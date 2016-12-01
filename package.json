@@ -1,6 +1,9 @@
 {
-  "name": "relay",
-  "repository": "https://github.com/forstaathletics/relay-chrome-app.git",
+  "name": "relay-superman",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forstaathletics/relay-chrome-app.git"
+  },
   "version": "0.0.0",
   "devDependencies": {
     "bower": "^1.3.12",
@@ -21,5 +24,18 @@
   "scripts": {
     "test": "grunt test",
     "lint": "grunt jshint"
-  }
+  },
+  "description": "Superman in the middle of whipsersystems protocol.",
+  "bugs": {
+    "url": "https://github.com/forstaathletics/relay-superman/issues"
+  },
+  "homepage": "https://github.com/forstaathletics/relay-superman",
+  "main": "Gruntfile.js",
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [
+    "badidea"
+  ],
+  "private": true
 }
