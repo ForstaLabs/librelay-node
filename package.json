@@ -1,0 +1,19 @@
+{
+  "name": "textsecure",
+  "version": "0.0.0",
+  "description": "Whisper systems textsecure (signal) high level protocols",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forstaathletics/textsecure-node.git"
+  },
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/forstaathletics/textsecure-node/issues"
+  },
+  "homepage": "https://github.com/forstaathletics/textsecure-node#readme"
+}
