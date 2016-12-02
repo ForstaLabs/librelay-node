@@ -1,40 +1,22 @@
 /*
  * vim: ts=4:sw=4:expandtab
  */
-(function () {
-  'use strict';
-   window.Whisper = window.Whisper || {};
+'use strict';
 
-   // TODO: Factor out private and group subclasses of Conversation
+const Backbone = require('backbone');
+const messages = require('./messages.js')
+const Database = require('../database.js');
 
-   var COLORS = [
-        'red',
-        'pink',
-        'purple',
-        'deep_purple',
-        'indigo',
-        'blue',
-        'light_blue',
-        'cyan',
-        'teal',
-        'green',
-        'light_green',
-        'orange',
-        'deep_orange',
-        'amber',
-        'blue_grey',
-    ];
-
-  Whisper.Conversation = Backbone.Model.extend({
-    database: Whisper.Database,
+const Conversation = exports.Conversation = Backbone.Model.extend({
+    database: Database,
     storeName: 'conversations',
     defaults: function() {
-      return { unreadCount : 0 };
+        return { unreadCount : 0 };
     },
 
     initialize: function() {
         this.contactCollection = new Backbone.Collection();
-        this.messageCollection = new Whisper.MessageCollection([], {
+        this.messageCollection = new messages.MessageCollection([], {
             conversation: this
         });
 
@@ -416,52 +398,6 @@
             this.trigger('change');
         }
     },
-    getColor: function() {
-        var title = this.get('name');
-        var color = this.get('color');
-        if (!color) {
-            if (this.isPrivate()) {
-                if (title) {
-                    color = COLORS[Math.abs(this.hashCode()) % 15];
-                } else {
-                    color = 'grey';
-                }
-            } else {
-                color = 'default';
-            }
-        }
-        return color;
-    },
-    getAvatar: function() {
-        if (this.avatarUrl === undefined) {
-            this.updateAvatarUrl(true);
-        }
-
-        var title = this.get('name');
-        var color = this.getColor();
-
-        if (this.avatarUrl) {
-            return { url: this.avatarUrl, color: color };
-        } else if (this.isPrivate()) {
-            return {
-                color: color,
-                content: title ? title.trim()[0] : '#'
-            };
-        } else {
-            return { url: '/images/group_default.png', color: color };
-        }
-    },
-
-    getNotificationIcon: function() {
-        return new Promise(function(resolve) {
-            var avatar = this.getAvatar();
-            if (avatar.url) {
-                resolve(avatar.url);
-            } else {
-                resolve(new Whisper.IdenticonSVGView(avatar).getDataUrl());
-            }
-        }.bind(this));
-    },
 
     resolveConflicts: function(conflict) {
         var number = conflict.number;
@@ -498,31 +434,11 @@
             }.bind(this));
         }.bind(this));
     },
+
     notify: function(message) {
-        if (!message.isIncoming()) {
-            return;
-        }
-        if (window.isOpen() && window.isFocused()) {
-            return;
-        }
-        var sender = ConversationController.create({
-            id: message.get('source'), type: 'private'
-        });
-        var conversationId = this.id;
-        sender.fetch().then(function() {
-            sender.getNotificationIcon().then(function(iconUrl) {
-                console.log('adding notification');
-                Whisper.Notifications.add({
-                    title          : sender.getTitle(),
-                    message        : message.getNotificationText(),
-                    iconUrl        : iconUrl,
-                    imageUrl       : message.getImageUrl(),
-                    conversationId : conversationId,
-                    messageId      : message.id
-                });
-            });
-        });
+        throw "not needed I think";
     },
+
     hashCode: function() {
         if (this.hash === undefined) {
             var string = this.getTitle() || '';
@@ -539,12 +455,12 @@
         }
         return this.hash;
     }
-  });
+});
 
-  Whisper.ConversationCollection = Backbone.Collection.extend({
-    database: Whisper.Database,
+exports.ConversationCollection = Backbone.Collection.extend({
+    database: Database,
     storeName: 'conversations',
-    model: Whisper.Conversation,
+    model: Conversation,
 
     comparator: function(m) {
       return -m.get('timestamp');
@@ -613,7 +529,4 @@
             remove: false
         });
     }
-  });
-
-  Whisper.Conversation.COLORS = COLORS.concat(['grey', 'default']).join(' ');
-})();
+});
