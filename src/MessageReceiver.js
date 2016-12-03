@@ -482,9 +482,7 @@ MessageReceiver.prototype.extend({
     }
 });
 
-window.textsecure = window.textsecure || {};
-
-textsecure.MessageReceiver = function(url, ports, username, password, signalingKey, attachment_server_url) {
+module.exports = function(url, ports, username, password, signalingKey, attachment_server_url) {
     var messageReceiver = new MessageReceiver(url, ports, username, password, signalingKey, attachment_server_url);
     this.addEventListener    = messageReceiver.addEventListener.bind(messageReceiver);
     this.removeEventListener = messageReceiver.removeEventListener.bind(messageReceiver);
@@ -495,7 +493,7 @@ textsecure.MessageReceiver = function(url, ports, username, password, signalingK
     textsecure.replay.registerFunction(messageReceiver.tryMessageAgain.bind(messageReceiver), textsecure.replay.Type.INIT_SESSION);
 };
 
-textsecure.MessageReceiver.prototype = {
-    constructor: textsecure.MessageReceiver
+module.exports.prototype = {
+    constructor: module.exports
 };
 

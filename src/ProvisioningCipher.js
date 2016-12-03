@@ -1,5 +1,7 @@
-(function() {
 'use strict';
+
+const Curve = require('./Curve.js');
+const crypto = require('./crypto.js');
 
 function ProvisioningCipher() {}
 
@@ -16,10 +18,10 @@ ProvisioningCipher.prototype = {
         var ivAndCiphertext = message.slice(0, message.byteLength - 32);
         var ciphertext = message.slice(16 + 1, message.byteLength - 32);
 
-        return libsignal.Curve.async.calculateAgreement(
+        return Curve.async.calculateAgreement(
             masterEphemeral, this.keyPair.privKey
         ).then(function(ecRes) {
-            return libsignal.HKDF.deriveSecrets(
+            return crypto.HKDF(
                 ecRes, new ArrayBuffer(32), "TextSecure Provisioning Message"
             );
         }).then(function(keys) {
@@ -30,7 +32,7 @@ ProvisioningCipher.prototype = {
             var provisionMessage = textsecure.protobuf.ProvisionMessage.decode(plaintext);
             var privKey = provisionMessage.identityKeyPrivate.toArrayBuffer();
 
-            return libsignal.Curve.async.createKeyPair(privKey).then(function(keyPair) {
+            return Curve.async.createKeyPair(privKey).then(function(keyPair) {
                 return {
                     identityKeyPair  : keyPair,
                     number           : provisionMessage.number,
@@ -43,7 +45,7 @@ ProvisioningCipher.prototype = {
     getPublicKey: function() {
       return Promise.resolve().then(function() {
           if (!this.keyPair) {
-              return libsignal.Curve.async.generateKeyPair().then(function(keyPair) {
+              return Curve.async.generateKeyPair().then(function(keyPair) {
                   this.keyPair = keyPair;
               }.bind(this));
           }
@@ -53,11 +55,9 @@ ProvisioningCipher.prototype = {
     }
 };
 
-libsignal.ProvisioningCipher = function() {
+exports.ProvisioningCipher = function() {
     var cipher = new ProvisioningCipher();
 
     this.decrypt      = cipher.decrypt.bind(cipher);
     this.getPublicKey = cipher.getPublicKey.bind(cipher);
 };
-
-})();

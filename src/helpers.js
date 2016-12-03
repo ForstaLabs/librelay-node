@@ -2,8 +2,6 @@
  * vim: ts=4:sw=4:expandtab
  */
 
-window.textsecure = window.textsecure || {};
-
 /*********************************
  *** Type conversion utilities ***
  *********************************/
@@ -34,7 +32,7 @@ function getStringable(thing) {
 }
 
 // Number formatting utils
-window.textsecure.utils = function() {
+exports.utils = function() {
     var self = {};
     self.unencodeNumber = function(number) {
         return number.split(".");

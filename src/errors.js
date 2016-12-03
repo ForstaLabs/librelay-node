@@ -1,122 +1,118 @@
 /*
  * vim: ts=4:sw=4:expandtab
  */
-;(function() {
-    'use strict';
+'use strict';
 
-    var registeredFunctions = {};
-    var Type = {
-        ENCRYPT_MESSAGE: 1,
-        INIT_SESSION: 2,
-        TRANSMIT_MESSAGE: 3,
-        REBUILD_MESSAGE: 4,
-    };
-    window.textsecure = window.textsecure || {};
-    window.textsecure.replay = {
-        Type: Type,
-        registerFunction: function(func, functionCode) {
-            registeredFunctions[functionCode] = func;
-        }
-    };
-
-    function ReplayableError(options) {
-        options = options || {};
-        this.name         = options.name || 'ReplayableError';
-        this.functionCode = options.functionCode;
-        this.args         = options.args;
+var registeredFunctions = {};
+var Type = {
+    ENCRYPT_MESSAGE: 1,
+    INIT_SESSION: 2,
+    TRANSMIT_MESSAGE: 3,
+    REBUILD_MESSAGE: 4,
+};
+exports.replay = {
+    Type: Type,
+    registerFunction: function(func, functionCode) {
+        registeredFunctions[functionCode] = func;
     }
-    ReplayableError.prototype = new Error();
-    ReplayableError.prototype.constructor = ReplayableError;
+};
 
-    ReplayableError.prototype.replay = function() {
-        return registeredFunctions[this.functionCode].apply(window, this.args);
-    };
+function ReplayableError(options) {
+    options = options || {};
+    this.name         = options.name || 'ReplayableError';
+    this.functionCode = options.functionCode;
+    this.args         = options.args;
+}
+ReplayableError.prototype = new Error();
+ReplayableError.prototype.constructor = ReplayableError;
 
-    function IncomingIdentityKeyError(number, message, key) {
-        ReplayableError.call(this, {
-            functionCode : Type.INIT_SESSION,
-            args         : [number, message]
+ReplayableError.prototype.replay = function() {
+    return registeredFunctions[this.functionCode].apply(null, this.args);
+};
 
-        });
-        this.number = number.split('.')[0];
-        this.name = 'IncomingIdentityKeyError';
-        this.message = "The identity of " + this.number + " has changed.";
-        this.identityKey = key;
-    }
-    IncomingIdentityKeyError.prototype = new ReplayableError();
-    IncomingIdentityKeyError.prototype.constructor = IncomingIdentityKeyError;
+function IncomingIdentityKeyError(number, message, key) {
+    ReplayableError.call(this, {
+        functionCode : Type.INIT_SESSION,
+        args         : [number, message]
 
-    function OutgoingIdentityKeyError(number, message, timestamp, identityKey) {
-        ReplayableError.call(this, {
-            functionCode : Type.ENCRYPT_MESSAGE,
-            args         : [number, message, timestamp]
-        });
-        this.number = number.split('.')[0];
-        this.name = 'OutgoingIdentityKeyError';
-        this.message = "The identity of " + this.number + " has changed.";
-        this.identityKey = identityKey;
-    }
-    OutgoingIdentityKeyError.prototype = new ReplayableError();
-    OutgoingIdentityKeyError.prototype.constructor = OutgoingIdentityKeyError;
+    });
+    this.number = number.split('.')[0];
+    this.name = 'IncomingIdentityKeyError';
+    this.message = "The identity of " + this.number + " has changed.";
+    this.identityKey = key;
+}
+IncomingIdentityKeyError.prototype = new ReplayableError();
+IncomingIdentityKeyError.prototype.constructor = IncomingIdentityKeyError;
 
-    function OutgoingMessageError(number, message, timestamp, httpError) {
-        ReplayableError.call(this, {
-            functionCode : Type.ENCRYPT_MESSAGE,
-            args         : [number, message, timestamp]
-        });
-        this.name = 'OutgoingMessageError';
-        if (httpError) {
-            this.code = httpError.code;
-            this.message = httpError.message;
-            this.stack = httpError.stack;
-        }
-    }
-    OutgoingMessageError.prototype = new ReplayableError();
-    OutgoingMessageError.prototype.constructor = OutgoingMessageError;
+function OutgoingIdentityKeyError(number, message, timestamp, identityKey) {
+    ReplayableError.call(this, {
+        functionCode : Type.ENCRYPT_MESSAGE,
+        args         : [number, message, timestamp]
+    });
+    this.number = number.split('.')[0];
+    this.name = 'OutgoingIdentityKeyError';
+    this.message = "The identity of " + this.number + " has changed.";
+    this.identityKey = identityKey;
+}
+OutgoingIdentityKeyError.prototype = new ReplayableError();
+OutgoingIdentityKeyError.prototype.constructor = OutgoingIdentityKeyError;
 
-    function SendMessageNetworkError(number, jsonData, httpError, timestamp) {
-        ReplayableError.call(this, {
-            functionCode : Type.TRANSMIT_MESSAGE,
-            args         : [number, jsonData, timestamp]
-        });
-        this.name = 'SendMessageNetworkError';
-        this.number = number;
+function OutgoingMessageError(number, message, timestamp, httpError) {
+    ReplayableError.call(this, {
+        functionCode : Type.ENCRYPT_MESSAGE,
+        args         : [number, message, timestamp]
+    });
+    this.name = 'OutgoingMessageError';
+    if (httpError) {
         this.code = httpError.code;
         this.message = httpError.message;
         this.stack = httpError.stack;
     }
-    SendMessageNetworkError.prototype = new ReplayableError();
-    SendMessageNetworkError.prototype.constructor = SendMessageNetworkError;
+}
+OutgoingMessageError.prototype = new ReplayableError();
+OutgoingMessageError.prototype.constructor = OutgoingMessageError;
 
-    function MessageError(message, httpError) {
-        ReplayableError.call(this, {
-            functionCode : Type.REBUILD_MESSAGE,
-            args         : [message]
-        });
-        this.name = 'MessageError';
-        this.code = httpError.code;
-        this.message = httpError.message;
-        this.stack = httpError.stack;
-    }
-    MessageError.prototype = new ReplayableError();
-    MessageError.prototype.constructor = MessageError;
+function SendMessageNetworkError(number, jsonData, httpError, timestamp) {
+    ReplayableError.call(this, {
+        functionCode : Type.TRANSMIT_MESSAGE,
+        args         : [number, jsonData, timestamp]
+    });
+    this.name = 'SendMessageNetworkError';
+    this.number = number;
+    this.code = httpError.code;
+    this.message = httpError.message;
+    this.stack = httpError.stack;
+}
+SendMessageNetworkError.prototype = new ReplayableError();
+SendMessageNetworkError.prototype.constructor = SendMessageNetworkError;
 
-    function UnregisteredUserError(number, httpError) {
-        this.name = 'UnregisteredUserError';
-        this.number = number;
-        this.code = httpError.code;
-        this.message = httpError.message;
-        this.stack = httpError.stack;
-    }
-    UnregisteredUserError.prototype = new Error();
-    UnregisteredUserError.prototype.constructor = UnregisteredUserError;
+function MessageError(message, httpError) {
+    ReplayableError.call(this, {
+        functionCode : Type.REBUILD_MESSAGE,
+        args         : [message]
+    });
+    this.name = 'MessageError';
+    this.code = httpError.code;
+    this.message = httpError.message;
+    this.stack = httpError.stack;
+}
+MessageError.prototype = new ReplayableError();
+MessageError.prototype.constructor = MessageError;
 
-    window.textsecure.UnregisteredUserError = UnregisteredUserError;
-    window.textsecure.SendMessageNetworkError = SendMessageNetworkError;
-    window.textsecure.IncomingIdentityKeyError = IncomingIdentityKeyError;
-    window.textsecure.OutgoingIdentityKeyError = OutgoingIdentityKeyError;
-    window.textsecure.ReplayableError = ReplayableError;
-    window.textsecure.OutgoingMessageError = OutgoingMessageError;
-    window.textsecure.MessageError = MessageError;
+function UnregisteredUserError(number, httpError) {
+    this.name = 'UnregisteredUserError';
+    this.number = number;
+    this.code = httpError.code;
+    this.message = httpError.message;
+    this.stack = httpError.stack;
+}
+UnregisteredUserError.prototype = new Error();
+UnregisteredUserError.prototype.constructor = UnregisteredUserError;
 
-})();
+exports.UnregisteredUserError = UnregisteredUserError;
+exports.SendMessageNetworkError = SendMessageNetworkError;
+exports.IncomingIdentityKeyError = IncomingIdentityKeyError;
+exports.OutgoingIdentityKeyError = OutgoingIdentityKeyError;
+exports.ReplayableError = ReplayableError;
+exports.OutgoingMessageError = OutgoingMessageError;
+exports.MessageError = MessageError;
