@@ -1,2 +1,2 @@
 
-require('./src/foo.js');
+//require('./src/foo.js');
