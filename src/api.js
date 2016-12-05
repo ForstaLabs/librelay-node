@@ -4,19 +4,7 @@
 
 'use strict';
 
-function PortManager(ports) {
-    this.ports = ports;
-    this.idx = 0;
-}
-
-PortManager.prototype = {
-    constructor: PortManager,
-    getPort: function() {
-        var port = this.ports[this.idx];
-        this.idx = (this.idx + 1) % this.ports.length;
-        return port;
-    }
-};
+const request = require('request-promise-native');
 
 var TextSecureServer = (function() {
 
@@ -37,84 +25,6 @@ var TextSecureServer = (function() {
             return false;
         }
         return true;
-    }
-
-    // Promise-based async xhr routine
-    function promise_ajax(url, options) {
-        return new Promise(function (resolve, reject) {
-            if (!url) {
-                url = options.host + ':' + options.port + '/' + options.path;
-            }
-            console.log(options.type, url);
-            var xhr = new XMLHttpRequest();
-            xhr.open(options.type, url, true /*async*/);
-
-            if ( options.responseType ) {
-                xhr[ 'responseType' ] = options.responseType;
-            }
-            if (options.user && options.password) {
-                xhr.setRequestHeader("Authorization", "Basic " + btoa(getString(options.user) + ":" + getString(options.password)));
-            }
-            if (options.contentType) {
-                xhr.setRequestHeader( "Content-Type", options.contentType );
-            }
-            xhr.setRequestHeader( 'X-Signal-Agent', 'OWD' );
-
-
-            xhr.onload = function() {
-                var result = xhr.response;
-                if ( (!xhr.responseType || xhr.responseType === "text") &&
-                        typeof xhr.responseText === "string" ) {
-                    result = xhr.responseText;
-                }
-                if (options.dataType === 'json') {
-                    try { result = JSON.parse(xhr.responseText + ''); } catch(e) {}
-                    if (options.validateResponse) {
-                        if (!validateResponse(result, options.validateResponse)) {
-                            console.log(options.type, url, xhr.status, 'Error');
-                            reject(HTTPError(xhr.status, result, options.stack));
-                        }
-                    }
-                }
-                if ( 0 <= xhr.status && xhr.status < 400) {
-                    console.log(options.type, url, xhr.status, 'Success');
-                    resolve(result, xhr.status);
-                } else {
-                    console.log(options.type, url, xhr.status, 'Error');
-                    reject(HTTPError(xhr.status, result, options.stack));
-                }
-            };
-            xhr.onerror = function() {
-                console.log(options.type, url, xhr.status, 'Error');
-                reject(HTTPError(xhr.status, null, options.stack));
-            };
-            xhr.send( options.data || null );
-        });
-    }
-
-    function retry_ajax(url, options, limit, count) {
-        count = count || 0;
-        limit = limit || 3;
-        if (options.ports) {
-            options.port = options.ports[count % options.ports.length];
-        }
-        count++;
-        return promise_ajax(url, options).catch(function(e) {
-            if (e.name === 'HTTPError' && e.code === -1 && count < limit) {
-                return new Promise(function(resolve) {
-                    setTimeout(function() {
-                        resolve(retry_ajax(url, options, limit, count));
-                    }, 1000);
-                });
-            } else {
-                throw e;
-            }
-        });
-    }
-
-    function ajax(url, options) {
-        options.stack = new Error().stack; // just in case, save stack here.
-        return retry_ajax(url, options);
     }
 
     function HTTPError(code, response, stack) {
@@ -139,11 +49,11 @@ var TextSecureServer = (function() {
         attachment : "v1/attachments"
     };
 
-    function TextSecureServer(url, ports, username, password, attachment_server_url) {
+    function TextSecureServer(url, username, password, attachment_server_url) {
         if (typeof url !== 'string') {
             throw new Error('Invalid server url');
         }
-        this.portManager = new PortManager(ports);
+        console.log(`Initialized TextSecureServer: ${url} ${username}`);
         this.url = url;
         this.username = username;
         this.password = password;
@@ -156,65 +66,40 @@ var TextSecureServer = (function() {
             attachment_server_url = attachment_server_url.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
             this.attachment_id_regex = RegExp( "^" + attachment_server_url + "\/(\\d+)\?");
         }
-
-
     }
 
     TextSecureServer.prototype = {
         constructor: TextSecureServer,
-        getUrl: function() {
-            return this.url + ':' + this.portManager.getPort();
-        },
-        ajax: function(param) {
+        ajax: async function(param) {
             if (!param.urlParameters) {
                 param.urlParameters = '';
             }
-            return ajax(null, {
-                    host        : this.url,
-                    ports       : this.portManager.ports,
-                    path        : URL_CALLS[param.call] + param.urlParameters,
-                    type        : param.httpType,
-                    data        : param.jsonData && textsecure.utils.jsonThing(param.jsonData),
-                    contentType : 'application/json; charset=utf-8',
-                    dataType    : 'json',
-                    user        : this.username,
-                    password    : this.password,
-                    validateResponse: param.validateResponse
-            }).catch(function(e) {
-                var code = e.code;
-                if (code === 200) {
-                    // happens sometimes when we get no response
-                    // (TODO: Fix server to return 204? instead)
-                    return null;
-                }
-                var message;
-                switch (code) {
-                case -1:
-                    message = "Failed to connect to the server, please check your network connection.";
-                    break;
-                case 413:
-                    message = "Rate limit exceeded, please try again later.";
-                    break;
-                case 403:
-                    message = "Invalid code, please try again.";
-                    break;
-                case 417:
-                    // TODO: This shouldn't be a thing?, but its in the API doc?
-                    message = "Number already registered.";
-                    break;
-                case 401:
-                    message = "Invalid authentication, most likely someone re-registered and invalidated our registration.";
-                    break;
-                case 404:
-                    message = "Number is not registered.";
-                    break;
-                default:
-                    message = "The server rejected our query, please file a bug report.";
-                }
-                e.message = message
-                throw e;
+            let auth;
+            if (this.username && this.password) {
+                const auth = {
+                    username: this.username,
+                    password: this.password
+                };
+            }
+            const uri = this.url + '/' + URL_CALLS[param.call] + param.urlParameters;
+            console.info(`Request ${param.httpType} ${uri} [${param.jsonData}]`);
+            const resp = request({
+                uri,
+                auth,
+                method: param.httpType,
+                json: true,
+                body: param.jsonData
             });
+            console.log(resp._rp_promise);
+            const reply = await resp;
+            console.log(resp._rp_promise);
+            if (param.validateResponse) {
+                throw "looka at it";
+                //validateResponse: param.validateResponse
+            }
+            //}).catch(function(e) {
         },
+
         requestVerificationSMS: function(number) {
             return this.ajax({
                 call                : 'accounts',
@@ -380,20 +265,18 @@ var TextSecureServer = (function() {
             }.bind(this));
         },
         getMessageSocket: function() {
-            var url = this.getUrl();
-            console.log('opening message socket', url);
+            console.log('opening message socket', this.url);
             return new WebSocket(
-                url.replace('https://', 'wss://').replace('http://', 'ws://')
+                this.url.replace('https://', 'wss://').replace('http://', 'ws://')
                     + '/v1/websocket/?login=' + encodeURIComponent(this.username)
                     + '&password=' + encodeURIComponent(this.password)
                     + '&agent=OWD'
             );
         },
         getProvisioningSocket: function () {
-            var url = this.getUrl();
-            console.log('opening provisioning socket', url);
+            console.log('opening provisioning socket', this.url);
             return new WebSocket(
-                url.replace('https://', 'wss://').replace('http://', 'ws://')
+                this.url.replace('https://', 'wss://').replace('http://', 'ws://')
                     + '/v1/websocket/provisioning/?agent=OWD'
             );
         }

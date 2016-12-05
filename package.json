@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/forstaathletics/textsecure-node#readme",
   "dependencies": {
-    "libsignal-protocol": "file:///home/mayfield/project/libsignal-protocol-node"
+    "libsignal-protocol": "file:///home/mayfield/project/libsignal-protocol-node",
+    "request": "2.79.0",
+    "request-promise-native": "1.0.3"
   }
 }
