@@ -6,9 +6,10 @@
 'use strict';
 
 const ev = require('./event_target.js');
+const api = require('./api.js');
 
 function AccountManager(url, ports, username, password) {
-    this.server = new TextSecureServer(url, ports, username, password);
+    this.server = new api.TextSecureServer(url, ports, username, password);
 }
 
 AccountManager.prototype = new ev.EventTarget();
@@ -191,4 +192,4 @@ AccountManager.prototype.extend({
     }
 });
 
-exports.AccountManager = AccountManager;
+module.exports = AccountManager;

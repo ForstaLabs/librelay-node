@@ -2,6 +2,8 @@
  * vim: ts=4:sw=4:expandtab
  */
 
+'use strict';
+
 function PortManager(ports) {
     this.ports = ports;
     this.idx = 0;
@@ -17,7 +19,6 @@ PortManager.prototype = {
 };
 
 var TextSecureServer = (function() {
-    'use strict';
 
     function validateResponse(response, schema) {
         try {
@@ -400,3 +401,6 @@ var TextSecureServer = (function() {
 
     return TextSecureServer;
 })();
+
+
+exports.TextSecureServer = TextSecureServer;

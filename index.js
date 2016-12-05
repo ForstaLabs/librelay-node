@@ -1,2 +1,4 @@
 
-//require('./src/foo.js');
+module.exports = {
+    AccountManager: require('./src/account_manager.js')
+};
