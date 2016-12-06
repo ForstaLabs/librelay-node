@@ -1,6 +1,7 @@
 /*
  * vim: ts=4:sw=4:expandtab
  */
+// XXX this whole thing is suspect
 ;(function() {
     'use strict';
     window.textsecure = window.textsecure || {};

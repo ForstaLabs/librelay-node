@@ -10,7 +10,7 @@ const decrypt      = libsignal.crypto.decrypt;
 const calculateMAC = libsignal.crypto.calculateMAC;
 const verifyMAC    = libsignal.crypto.verifyMAC;
 
-exports.crypto = {
+module.exports = {
     // Decrypts message into a raw string
     decryptWebsocketMessage: function(message, signaling_key) {
         var decodedMessage = message.toArrayBuffer();

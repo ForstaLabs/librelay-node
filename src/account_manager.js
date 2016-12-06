@@ -1,12 +1,14 @@
 /*
  * vim: ts=4:sw=4:expandtab
  */
-
-
 'use strict';
 
-const ev = require('./event_target.js');
+const btoa = require('bytebuffer').btoa;
+const libsignal = require('libsignal-protocol');
 const api = require('./api.js');
+const crypto = require('./crypto.js');
+const ev = require('./event_target.js');
+const helpers = require('./helpers.js');
 
 function AccountManager(url, ports, username, password) {
     this.server = new api.TextSecureServer(url, ports, username, password);
@@ -54,7 +56,7 @@ AccountManager.prototype.extend({
                             var proto = textsecure.protobuf.ProvisioningUuid.decode(request.body);
                             setProvisioningUrl([
                                 'tsdevice:/?uuid=', proto.uuid, '&pub_key=',
-                                encodeURIComponent(btoa(getString(pubKey)))
+                                encodeURIComponent(btoa(helpers.getString(pubKey)))
                             ].join(''));
                             request.respond(200, 'OK');
                         } else if (request.path === "/v1/message" && request.verb === "PUT") {
@@ -85,6 +87,7 @@ AccountManager.prototype.extend({
            then(registerKeys).
            then(registrationDone);
     },
+
     refreshPreKeys: function() {
         var generateKeys = this.generateKeys.bind(this, 100);
         var registerKeys = this.server.registerKeys.bind(this.server);
@@ -95,9 +98,10 @@ AccountManager.prototype.extend({
             }
         }.bind(this));
     },
+
     createAccount: function(number, verificationCode, identityKeyPair, deviceName, userAgent) {
-        var signalingKey = libsignal.crypto.getRandomBytes(32 + 20);
-        var password = btoa(getString(libsignal.crypto.getRandomBytes(16)));
+        var signalingKey = crypto.getRandomBytes(32 + 20);
+        var password = btoa(helpers.getString(crypto.getRandomBytes(16)));
         password = password.substring(0, password.length - 2);
         var registrationId = libsignal.KeyHelper.generateRegistrationId();
 
@@ -131,7 +135,7 @@ AccountManager.prototype.extend({
 
                 textsecure.storage.user.setNumberAndDeviceId(number, response.deviceId || 1, deviceName);
                 textsecure.storage.put('regionCode', libphonenumber.util.getRegionCodeForNumber(number));
-                this.server.username = textsecure.storage.get('number_id');
+                this.server.setUsername(textsecure.storage.get('number_id'));
             }.bind(this));
         }.bind(this));
     },

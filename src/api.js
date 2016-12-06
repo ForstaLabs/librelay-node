@@ -4,9 +4,11 @@
 
 'use strict';
 
+const btoa = require('bytebuffer').btoa;
 const http = require('http');
 const https = require('https');
 const axios = require('axios');
+const helpers = require('./helpers.js');
 
 var TextSecureServer = (function() {
 
@@ -95,19 +97,26 @@ var TextSecureServer = (function() {
             if (!param.urlParameters) {
                 param.urlParameters = '';
             }
+            console.log(`HTTP ${param.httpType} ${param.call} [${param.urlParameters}]`);
             const resp = await this._http({
                 method: param.httpType,
                 url: URL_CALLS[param.call] + param.urlParameters,
-                data: param.jsonData
+                data: param.jsonData,
+                auth: param.auth
             });
-            if (resp.statusText !== 'OK') {
-                throw new Error(`HTTP non-ok response: ${resp.statusText}`);
-            }
             if (param.validateResponse &&
                 !validateResponse(resp.data, param.validateResponse)) {
                 throw new Error(`Invalid server response for: ${param.call}`);
             }
             return resp.data;
+        },
+
+        setUsername: function(username) {
+            console.log("Setting username", username);
+            if (!this._http.defaults.auth) {
+                this._http.defaults.auth = {};
+            }
+            this._http.defaults.auth.username = username;
         },
 
         requestVerificationSMS: function(number) {
@@ -126,7 +135,7 @@ var TextSecureServer = (function() {
         },
         confirmCode: function(number, code, password, signaling_key, registrationId, deviceName) {
             var jsonData = {
-                signalingKey    : btoa(getString(signaling_key)),
+                signalingKey    : btoa(helpers.getString(signaling_key)),
                 supportsSms     : false,
                 fetchesMessages : true,
                 registrationId  : registrationId,
@@ -164,11 +173,11 @@ var TextSecureServer = (function() {
         },
         registerKeys: function(genKeys) {
             var keys = {};
-            keys.identityKey = btoa(getString(genKeys.identityKey));
+            keys.identityKey = btoa(helpers.getString(genKeys.identityKey));
             keys.signedPreKey = {
                 keyId: genKeys.signedPreKey.keyId,
-                publicKey: btoa(getString(genKeys.signedPreKey.publicKey)),
-                signature: btoa(getString(genKeys.signedPreKey.signature))
+                publicKey: btoa(helpers.getString(genKeys.signedPreKey.publicKey)),
+                signature: btoa(helpers.getString(genKeys.signedPreKey.signature))
             };
 
             keys.preKeys = [];
@@ -176,7 +185,7 @@ var TextSecureServer = (function() {
             for (var i in genKeys.preKeys) {
                 keys.preKeys[j++] = {
                     keyId: genKeys.preKeys[i].keyId,
-                    publicKey: btoa(getString(genKeys.preKeys[i].publicKey))
+                    publicKey: btoa(helpers.getString(genKeys.preKeys[i].publicKey))
                 };
             }
 
