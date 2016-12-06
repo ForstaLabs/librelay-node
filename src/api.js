@@ -4,7 +4,9 @@
 
 'use strict';
 
-const request = require('request-promise-native');
+const http = require('http');
+const https = require('https');
+const axios = require('axios');
 
 var TextSecureServer = (function() {
 
@@ -42,11 +44,11 @@ var TextSecureServer = (function() {
     }
 
     var URL_CALLS = {
-        accounts   : "v1/accounts",
-        devices    : "v1/devices",
-        keys       : "v2/keys",
-        messages   : "v1/messages",
-        attachment : "v1/attachments"
+        accounts   : "/v1/accounts",
+        devices    : "/v1/devices",
+        keys       : "/v2/keys",
+        messages   : "/v1/messages",
+        attachment : "/v1/attachments"
     };
 
     function TextSecureServer(url, username, password, attachment_server_url) {
@@ -54,9 +56,26 @@ var TextSecureServer = (function() {
             throw new Error('Invalid server url');
         }
         console.log(`Initialized TextSecureServer: ${url} ${username}`);
-        this.url = url;
-        this.username = username;
-        this.password = password;
+        let auth;
+        if (username && password) {
+            auth = {
+                username,
+                password
+            };
+        }
+        this._http = axios.create({
+            baseURL: url,
+            auth,
+            timeout: 30000,
+            agent: {
+                httpAgent: new http.Agent({keepAlive: true}),
+                httpsAgent: new https.Agent({keepAlive: true})
+            },
+            headers: {
+                'Connection': 'keep-alive',
+                'Content-Type': 'application/json'
+            }
+        });
 
         this.attachment_id_regex = RegExp("^https:\/\/.*\/(\\d+)\?");
         if (attachment_server_url) {
@@ -69,46 +88,37 @@ var TextSecureServer = (function() {
     }
 
     TextSecureServer.prototype = {
+
         constructor: TextSecureServer,
-        ajax: async function(param) {
+
+        http: async function(param) {
             if (!param.urlParameters) {
                 param.urlParameters = '';
             }
-            let auth;
-            if (this.username && this.password) {
-                const auth = {
-                    username: this.username,
-                    password: this.password
-                };
-            }
-            const uri = this.url + '/' + URL_CALLS[param.call] + param.urlParameters;
-            console.info(`Request ${param.httpType} ${uri} [${param.jsonData}]`);
-            const resp = request({
-                uri,
-                auth,
+            const resp = await this._http({
                 method: param.httpType,
-                json: true,
-                body: param.jsonData
+                url: URL_CALLS[param.call] + param.urlParameters,
+                data: param.jsonData
             });
-            console.log(resp._rp_promise);
-            const reply = await resp;
-            console.log(resp._rp_promise);
-            if (param.validateResponse) {
-                throw "looka at it";
-                //validateResponse: param.validateResponse
+            if (resp.statusText !== 'OK') {
+                throw new Error(`HTTP non-ok response: ${resp.statusText}`);
             }
-            //}).catch(function(e) {
+            if (param.validateResponse &&
+                !validateResponse(resp.data, param.validateResponse)) {
+                throw new Error(`Invalid server response for: ${param.call}`);
+            }
+            return resp.data;
         },
 
         requestVerificationSMS: function(number) {
-            return this.ajax({
+            return this.http({
                 call                : 'accounts',
                 httpType            : 'GET',
                 urlParameters       : '/sms/code/' + number,
             });
         },
         requestVerificationVoice: function(number) {
-            return this.ajax({
+            return this.http({
                 call                : 'accounts',
                 httpType            : 'GET',
                 urlParameters       : '/voice/code/' + number,
@@ -133,20 +143,23 @@ var TextSecureServer = (function() {
                 urlPrefix = '/code/';
             }
 
-            this.username = number;
-            this.password = password;
-            return this.ajax({
-                call                : call,
-                httpType            : 'PUT',
-                urlParameters       : urlPrefix + code,
-                jsonData            : jsonData,
-                validateResponse    : schema
+            const auth = {
+                username: number,
+                password
+            };
+            return this.http({
+                auth,
+                call: call,
+                httpType: 'PUT',
+                urlParameters: urlPrefix + code,
+                jsonData: jsonData,
+                validateResponse: schema
             });
         },
         getDevices: function(number) {
-            return this.ajax({
-                call     : 'devices',
-                httpType : 'GET',
+            return this.http({
+                call: 'devices',
+                httpType: 'GET',
             });
         },
         registerKeys: function(genKeys) {
@@ -171,14 +184,14 @@ var TextSecureServer = (function() {
             // (v2 clients should choke on publicKey)
             keys.lastResortKey = {keyId: 0x7fffFFFF, publicKey: btoa("42")};
 
-            return this.ajax({
+            return this.http({
                 call                : 'keys',
                 httpType            : 'PUT',
                 jsonData            : keys,
             });
         },
         getMyKeys: function(number, deviceId) {
-            return this.ajax({
+            return this.http({
                 call                : 'keys',
                 httpType            : 'GET',
                 validateResponse    : {count: 'number'}
@@ -190,7 +203,7 @@ var TextSecureServer = (function() {
             if (deviceId === undefined)
                 deviceId = "*";
 
-            return this.ajax({
+            return this.http({
                 call                : 'keys',
                 httpType            : 'GET',
                 urlParameters       : "/" + number + "/" + deviceId,
@@ -216,15 +229,16 @@ var TextSecureServer = (function() {
         sendMessages: function(destination, messageArray, timestamp) {
             var jsonData = { messages: messageArray, timestamp: timestamp};
 
-            return this.ajax({
+            return this.http({
                 call                : 'messages',
                 httpType            : 'PUT',
                 urlParameters       : '/' + destination,
                 jsonData            : jsonData,
             });
         },
+        // XXX Probably not...
         getAttachment: function(id) {
-            return this.ajax({
+            return this.http({
                 call                : 'attachment',
                 httpType            : 'GET',
                 urlParameters       : '/' + id,
@@ -235,15 +249,17 @@ var TextSecureServer = (function() {
                     console.log('Invalid attachment url for incoming message', response.location);
                     throw new Error('Received invalid attachment url');
                 }
+                // XXX not implemented
                 return ajax(response.location, {
-                    type        : "GET",
+                    type: "GET",
                     responseType: "arraybuffer",
-                    contentType : "application/octet-stream"
+                    contentType: "application/octet-stream"
                 });
             }.bind(this));
         },
+        // XXX Probably not...
         putAttachment: function(encryptedBin) {
-            return this.ajax({
+            return this.http({
                 call     : 'attachment',
                 httpType : 'GET',
             }).then(function(response) {
@@ -255,10 +271,10 @@ var TextSecureServer = (function() {
                     throw new Error('Received invalid attachment url');
                 }
                 return ajax(response.location, {
-                    type        : "PUT",
-                    contentType : "application/octet-stream",
-                    data        : encryptedBin,
-                    processData : false,
+                    type: "PUT",
+                    contentType: "application/octet-stream",
+                    data: encryptedBin,
+                    processData: false,
                 }).then(function() {
                     return match[1];
                 }.bind(this));
@@ -266,6 +282,7 @@ var TextSecureServer = (function() {
         },
         getMessageSocket: function() {
             console.log('opening message socket', this.url);
+            // XXX NotImplemented
             return new WebSocket(
                 this.url.replace('https://', 'wss://').replace('http://', 'ws://')
                     + '/v1/websocket/?login=' + encodeURIComponent(this.username)
