@@ -1,4 +1,4 @@
-Relay - Superman (in the middle)
+librelay - Forsta Relay Node library
 ==========================
 Bad idea jeans.
 

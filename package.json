@@ -1,23 +1,20 @@
 {
-  "name": "textsecure",
-  "version": "0.0.0",
-  "description": "Whisper systems textsecure (signal) high level protocols",
+  "name": "librelay",
+  "version": "0.0.1",
+  "description": "Forsta relay high level protocols",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/forstaathletics/textsecure-node.git"
+    "url": "git+https://github.com/forstaathletics/librelay-node.git"
   },
   "author": "",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/forstaathletics/textsecure-node/issues"
+    "url": "https://github.com/forstaathletics/librelay-node/issues"
   },
-  "homepage": "https://github.com/forstaathletics/textsecure-node#readme",
+  "homepage": "https://github.com/forstaathletics/librelay-node#readme",
   "dependencies": {
     "axios": "0.15.3",
-    "libsignal-protocol": "file:///home/mayfield/project/libsignal-protocol-node"
+    "libsignal": "0.0.1"
   }
 }
