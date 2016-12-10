@@ -12,7 +12,9 @@ function EventTarget() {
 }
 
 EventTarget.prototype = {
+
     constructor: EventTarget,
+
     dispatchEvent: function(ev) {
         if (!(ev instanceof Event)) {
             throw new Error('Expects an event');
@@ -29,6 +31,7 @@ EventTarget.prototype = {
             }
         }
     },
+
     addEventListener: function(eventName, callback) {
         if (typeof eventName !== 'string') {
             throw new Error('First argument expects a string');
@@ -46,6 +49,7 @@ EventTarget.prototype = {
         listeners.push(callback);
         this.listeners[eventName] = listeners;
     },
+
     removeEventListener: function(eventName, callback) {
         if (typeof eventName !== 'string') {
             throw new Error('First argument expects a string');
@@ -67,6 +71,7 @@ EventTarget.prototype = {
         }
         this.listeners[eventName] = listeners;
     },
+
     extend: function(obj) {
       for (var prop in obj) {
         this[prop] = obj[prop];
@@ -75,4 +80,4 @@ EventTarget.prototype = {
     }
 };
 
-exports.EventTarget = EventTarget;
+module.exports = EventTarget;

@@ -2,6 +2,13 @@
  * vim: ts=4:sw=4:expandtab
  */
 
+const protobufs = require('./protobufs.js');
+const libsignal = require('libsignal');
+const crypto = require('./crypto.js');
+const errors = require('./errors.js');
+const storage = require('./storage');
+
+
 function stringToArrayBuffer(str) {
     if (typeof str !== 'string') {
         throw new Error('Passed non-string to stringToArrayBuffer');
@@ -73,13 +80,13 @@ function Message(options) {
 Message.prototype = {
     constructor: Message,
     isEndSession: function() {
-        return (this.flags & textsecure.protobuf.DataMessage.Flags.END_SESSION);
+        return (this.flags & protobufs.DataMessage.Flags.END_SESSION);
     },
     toProto: function() {
-        if (this.dataMessage instanceof textsecure.protobuf.DataMessage) {
+        if (this.dataMessage instanceof protobufs.DataMessage) {
             return this.dataMessage;
         }
-        var proto         = new textsecure.protobuf.DataMessage();
+        var proto         = new protobufs.DataMessage();
         if (this.body) {
           proto.body        = this.body;
         }
@@ -88,7 +95,7 @@ Message.prototype = {
             proto.flags = this.flags;
         }
         if (this.group) {
-            proto.group      = new textsecure.protobuf.GroupContext();
+            proto.group      = new protobufs.GroupContext();
             proto.group.id   = stringToArrayBuffer(this.group.id);
             proto.group.type = this.group.type
         }
@@ -104,8 +111,8 @@ Message.prototype = {
     }
 };
 
-function MessageSender(url, ports, username, password, attachment_server_url) {
-    this.server = new TextSecureServer(url, ports, username, password, attachment_server_url);
+function MessageSender(url, username, password, attachment_server_url) {
+    this.server = new RelayServer(url, username, password, attachment_server_url);
     this.pendingMessages = {};
 }
 
@@ -115,11 +122,11 @@ MessageSender.prototype = {
         if (typeof attachment !== 'object' || attachment == null) {
             return Promise.resolve(undefined);
         }
-        var proto = new textsecure.protobuf.AttachmentPointer();
+        var proto = new protobufs.AttachmentPointer();
         proto.key = libsignal.crypto.getRandomBytes(64);
 
         var iv = libsignal.crypto.getRandomBytes(16);
-        return textsecure.crypto.encryptAttachment(attachment.data, proto.key, iv).then(function(encryptedBin) {
+        return crypto.encryptAttachment(attachment.data, proto.key, iv).then(function(encryptedBin) {
             return this.server.putAttachment(encryptedBin).then(function(id) {
                 proto.id = id;
                 proto.contentType = attachment.contentType;
@@ -134,7 +141,7 @@ MessageSender.prototype = {
     },
 
     tryMessageAgain: function(number, encodedMessage, timestamp) {
-        var proto = textsecure.protobuf.DataMessage.decode(encodedMessage);
+        var proto = protobufs.DataMessage.decode(encodedMessage);
         return this.sendIndividualProto(number, proto, timestamp);
     },
 
@@ -155,7 +162,7 @@ MessageSender.prototype = {
             message.attachmentPointers = attachmentPointers;
         }).catch(function(error) {
             if (error instanceof Error && error.name === 'HTTPError') {
-                throw new textsecure.MessageError(message, error);
+                throw new errors.MessageError(message, error);
             } else {
                 throw error;
             }
@@ -204,14 +211,14 @@ MessageSender.prototype = {
     },
 
     sendSyncMessage: function(encodedDataMessage, timestamp, destination, expirationStartTimestamp) {
-        var myNumber = textsecure.storage.user.getNumber();
-        var myDevice = textsecure.storage.user.getDeviceId();
+        var myNumber = storage.user.getNumber();
+        var myDevice = storage.user.getDeviceId();
         if (myDevice == 1) {
             return Promise.resolve();
         }
 
-        var dataMessage = textsecure.protobuf.DataMessage.decode(encodedDataMessage);
-        var sentMessage = new textsecure.protobuf.SyncMessage.Sent();
+        var dataMessage = protobufs.DataMessage.decode(encodedDataMessage);
+        var sentMessage = new protobufs.SyncMessage.Sent();
         sentMessage.timestamp = timestamp;
         sentMessage.message = dataMessage;
         if (destination) {
@@ -220,22 +227,22 @@ MessageSender.prototype = {
         if (expirationStartTimestamp) {
             sentMessage.expirationStartTimestamp = expirationStartTimestamp;
         }
-        var syncMessage = new textsecure.protobuf.SyncMessage();
+        var syncMessage = new protobufs.SyncMessage();
         syncMessage.sent = sentMessage;
-        var contentMessage = new textsecure.protobuf.Content();
+        var contentMessage = new protobufs.Content();
         contentMessage.syncMessage = syncMessage;
         return this.sendIndividualProto(myNumber, contentMessage, Date.now());
     },
 
     sendRequestGroupSyncMessage: function() {
-        var myNumber = textsecure.storage.user.getNumber();
-        var myDevice = textsecure.storage.user.getDeviceId();
+        var myNumber = storage.user.getNumber();
+        var myDevice = storage.user.getDeviceId();
         if (myDevice != 1) {
-            var request = new textsecure.protobuf.SyncMessage.Request();
-            request.type = textsecure.protobuf.SyncMessage.Request.Type.GROUPS;
-            var syncMessage = new textsecure.protobuf.SyncMessage();
+            var request = new protobufs.SyncMessage.Request();
+            request.type = protobufs.SyncMessage.Request.Type.GROUPS;
+            var syncMessage = new protobufs.SyncMessage();
             syncMessage.request = request;
-            var contentMessage = new textsecure.protobuf.Content();
+            var contentMessage = new protobufs.Content();
             contentMessage.syncMessage = syncMessage;
 
             return this.sendIndividualProto(myNumber, contentMessage, Date.now());
@@ -243,32 +250,32 @@ MessageSender.prototype = {
     },
 
     sendRequestContactSyncMessage: function() {
-        var myNumber = textsecure.storage.user.getNumber();
-        var myDevice = textsecure.storage.user.getDeviceId();
+        var myNumber = storage.user.getNumber();
+        var myDevice = storage.user.getDeviceId();
         if (myDevice != 1) {
-            var request = new textsecure.protobuf.SyncMessage.Request();
-            request.type = textsecure.protobuf.SyncMessage.Request.Type.CONTACTS;
-            var syncMessage = new textsecure.protobuf.SyncMessage();
+            var request = new protobufs.SyncMessage.Request();
+            request.type = protobufs.SyncMessage.Request.Type.CONTACTS;
+            var syncMessage = new protobufs.SyncMessage();
             syncMessage.request = request;
-            var contentMessage = new textsecure.protobuf.Content();
+            var contentMessage = new protobufs.Content();
             contentMessage.syncMessage = syncMessage;
 
             return this.sendIndividualProto(myNumber, contentMessage, Date.now());
         }
     },
     syncReadMessages: function(reads) {
-        var myNumber = textsecure.storage.user.getNumber();
-        var myDevice = textsecure.storage.user.getDeviceId();
+        var myNumber = storage.user.getNumber();
+        var myDevice = storage.user.getDeviceId();
         if (myDevice != 1) {
-            var syncMessage = new textsecure.protobuf.SyncMessage();
+            var syncMessage = new protobufs.SyncMessage();
             syncMessage.read = [];
             for (var i = 0; i < reads.length; ++i) {
-                var read = new textsecure.protobuf.SyncMessage.Read();
+                var read = new protobufs.SyncMessage.Read();
                 read.timestamp = reads[i].timestamp;
                 read.sender = reads[i].sender;
                 syncMessage.read.push(read);
             }
-            var contentMessage = new textsecure.protobuf.Content();
+            var contentMessage = new protobufs.Content();
             contentMessage.syncMessage = syncMessage;
 
             return this.sendIndividualProto(myNumber, contentMessage, Date.now());
@@ -277,7 +284,7 @@ MessageSender.prototype = {
 
     sendGroupProto: function(numbers, proto, timestamp) {
         timestamp = timestamp || Date.now();
-        var me = textsecure.storage.user.getNumber();
+        var me = storage.user.getNumber();
         numbers = numbers.filter(function(number) { return number != me; });
         if (numbers.length === 0) {
             return Promise.reject(new Error('No other members in the group'));
@@ -307,15 +314,15 @@ MessageSender.prototype = {
 
     closeSession: function(number, timestamp) {
         console.log('sending end session');
-        var proto = new textsecure.protobuf.DataMessage();
+        var proto = new protobufs.DataMessage();
         proto.body = "TERMINATE";
-        proto.flags = textsecure.protobuf.DataMessage.Flags.END_SESSION;
+        proto.flags = protobufs.DataMessage.Flags.END_SESSION;
         return this.sendIndividualProto(number, proto, timestamp).then(function(res) {
-            return textsecure.storage.protocol.getDeviceIds(number).then(function(deviceIds) {
+            return storage.protocol.getDeviceIds(number).then(function(deviceIds) {
                 return Promise.all(deviceIds.map(function(deviceId) {
                     var address = new libsignal.SignalProtocolAddress(number, deviceId);
                     console.log('closing session for', address.toString());
-                    var sessionCipher = new libsignal.SessionCipher(textsecure.storage.protocol, address);
+                    var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
                     return sessionCipher.closeOpenSessionForDevice();
                 })).then(function() {
                     return res;
@@ -325,11 +332,11 @@ MessageSender.prototype = {
     },
 
     sendMessageToGroup: function(groupId, messageText, attachments, timestamp, expireTimer) {
-        return textsecure.storage.groups.getNumbers(groupId).then(function(numbers) {
+        return storage.groups.getNumbers(groupId).then(function(numbers) {
             if (numbers === undefined)
                 return Promise.reject(new Error("Unknown Group"));
 
-            var me = textsecure.storage.user.getNumber();
+            var me = storage.user.getNumber();
             numbers = numbers.filter(function(number) { return number != me; });
             if (numbers.length === 0) {
                 return Promise.reject(new Error('No other members in the group'));
@@ -344,21 +351,21 @@ MessageSender.prototype = {
                 expireTimer : expireTimer,
                 group: {
                     id: groupId,
-                    type: textsecure.protobuf.GroupContext.Type.DELIVER
+                    type: protobufs.GroupContext.Type.DELIVER
                 }
             });
         }.bind(this));
     },
 
     createGroup: function(numbers, name, avatar) {
-        var proto = new textsecure.protobuf.DataMessage();
-        proto.group = new textsecure.protobuf.GroupContext();
+        var proto = new protobufs.DataMessage();
+        proto.group = new protobufs.GroupContext();
 
-        return textsecure.storage.groups.createNewGroup(numbers).then(function(group) {
+        return storage.groups.createNewGroup(numbers).then(function(group) {
             proto.group.id = stringToArrayBuffer(group.id);
             var numbers = group.numbers;
 
-            proto.group.type = textsecure.protobuf.GroupContext.Type.UPDATE;
+            proto.group.type = protobufs.GroupContext.Type.UPDATE;
             proto.group.members = numbers;
             proto.group.name = name;
 
@@ -372,14 +379,14 @@ MessageSender.prototype = {
     },
 
     updateGroup: function(groupId, name, avatar, numbers) {
-        var proto = new textsecure.protobuf.DataMessage();
-        proto.group = new textsecure.protobuf.GroupContext();
+        var proto = new protobufs.DataMessage();
+        proto.group = new protobufs.GroupContext();
 
         proto.group.id = stringToArrayBuffer(groupId);
-        proto.group.type = textsecure.protobuf.GroupContext.Type.UPDATE;
+        proto.group.type = protobufs.GroupContext.Type.UPDATE;
         proto.group.name = name;
 
-        return textsecure.storage.groups.addNumbers(groupId, numbers).then(function(numbers) {
+        return storage.groups.addNumbers(groupId, numbers).then(function(numbers) {
             if (numbers === undefined) {
                 return Promise.reject(new Error("Unknown Group"));
             }
@@ -395,12 +402,12 @@ MessageSender.prototype = {
     },
 
     addNumberToGroup: function(groupId, number) {
-        var proto = new textsecure.protobuf.DataMessage();
-        proto.group = new textsecure.protobuf.GroupContext();
+        var proto = new protobufs.DataMessage();
+        proto.group = new protobufs.GroupContext();
         proto.group.id = stringToArrayBuffer(groupId);
-        proto.group.type = textsecure.protobuf.GroupContext.Type.UPDATE;
+        proto.group.type = protobufs.GroupContext.Type.UPDATE;
 
-        return textsecure.storage.groups.addNumbers(groupId, [number]).then(function(numbers) {
+        return storage.groups.addNumbers(groupId, [number]).then(function(numbers) {
             if (numbers === undefined)
                 return Promise.reject(new Error("Unknown Group"));
             proto.group.members = numbers;
@@ -410,13 +417,13 @@ MessageSender.prototype = {
     },
 
     setGroupName: function(groupId, name) {
-        var proto = new textsecure.protobuf.DataMessage();
-        proto.group = new textsecure.protobuf.GroupContext();
+        var proto = new protobufs.DataMessage();
+        proto.group = new protobufs.GroupContext();
         proto.group.id = stringToArrayBuffer(groupId);
-        proto.group.type = textsecure.protobuf.GroupContext.Type.UPDATE;
+        proto.group.type = protobufs.GroupContext.Type.UPDATE;
         proto.group.name = name;
 
-        return textsecure.storage.groups.getNumbers(groupId).then(function(numbers) {
+        return storage.groups.getNumbers(groupId).then(function(numbers) {
             if (numbers === undefined)
                 return Promise.reject(new Error("Unknown Group"));
             proto.group.members = numbers;
@@ -426,12 +433,12 @@ MessageSender.prototype = {
     },
 
     setGroupAvatar: function(groupId, avatar) {
-        var proto = new textsecure.protobuf.DataMessage();
-        proto.group = new textsecure.protobuf.GroupContext();
+        var proto = new protobufs.DataMessage();
+        proto.group = new protobufs.GroupContext();
         proto.group.id = stringToArrayBuffer(groupId);
-        proto.group.type = textsecure.protobuf.GroupContext.Type.UPDATE;
+        proto.group.type = protobufs.GroupContext.Type.UPDATE;
 
-        return textsecure.storage.groups.getNumbers(groupId).then(function(numbers) {
+        return storage.groups.getNumbers(groupId).then(function(numbers) {
             if (numbers === undefined)
                 return Promise.reject(new Error("Unknown Group"));
             proto.group.members = numbers;
@@ -444,25 +451,25 @@ MessageSender.prototype = {
     },
 
     leaveGroup: function(groupId) {
-        var proto = new textsecure.protobuf.DataMessage();
-        proto.group = new textsecure.protobuf.GroupContext();
+        var proto = new protobufs.DataMessage();
+        proto.group = new protobufs.GroupContext();
         proto.group.id = stringToArrayBuffer(groupId);
-        proto.group.type = textsecure.protobuf.GroupContext.Type.QUIT;
+        proto.group.type = protobufs.GroupContext.Type.QUIT;
 
-        return textsecure.storage.groups.getNumbers(groupId).then(function(numbers) {
+        return storage.groups.getNumbers(groupId).then(function(numbers) {
             if (numbers === undefined)
                 return Promise.reject(new Error("Unknown Group"));
-            return textsecure.storage.groups.deleteGroup(groupId).then(function() {
+            return storage.groups.deleteGroup(groupId).then(function() {
                 return this.sendGroupProto(numbers, proto);
             }.bind(this));
         });
     },
     sendExpirationTimerUpdateToGroup: function(groupId, expireTimer, timestamp) {
-        return textsecure.storage.groups.getNumbers(groupId).then(function(numbers) {
+        return storage.groups.getNumbers(groupId).then(function(numbers) {
             if (numbers === undefined)
                 return Promise.reject(new Error("Unknown Group"));
 
-            var me = textsecure.storage.user.getNumber();
+            var me = storage.user.getNumber();
             numbers = numbers.filter(function(number) { return number != me; });
             if (numbers.length === 0) {
                 return Promise.reject(new Error('No other members in the group'));
@@ -472,33 +479,31 @@ MessageSender.prototype = {
                 timestamp   : timestamp,
                 needsSync   : true,
                 expireTimer : expireTimer,
-                flags       : textsecure.protobuf.DataMessage.Flags.EXPIRATION_TIMER_UPDATE,
+                flags       : protobufs.DataMessage.Flags.EXPIRATION_TIMER_UPDATE,
                 group: {
                     id: groupId,
-                    type: textsecure.protobuf.GroupContext.Type.DELIVER
+                    type: protobufs.GroupContext.Type.DELIVER
                 }
             });
         }.bind(this));
     },
     sendExpirationTimerUpdateToNumber: function(number, expireTimer, timestamp) {
-        var proto = new textsecure.protobuf.DataMessage();
+        var proto = new protobufs.DataMessage();
         return this.sendMessage({
             recipients  : [number],
             timestamp   : timestamp,
             needsSync   : true,
             expireTimer : expireTimer,
-            flags       : textsecure.protobuf.DataMessage.Flags.EXPIRATION_TIMER_UPDATE
+            flags       : protobufs.DataMessage.Flags.EXPIRATION_TIMER_UPDATE
         });
     }
 };
 
-window.textsecure = window.textsecure || {};
-
-textsecure.MessageSender = function(url, ports, username, password, attachment_server_url) {
-    var sender = new MessageSender(url, ports, username, password, attachment_server_url);
-    textsecure.replay.registerFunction(sender.tryMessageAgain.bind(sender), textsecure.replay.Type.ENCRYPT_MESSAGE);
-    textsecure.replay.registerFunction(sender.retransmitMessage.bind(sender), textsecure.replay.Type.TRANSMIT_MESSAGE);
-    textsecure.replay.registerFunction(sender.sendMessage.bind(sender), textsecure.replay.Type.REBUILD_MESSAGE);
+const _MessageSender = function(url, username, password, attachment_server_url) {
+    var sender = new MessageSender(url, username, password, attachment_server_url);
+    errors.replay.registerFunction(sender.tryMessageAgain.bind(sender), errors.replay.Type.ENCRYPT_MESSAGE);
+    errors.replay.registerFunction(sender.retransmitMessage.bind(sender), errors.replay.Type.TRANSMIT_MESSAGE);
+    errors.replay.registerFunction(sender.sendMessage.bind(sender), errors.replay.Type.REBUILD_MESSAGE);
 
     this.sendExpirationTimerUpdateToNumber = sender.sendExpirationTimerUpdateToNumber.bind(sender);
     this.sendExpirationTimerUpdateToGroup  = sender.sendExpirationTimerUpdateToGroup .bind(sender);
@@ -517,6 +522,8 @@ textsecure.MessageSender = function(url, ports, username, password, attachment_s
     this.syncReadMessages                  = sender.syncReadMessages                 .bind(sender);
 };
 
-textsecure.MessageSender.prototype = {
-    constructor: textsecure.MessageSender
+_MessageSender.prototype = {
+    constructor: MessageSender
 };
+
+module.exports = _MessageSender;

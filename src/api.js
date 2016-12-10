@@ -10,7 +10,7 @@ const https = require('https');
 const axios = require('axios');
 const helpers = require('./helpers.js');
 
-var TextSecureServer = (function() {
+var RelayServer = (function() {
 
     function validateResponse(response, schema) {
         try {
@@ -53,11 +53,11 @@ var TextSecureServer = (function() {
         attachment : "/v1/attachments"
     };
 
-    function TextSecureServer(url, username, password, attachment_server_url) {
+    function RelayServer(url, username, password, attachment_server_url) {
         if (typeof url !== 'string') {
             throw new Error('Invalid server url');
         }
-        console.log(`Initialized TextSecureServer: ${url} ${username}`);
+        console.log(`Initialized RelayServer: ${url} ${username}`);
         let auth;
         if (username && password) {
             auth = {
@@ -89,9 +89,9 @@ var TextSecureServer = (function() {
         }
     }
 
-    TextSecureServer.prototype = {
+    RelayServer.prototype = {
 
-        constructor: TextSecureServer,
+        constructor: RelayServer,
 
         http: async function(param) {
             if (!param.urlParameters) {
@@ -308,8 +308,8 @@ var TextSecureServer = (function() {
         }
     };
 
-    return TextSecureServer;
+    return RelayServer;
 })();
 
 
-exports.TextSecureServer = TextSecureServer;
+exports.RelayServer = RelayServer;

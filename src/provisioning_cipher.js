@@ -1,11 +1,11 @@
 'use strict';
 
-const Curve = require('./Curve.js');
-const crypto = require('./crypto.js');
+const libsignal = require('libsignal');
 
 function ProvisioningCipher() {}
 
 ProvisioningCipher.prototype = {
+
     decrypt: function(provisionEnvelope) {
         var masterEphemeral = provisionEnvelope.publicKey.toArrayBuffer();
         var message = provisionEnvelope.body.toArrayBuffer();
@@ -18,10 +18,10 @@ ProvisioningCipher.prototype = {
         var ivAndCiphertext = message.slice(0, message.byteLength - 32);
         var ciphertext = message.slice(16 + 1, message.byteLength - 32);
 
-        return Curve.async.calculateAgreement(
+        return libsignal.crypto.calculateAgreement(
             masterEphemeral, this.keyPair.privKey
         ).then(function(ecRes) {
-            return crypto.HKDF(
+            return libsignal.crypto.HKDF(
                 ecRes, new ArrayBuffer(32), "TextSecure Provisioning Message"
             );
         }).then(function(keys) {
@@ -32,7 +32,7 @@ ProvisioningCipher.prototype = {
             var provisionMessage = textsecure.protobuf.ProvisionMessage.decode(plaintext);
             var privKey = provisionMessage.identityKeyPrivate.toArrayBuffer();
 
-            return Curve.async.createKeyPair(privKey).then(function(keyPair) {
+            return libsignal.crypto.createKeyPair(privKey).then(function(keyPair) {
                 return {
                     identityKeyPair  : keyPair,
                     number           : provisionMessage.number,
@@ -42,10 +42,11 @@ ProvisioningCipher.prototype = {
             });
         });
     },
+
     getPublicKey: function() {
       return Promise.resolve().then(function() {
           if (!this.keyPair) {
-              return Curve.async.generateKeyPair().then(function(keyPair) {
+              return libsignal.crypto.generateKeyPair().then(function(keyPair) {
                   this.keyPair = keyPair;
               }.bind(this));
           }
@@ -55,7 +56,7 @@ ProvisioningCipher.prototype = {
     }
 };
 
-exports.ProvisioningCipher = function() {
+module.exports = function() {
     var cipher = new ProvisioningCipher();
 
     this.decrypt      = cipher.decrypt.bind(cipher);

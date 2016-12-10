@@ -6,12 +6,13 @@
 
 const helpers = require('../helpers.js');
 const protocol = require('./protocol.js');
+const user = require('./user.js');
 
 
 // create a random group id that we haven't seen before.
 function generateNewGroupId() {
     var groupId = helpers.getString(libsignal.crypto.getRandomBytes(16));
-    return textsecure.storage.protocol.getGroup(groupId).then(function(group) {
+    return protocol.getGroup(groupId).then(function(group) {
         if (group === undefined) {
             return groupId;
         } else {
@@ -26,7 +27,7 @@ module.exports = {
         var groupId = groupId;
         return new Promise(function(resolve) {
             if (groupId !== undefined) {
-                resolve(textsecure.storage.protocol.getGroup(groupId).then(function(group) {
+                resolve(protocol.getGroup(groupId).then(function(group) {
                     if (group !== undefined) {
                         throw new Error("Tried to recreate group");
                     }
@@ -37,7 +38,7 @@ module.exports = {
                 }));
             }
         }).then(function() {
-            var me = textsecure.storage.user.getNumber();
+            var me = user.getNumber();
             var haveMe = false;
             var finalNumbers = [];
             for (var i in numbers) {
@@ -57,14 +58,14 @@ module.exports = {
             for (var i in finalNumbers)
                 groupObject.numberRegistrationIds[finalNumbers[i]] = {};
 
-            return textsecure.storage.protocol.putGroup(groupId, groupObject).then(function() {
+            return protocol.putGroup(groupId, groupObject).then(function() {
                 return {id: groupId, numbers: finalNumbers};
             });
         });
     },
 
     getNumbers: function(groupId) {
-        return textsecure.storage.protocol.getGroup(groupId).then(function(group) {
+        return protocol.getGroup(groupId).then(function(group) {
             if (group === undefined)
                 return undefined;
 
@@ -73,11 +74,11 @@ module.exports = {
     },
 
     removeNumber: function(groupId, number) {
-        return textsecure.storage.protocol.getGroup(groupId).then(function(group) {
+        return protocol.getGroup(groupId).then(function(group) {
             if (group === undefined)
                 return undefined;
 
-            var me = textsecure.storage.user.getNumber();
+            var me = user.getNumber();
             if (number == me)
                 throw new Error("Cannot remove ourselves from a group, leave the group instead");
 
@@ -85,7 +86,7 @@ module.exports = {
             if (i > -1) {
                 group.numbers.splice(i, 1);
                 delete group.numberRegistrationIds[number];
-                return textsecure.storage.protocol.putGroup(groupId, group).then(function() {
+                return protocol.putGroup(groupId, group).then(function() {
                     return group.numbers;
                 });
             }
@@ -95,7 +96,7 @@ module.exports = {
     },
 
     addNumbers: function(groupId, numbers) {
-        return textsecure.storage.protocol.getGroup(groupId).then(function(group) {
+        return protocol.getGroup(groupId).then(function(group) {
             if (group === undefined)
                 return undefined;
 
@@ -109,18 +110,18 @@ module.exports = {
                 }
             }
 
-            return textsecure.storage.protocol.putGroup(groupId, group).then(function() {
+            return protocol.putGroup(groupId, group).then(function() {
                 return group.numbers;
             });
         });
     },
 
     deleteGroup: function(groupId) {
-        return textsecure.storage.protocol.removeGroup(groupId);
+        return protocol.removeGroup(groupId);
     },
 
     getGroup: function(groupId) {
-        return textsecure.storage.protocol.getGroup(groupId).then(function(group) {
+        return protocol.getGroup(groupId).then(function(group) {
             if (group === undefined)
                 return undefined;
 
@@ -129,7 +130,7 @@ module.exports = {
     },
 
     updateNumbers: function(groupId, numbers) {
-        return textsecure.storage.protocol.getGroup(groupId).then(function(group) {
+        return protocol.getGroup(groupId).then(function(group) {
             if (group === undefined)
                 throw new Error("Tried to update numbers for unknown group");
 
@@ -141,7 +142,7 @@ module.exports = {
 
             var added = numbers.filter(function(number) { return group.numbers.indexOf(number) < 0; });
 
-            return textsecure.storage.groups.addNumbers(groupId, added).then(function(newGroup) {
+            return module.exports.addNumbers(groupId, added).then(function(newGroup) {
                 if (numbers.filter(function(number) { return newGroup.indexOf(number) < 0; }).length != 0 ||
                     newGroup.filter(function(number) { return numbers.indexOf(number) < 0; }).length != 0) {
                     throw new Error("Error calculating group member difference");
@@ -153,7 +154,7 @@ module.exports = {
     },
 
     needUpdateByDeviceRegistrationId: function(groupId, number, encodedNumber, registrationId) {
-        return textsecure.storage.protocol.getGroup(groupId).then(function(group) {
+        return protocol.getGroup(groupId).then(function(group) {
             if (group === undefined)
                 throw new Error("Unknown group for device registration id");
 
@@ -165,10 +166,9 @@ module.exports = {
 
             var needUpdate = group.numberRegistrationIds[number][encodedNumber] !== undefined;
             group.numberRegistrationIds[number][encodedNumber] = registrationId;
-            return textsecure.storage.protocol.putGroup(groupId, group).then(function() {
+            return protocol.putGroup(groupId, group).then(function() {
                 return needUpdate;
             });
         });
     },
 };
-})();

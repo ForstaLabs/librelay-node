@@ -3,26 +3,34 @@
  */
 'use strict';
 
-const btoa = require('bytebuffer').btoa;
-const libsignal = require('libsignal-protocol');
+const EventTarget = require('./event_target.js');
+const ProvisioningCipher = require('./provisioning_cipher.js');
 const api = require('./api.js');
-const crypto = require('./crypto.js');
-const ev = require('./event_target.js');
+const btoa = require('bytebuffer').btoa;
 const helpers = require('./helpers.js');
+const libsignal = require('libsignal');
+const protobufs = require('./protobufs.js');
+const storage = require('./storage');
 
-function AccountManager(url, ports, username, password) {
-    this.server = new api.TextSecureServer(url, ports, username, password);
+
+function AccountManager(url, username, password) {
+    this.server = new api.RelayServer(url, username, password);
 }
 
-AccountManager.prototype = new ev.EventTarget();
+AccountManager.prototype = new EventTarget();
+
 AccountManager.prototype.extend({
+
     constructor: AccountManager,
+
     requestVoiceVerification: function(number) {
         return this.server.requestVerificationVoice(number);
     },
+
     requestSMSVerification: function(number) {
         return this.server.requestVerificationSMS(number);
     },
+
     registerSingleDevice: function(number, verificationCode) {
         var registerKeys = this.server.registerKeys.bind(this.server);
         var createAccount = this.createAccount.bind(this);
@@ -35,13 +43,14 @@ AccountManager.prototype.extend({
                 then(registrationDone);
         }.bind(this));
     },
+
     registerSecondDevice: function(setProvisioningUrl, confirmNumber, progressCallback) {
         var createAccount = this.createAccount.bind(this);
         var generateKeys = this.generateKeys.bind(this, 100, progressCallback);
         var registrationDone = this.registrationDone.bind(this);
         var registerKeys = this.server.registerKeys.bind(this.server);
         var getSocket = this.server.getProvisioningSocket.bind(this.server);
-        var provisioningCipher = new libsignal.ProvisioningCipher();
+        var provisioningCipher = new ProvisioningCipher();
         return provisioningCipher.getPublicKey().then(function(pubKey) {
             return new Promise(function(resolve, reject) {
                 var socket = getSocket();
@@ -53,14 +62,14 @@ AccountManager.prototype.extend({
                     keepalive: { path: '/v1/keepalive/provisioning' },
                     handleRequest: function(request) {
                         if (request.path === "/v1/address" && request.verb === "PUT") {
-                            var proto = textsecure.protobuf.ProvisioningUuid.decode(request.body);
+                            var proto = protobufs.ProvisioningUuid.decode(request.body);
                             setProvisioningUrl([
                                 'tsdevice:/?uuid=', proto.uuid, '&pub_key=',
                                 encodeURIComponent(btoa(helpers.getString(pubKey)))
                             ].join(''));
                             request.respond(200, 'OK');
                         } else if (request.path === "/v1/message" && request.verb === "PUT") {
-                            var envelope = textsecure.protobuf.ProvisionEnvelope.decode(request.body, 'binary');
+                            var envelope = protobufs.ProvisionEnvelope.decode(request.body, 'binary');
                             request.respond(200, 'OK');
                             wsr.close();
                             resolve(provisioningCipher.decrypt(envelope).then(function(provisionMessage) {
@@ -100,14 +109,16 @@ AccountManager.prototype.extend({
     },
 
     createAccount: function(number, verificationCode, identityKeyPair, deviceName, userAgent) {
-        var signalingKey = crypto.getRandomBytes(32 + 20);
-        var password = btoa(helpers.getString(crypto.getRandomBytes(16)));
+        var signalingKey = libsignal.crypto.getRandomBytes(32 + 20);
+        var password = btoa(helpers.getString(libsignal.crypto.getRandomBytes(16)));
         password = password.substring(0, password.length - 2);
         var registrationId = libsignal.KeyHelper.generateRegistrationId();
 
         return this.server.confirmCode(
             number, verificationCode, password, signalingKey, registrationId, deviceName
         ).then(function(response) {
+            // XXX Fuckedup
+            throw new Error('Not implemented');
             return textsecure.storage.protocol.clearSessionStore().then(function() {
                 textsecure.storage.remove('identityKey');
                 textsecure.storage.remove('signaling_key');
@@ -139,12 +150,13 @@ AccountManager.prototype.extend({
             }.bind(this));
         }.bind(this));
     },
+
     generateKeys: function (count, progressCallback) {
         if (typeof progressCallback !== 'function') {
             progressCallback = undefined;
         }
-        var startId = textsecure.storage.get('maxPreKeyId', 1);
-        var signedKeyId = textsecure.storage.get('signedKeyId', 1);
+        var startId = storage.get('maxPreKeyId', 1);
+        var signedKeyId = storage.get('signedKeyId', 1);
 
         if (typeof startId != 'number') {
             throw new Error('Invalid maxPreKeyId');
@@ -152,7 +164,6 @@ AccountManager.prototype.extend({
         if (typeof signedKeyId != 'number') {
             throw new Error('Invalid signedKeyId');
         }
-
 
         var store = textsecure.storage.protocol;
         return store.getIdentityKeyPair().then(function(identityKey) {
@@ -191,6 +202,7 @@ AccountManager.prototype.extend({
             });
         });
     },
+
     registrationDone: function() {
         this.dispatchEvent(new Event('registration'));
     }

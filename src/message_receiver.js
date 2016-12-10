@@ -2,19 +2,25 @@
  * vim: ts=4:sw=4:expandtab
  */
 
-function MessageReceiver(url, ports, username, password, signalingKey, attachment_server_url) {
+'use strict';
+
+const api = require('./api.js');
+const EventTarget = require('./event_target.js');
+
+
+function MessageReceiver(url, username, password, signalingKey, attachment_server_url) {
     this.url = url;
     this.signalingKey = signalingKey;
     this.username = username;
     this.password = password;
-    this.server = new TextSecureServer(url, ports, username, password, attachment_server_url);
+    this.server = new api.RelayServer(url, username, password, attachment_server_url);
 
     var address = libsignal.SignalProtocolAddress.fromString(username);
     this.number = address.getName();
     this.deviceId = address.getDeviceId();
 }
 
-MessageReceiver.prototype = new textsecure.EventTarget();
+MessageReceiver.prototype = new EventTarget();
 MessageReceiver.prototype.extend({
     constructor: MessageReceiver,
     connect: function() {
@@ -131,6 +137,7 @@ MessageReceiver.prototype.extend({
     decrypt: function(envelope, ciphertext) {
         var promise;
         var address = new libsignal.SignalProtocolAddress(envelope.source, envelope.sourceDevice);
+        // XXX This is fucked.
         var sessionCipher = new libsignal.SessionCipher(textsecure.storage.protocol, address);
         switch(envelope.type) {
             case textsecure.protobuf.Envelope.Type.CIPHERTEXT:
@@ -482,7 +489,7 @@ MessageReceiver.prototype.extend({
     }
 });
 
-module.exports = function(url, ports, username, password, signalingKey, attachment_server_url) {
+const _MessageReceiver = function(url, ports, username, password, signalingKey, attachment_server_url) {
     var messageReceiver = new MessageReceiver(url, ports, username, password, signalingKey, attachment_server_url);
     this.addEventListener    = messageReceiver.addEventListener.bind(messageReceiver);
     this.removeEventListener = messageReceiver.removeEventListener.bind(messageReceiver);
@@ -493,7 +500,8 @@ module.exports = function(url, ports, username, password, signalingKey, attachme
     textsecure.replay.registerFunction(messageReceiver.tryMessageAgain.bind(messageReceiver), textsecure.replay.Type.INIT_SESSION);
 };
 
-module.exports.prototype = {
+_MessageReceiver.prototype = {
     constructor: module.exports
 };
 
+module.exports = _MessageReceiver;

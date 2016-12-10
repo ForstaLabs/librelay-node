@@ -1,18 +1,22 @@
-;(function() {
-    'use strict';
-    window.textsecure = window.textsecure || {};
-    window.textsecure.protobuf = {};
+'use strict';
 
-    function loadProtoBufs(filename) {
-        return dcodeIO.ProtoBuf.loadProtoFile({root: '/protos', file: filename}, function(error, result) {
-           var protos = result.build('textsecure');
-           for (var protoName in protos) {
-              textsecure.protobuf[protoName] = protos[protoName];
-           }
-        });
-    };
+const ByteBuffer = require('bytebuffer');
+const ProtoBuf = require('protobufjs');
 
-    loadProtoBufs('IncomingPushMessageSignal.proto');
-    loadProtoBufs('SubProtocol.proto');
-    loadProtoBufs('DeviceMessages.proto');
-})();
+function loadProtoBufs(filename) {
+    const b = ProtoBuf.loadProtoFile('./protos/' + filename);
+    return b.build('textsecure');
+}
+
+const proto_files = [
+    'IncomingPushMessageSignal.proto',
+    'SubProtocol.proto',
+    'DeviceMessages.proto'
+];
+
+for (const f of proto_files) {
+    const p = loadProtoBufs(f);
+    for (const message in p) {
+        exports[message] = p[message];
+    }
+}

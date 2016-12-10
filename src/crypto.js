@@ -4,13 +4,15 @@
 
 'use strict';
 
-const libsignal = require('libsignal-protocol');
-const encrypt      = libsignal.crypto.encrypt;
-const decrypt      = libsignal.crypto.decrypt;
+const libsignal = require('libsignal');
+const encrypt = libsignal.crypto.encrypt;
+const decrypt = libsignal.crypto.decrypt;
 const calculateMAC = libsignal.crypto.calculateMAC;
-const verifyMAC    = libsignal.crypto.verifyMAC;
+const verifyMAC = libsignal.crypto.verifyMAC;
+
 
 module.exports = {
+
     // Decrypts message into a raw string
     decryptWebsocketMessage: function(message, signaling_key) {
         var decodedMessage = message.toArrayBuffer();
