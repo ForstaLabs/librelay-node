@@ -3,8 +3,8 @@
  */
 'use strict';
 
+const Backbone = require('./backbone-indexeddb.js');
 const ByteBuffer = require('bytebuffer');
-const Backbone = require('backbone');
 const Database = require('./database.js');
 const _ = require('underscore');
 const storage = require('./storage.js');

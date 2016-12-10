@@ -3,7 +3,7 @@
  */
 'use strict';
 
-const Backbone = require('backbone');
+const Backbone = require('../backbone-indexeddb.js');
 const messages = require('./messages.js')
 const Database = require('../database.js');
 const storage = require('../storage.js');

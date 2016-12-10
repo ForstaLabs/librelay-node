@@ -6,8 +6,8 @@
 
 const helpers = require('../helpers.js');
 
-var LocalStorage = require('node-localstorage').LocalStorage;
-localStorage = new LocalStorage('relay.storage');
+const LocalStorage = require('node-localstorage').LocalStorage;
+const localStorage = new LocalStorage('relay.storage');
 
 
 function put(key, value) {

@@ -489,8 +489,8 @@ MessageReceiver.prototype.extend({
     }
 });
 
-const _MessageReceiver = function(url, ports, username, password, signalingKey, attachment_server_url) {
-    var messageReceiver = new MessageReceiver(url, ports, username, password, signalingKey, attachment_server_url);
+const _MessageReceiver = function(url, username, password, signalingKey, attachment_server_url) {
+    var messageReceiver = new MessageReceiver(url, username, password, signalingKey, attachment_server_url);
     this.addEventListener    = messageReceiver.addEventListener.bind(messageReceiver);
     this.removeEventListener = messageReceiver.removeEventListener.bind(messageReceiver);
     this.getStatus           = messageReceiver.getStatus.bind(messageReceiver);

@@ -1,24 +1,27 @@
 {
-    "name": "librelay",
-    "version": "0.0.1",
-    "description": "Forsta relay high level protocols",
-    "main": "index.js",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/forstaathletics/librelay-node.git"
-    },
-    "author": "",
-    "license": "GPL-3.0",
-    "bugs": {
-        "url": "https://github.com/forstaathletics/librelay-node/issues"
-    },
-    "homepage": "https://github.com/forstaathletics/librelay-node#readme",
-    "dependencies": {
-        "axios": "0.15.3",
-        "backbone": "1.3.3",
-        "bytebuffer": "5.0.1",
-        "libsignal": "0.0.1",
-        "node-localstorage": "1.3.0",
-        "protobufjs": "5.0.1"
-    }
+  "name": "librelay",
+  "version": "0.0.1",
+  "description": "Forsta relay high level protocols",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forstaathletics/librelay-node.git"
+  },
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/forstaathletics/librelay-node/issues"
+  },
+  "homepage": "https://github.com/forstaathletics/librelay-node#readme",
+  "dependencies": {
+    "axios": "0.15.3",
+    "backbone": "1.1.2",
+    "bytebuffer": "5.0.1",
+    "indexeddb-js": "0.0.14",
+    "jquery-deferred": "0.3.1",
+    "libsignal": "0.0.1",
+    "node-localstorage": "1.3.0",
+    "protobufjs": "5.0.1",
+    "sqlite3": "3.1.8"
+  }
 }

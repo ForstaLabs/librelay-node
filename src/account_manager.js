@@ -117,36 +117,34 @@ AccountManager.prototype.extend({
         return this.server.confirmCode(
             number, verificationCode, password, signalingKey, registrationId, deviceName
         ).then(function(response) {
-            // XXX Fuckedup
-            throw new Error('Not implemented');
-            return textsecure.storage.protocol.clearSessionStore().then(function() {
-                textsecure.storage.remove('identityKey');
-                textsecure.storage.remove('signaling_key');
-                textsecure.storage.remove('password');
-                textsecure.storage.remove('registrationId');
-                textsecure.storage.remove('number_id');
-                textsecure.storage.remove('device_name');
-                textsecure.storage.remove('regionCode');
-                textsecure.storage.remove('userAgent');
+            return storage.protocol.clearSessionStore().then(function() {
+                storage.remove('identityKey');
+                storage.remove('signaling_key');
+                storage.remove('password');
+                storage.remove('registrationId');
+                storage.remove('number_id');
+                storage.remove('device_name');
+                storage.remove('regionCode');
+                storage.remove('userAgent');
 
                 // update our own identity key, which may have changed
                 // if we're relinking after a reinstall on the master device
-                var putIdentity = textsecure.storage.protocol.saveIdentity.bind(
+                var putIdentity = storage.protocol.saveIdentity.bind(
                     null, number, identityKeyPair.pubKey
                 );
-                textsecure.storage.protocol.removeIdentityKey(number).then(putIdentity, putIdentity);
+                storage.protocol.removeIdentityKey(number).then(putIdentity, putIdentity);
 
-                textsecure.storage.put('identityKey', identityKeyPair);
-                textsecure.storage.put('signaling_key', signalingKey);
-                textsecure.storage.put('password', password);
-                textsecure.storage.put('registrationId', registrationId);
+                storage.put('identityKey', identityKeyPair);
+                storage.put('signaling_key', signalingKey);
+                storage.put('password', password);
+                storage.put('registrationId', registrationId);
                 if (userAgent) {
-                    textsecure.storage.put('userAgent', userAgent);
+                    storage.put('userAgent', userAgent);
                 }
 
-                textsecure.storage.user.setNumberAndDeviceId(number, response.deviceId || 1, deviceName);
-                textsecure.storage.put('regionCode', libphonenumber.util.getRegionCodeForNumber(number));
-                this.server.setUsername(textsecure.storage.get('number_id'));
+                storage.user.setNumberAndDeviceId(number, response.deviceId || 1, deviceName);
+                storage.put('regionCode', libphonenumber.util.getRegionCodeForNumber(number));
+                this.server.setUsername(storage.get('number_id'));
             }.bind(this));
         }.bind(this));
     },
@@ -165,7 +163,7 @@ AccountManager.prototype.extend({
             throw new Error('Invalid signedKeyId');
         }
 
-        var store = textsecure.storage.protocol;
+        var store = storage.protocol;
         return store.getIdentityKeyPair().then(function(identityKey) {
             var result = { preKeys: [], identityKey: identityKey.pubKey };
             var promises = [];
@@ -195,8 +193,8 @@ AccountManager.prototype.extend({
             );
 
             store.removeSignedPreKey(signedKeyId - 2);
-            textsecure.storage.put('maxPreKeyId', startId + count);
-            textsecure.storage.put('signedKeyId', signedKeyId + 1);
+            storage.put('maxPreKeyId', startId + count);
+            storage.put('signedKeyId', signedKeyId + 1);
             return Promise.all(promises).then(function() {
                 return result;
             });

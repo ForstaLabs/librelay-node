@@ -3,7 +3,7 @@
  */
 'use strict';
 
-const Backbone = require('backbone');
+const Backbone = require('../backbone-indexeddb.js');
 const Database = require('../database.js');
 
 const Message = exports.Message = Backbone.Model.extend({
