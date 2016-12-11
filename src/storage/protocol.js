@@ -3,7 +3,8 @@
  */
 'use strict';
 
-const Backbone = require('./backbone-indexeddb.js');
+const Backbone = require('./backbone-localstorage.js');
+const Deferred = require('jquery-deferred').Deferred;
 const ByteBuffer = require('bytebuffer');
 const Database = require('./database.js');
 const _ = require('underscore');
@@ -76,12 +77,20 @@ function equalArrayBuffers(ab1, ab2) {
 }
 
 
-var Model = Backbone.Model.extend({ database: Database });
-var PreKey = Model.extend({ storeName: 'preKeys' });
-var SignedPreKey = Model.extend({ storeName: 'signedPreKeys' });
+var Model = Backbone.Model.extend({
+    database: Database,
+    localStorage: new Backbone.LocalStorage("generic_xxx")
+});
+var PreKey = Model.extend({
+    storeName: 'preKeys'
+});
+var SignedPreKey = Model.extend({
+    storeName: 'signedPreKeys'
+});
 var Session = Model.extend({ storeName: 'sessions' });
 var SessionCollection = Backbone.Collection.extend({
     storeName: 'sessions',
+    localStorage: new Backbone.LocalStorage("sessions_xxx"),
     database: Database,
     model: Session,
     fetchSessionsForNumber: function(number) {

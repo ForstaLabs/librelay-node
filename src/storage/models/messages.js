@@ -3,12 +3,13 @@
  */
 'use strict';
 
-const Backbone = require('../backbone-indexeddb.js');
+const Backbone = require('../backbone-localstorage.js');
 const Database = require('../database.js');
 
 const Message = exports.Message = Backbone.Model.extend({
     database  : Database,
     storeName : 'messages',
+    localStorage: new Backbone.LocalStorage("messages_xxx"),
     initialize: function() {
         this.on('change:attachments', this.updateImageUrl);
         this.on('destroy', this.revokeImageUrl);
@@ -480,6 +481,7 @@ const Message = exports.Message = Backbone.Model.extend({
 exports.MessageCollection = Backbone.Collection.extend({
     model      : Message,
     database   : Database,
+    localStorage: new Backbone.LocalStorage("messages_collections_xxx"),
     storeName  : 'messages',
     comparator : 'received_at',
     initialize : function(models, options) {

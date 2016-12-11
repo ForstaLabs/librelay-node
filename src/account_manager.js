@@ -143,7 +143,8 @@ AccountManager.prototype.extend({
                 }
 
                 storage.user.setNumberAndDeviceId(number, response.deviceId || 1, deviceName);
-                storage.put('regionCode', libphonenumber.util.getRegionCodeForNumber(number));
+                //storage.put('regionCode', libphonenumber.util.getRegionCodeForNumber(number));
+                storage.put('regionCode', 'ZZ'); // XXX Do we care?
                 this.server.setUsername(storage.get('number_id'));
             }.bind(this));
         }.bind(this));
