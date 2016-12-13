@@ -31,23 +31,17 @@ AccountManager.prototype.extend({
         return this.server.requestVerificationSMS(number);
     },
 
-    registerSingleDevice: function(number, verificationCode) {
-        var registerKeys = this.server.registerKeys.bind(this.server);
-        var createAccount = this.createAccount.bind(this);
-        var generateKeys = this.generateKeys.bind(this, 100);
-        var registrationDone = this.registrationDone.bind(this);
-        return libsignal.KeyHelper.generateIdentityKeyPair().then(function(identityKeyPair) {
-            return createAccount(number, verificationCode, identityKeyPair).
-                then(generateKeys).
-                then(registerKeys).
-                then(registrationDone);
-        }.bind(this));
+    registerSingleDevice: async function(number, verificationCode) {
+        const identityKeyPair = await libsignal.KeyHelper.generateIdentityKeyPair();
+        await this.createAccount(number, verificationCode, identityKeyPair);
+        const keys = await this.generateKeys(100);
+        await this.server.registerKeys(keys);
     },
 
-    registerSecondDevice: function(setProvisioningUrl, confirmNumber, progressCallback) {
+    registerSecondDevice: function(setProvisioningUrl, confirmNumber) {
+        throw new Error("UNUSED?");
         var createAccount = this.createAccount.bind(this);
-        var generateKeys = this.generateKeys.bind(this, 100, progressCallback);
-        var registrationDone = this.registrationDone.bind(this);
+        var generateKeys = this.generateKeys.bind(this, 100);
         var registerKeys = this.server.registerKeys.bind(this.server);
         var getSocket = this.server.getProvisioningSocket.bind(this.server);
         var provisioningCipher = new ProvisioningCipher();
@@ -81,8 +75,7 @@ AccountManager.prototype.extend({
                                         provisionMessage.number,
                                         provisionMessage.provisioningCode,
                                         provisionMessage.identityKeyPair,
-                                        deviceName,
-                                        provisionMessage.userAgent
+                                        deviceName
                                     );
                                 });
                             }));
@@ -93,117 +86,98 @@ AccountManager.prototype.extend({
                 });
             });
         }).then(generateKeys).
-           then(registerKeys).
-           then(registrationDone);
+           then(registerKeys);
     },
 
-    refreshPreKeys: function() {
-        var generateKeys = this.generateKeys.bind(this, 100);
-        var registerKeys = this.server.registerKeys.bind(this.server);
-        return this.server.getMyKeys().then(function(preKeyCount) {
-            console.log('prekey count ' + preKeyCount);
-            if (preKeyCount < 10) {
-                return generateKeys().then(registerKeys);
-            }
-        }.bind(this));
+    refreshPreKeys: async function() {
+        if (this.server.getMyKeys() < 10) {
+            const keys = await generateKeys(100);
+            await this.server.registerKeys(keys);
+        }
     },
 
-    createAccount: function(number, verificationCode, identityKeyPair, deviceName, userAgent) {
+    createAccount: async function(number, verificationCode, identityKeyPair, deviceName) {
         var signalingKey = libsignal.crypto.getRandomBytes(32 + 20);
         var password = btoa(helpers.getString(libsignal.crypto.getRandomBytes(16)));
         password = password.substring(0, password.length - 2);
         var registrationId = libsignal.KeyHelper.generateRegistrationId();
 
-        return this.server.confirmCode(
-            number, verificationCode, password, signalingKey, registrationId, deviceName
-        ).then(function(response) {
-            return storage.protocol.clearSessionStore().then(function() {
-                storage.remove('identityKey');
-                storage.remove('signaling_key');
-                storage.remove('password');
-                storage.remove('registrationId');
-                storage.remove('number_id');
-                storage.remove('device_name');
-                storage.remove('regionCode');
-                storage.remove('userAgent');
+        const resp = await this.server.confirmCode(number, verificationCode,
+                                                   password, signalingKey,
+                                                   registrationId, deviceName);
+        await storage.protocol.clearSessionStore();
+        storage.remove_item('identityKey');
+        storage.remove_item('signaling_key');
+        storage.remove_item('password');
+        storage.remove_item('registrationId');
+        storage.remove_item('number_id');
+        storage.remove_item('device_name');
+        storage.remove_item('regionCode');
 
-                // update our own identity key, which may have changed
-                // if we're relinking after a reinstall on the master device
-                var putIdentity = storage.protocol.saveIdentity.bind(
-                    null, number, identityKeyPair.pubKey
-                );
-                storage.protocol.removeIdentityKey(number).then(putIdentity, putIdentity);
+        // update our own identity key, which may have changed
+        // if we're relinking after a reinstall on the master device
+        try {
+            await storage.protocol.removeIdentityKey(number);
+        } catch(e) {
+            console.log("WARNING: Ignoring removeIdentityKey error");
+        }
+        await storage.protocol.saveIdentity(number, identityKeyPair.pubKey);
 
-                storage.put('identityKey', identityKeyPair);
-                storage.put('signaling_key', signalingKey);
-                storage.put('password', password);
-                storage.put('registrationId', registrationId);
-                if (userAgent) {
-                    storage.put('userAgent', userAgent);
-                }
+        storage.put_arraybuffer('identityKey.pub', identityKeyPair.pubKey);
+        storage.put_arraybuffer('identityKey.priv', identityKeyPair.privKey);
+        storage.put_arraybuffer('signaling_key', signalingKey);
+        storage.put_item('password', password);
+        storage.put_item('registrationId', registrationId);
 
-                storage.user.setNumberAndDeviceId(number, response.deviceId || 1, deviceName);
-                //storage.put('regionCode', libphonenumber.util.getRegionCodeForNumber(number));
-                storage.put('regionCode', 'ZZ'); // XXX Do we care?
-                this.server.setUsername(storage.get('number_id'));
-            }.bind(this));
-        }.bind(this));
+        console.log("SetNumberAndDeviceId", number, resp.deviceId, deviceName);
+        storage.user.setNumberAndDeviceId(number, resp.deviceId || 1, deviceName);
+        //storage.put_item('regionCode', libphonenumber.util.getRegionCodeForNumber(number));
+        storage.put_item('regionCode', 'ZZ'); // XXX Do we care?
+        this.server.setUsername(storage.get_item('number_id'));
+        this.server.setPassword(password);
     },
 
-    generateKeys: function (count, progressCallback) {
-        if (typeof progressCallback !== 'function') {
-            progressCallback = undefined;
-        }
-        var startId = storage.get('maxPreKeyId', 1);
-        var signedKeyId = storage.get('signedKeyId', 1);
+    generateKeys: async function (count) {
+        var startId = storage.get_item('maxPreKeyId', 1);
+        var signedKeyId = storage.get_item('signedKeyId', 1);
 
         if (typeof startId != 'number') {
-            throw new Error('Invalid maxPreKeyId');
+            throw new Error(`Invalid maxPreKeyId: ${startId} ${typeof startId}`);
         }
         if (typeof signedKeyId != 'number') {
-            throw new Error('Invalid signedKeyId');
+            throw new Error(`Invalid signedKeyId: ${signedKeyId} ${typeof signedKeyId}`);
         }
 
         var store = storage.protocol;
-        return store.getIdentityKeyPair().then(function(identityKey) {
-            var result = { preKeys: [], identityKey: identityKey.pubKey };
-            var promises = [];
+        var identityKey = {
+            pubKey: storage.get_arraybuffer('identityKey.pub'),
+            privKey: storage.get_arraybuffer('identityKey.priv')
+        }
+        console.log('xxxxxxx', identityKey);
+        var result = { preKeys: [], identityKey: identityKey.pubKey };
 
-            for (var keyId = startId; keyId < startId+count; ++keyId) {
-                promises.push(
-                    libsignal.KeyHelper.generatePreKey(keyId).then(function(res) {
-                        store.storePreKey(res.keyId, res.keyPair);
-                        result.preKeys.push({
-                            keyId     : res.keyId,
-                            publicKey : res.keyPair.pubKey
-                        });
-                        if (progressCallback) { progressCallback(); }
-                    })
-                );
-            }
-
-            promises.push(
-                libsignal.KeyHelper.generateSignedPreKey(identityKey, signedKeyId).then(function(res) {
-                    store.storeSignedPreKey(res.keyId, res.keyPair);
-                    result.signedPreKey = {
-                        keyId     : res.keyId,
-                        publicKey : res.keyPair.pubKey,
-                        signature : res.signature
-                    };
-                })
-            );
-
-            store.removeSignedPreKey(signedKeyId - 2);
-            storage.put('maxPreKeyId', startId + count);
-            storage.put('signedKeyId', signedKeyId + 1);
-            return Promise.all(promises).then(function() {
-                return result;
+        for (var keyId = startId; keyId < startId+count; ++keyId) {
+            console.log("Generating key:", keyId);
+            let k = await libsignal.KeyHelper.generatePreKey(keyId);
+            store.storePreKey(k.keyId, k.keyPair);
+            result.preKeys.push({
+                keyId     : k.keyId,
+                publicKey : k.keyPair.pubKey
             });
-        });
-    },
+        }
 
-    registrationDone: function() {
-        this.dispatchEvent(new Event('registration'));
+        const spk = await libsignal.KeyHelper.generateSignedPreKey(identityKey, signedKeyId);
+        store.storeSignedPreKey(spk.keyId, spk.keyPair);
+        result.signedPreKey = {
+            keyId     : spk.keyId,
+            publicKey : spk.keyPair.pubKey,
+            signature : spk.signature
+        };
+
+        store.removeSignedPreKey(signedKeyId - 2);
+        storage.put_item('maxPreKeyId', startId + count);
+        storage.put_item('signedKeyId', signedKeyId + 1);
+        return result;
     }
 });
 

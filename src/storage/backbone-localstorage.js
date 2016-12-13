@@ -80,6 +80,9 @@ extend(Backbone.LocalStorage.prototype, {
       model.set(model.idAttribute, model.id);
     }
     this.localStorage().setItem(this._itemName(model.id), this.serializer.serialize(model));
+    if (model.id === null || model.id === undefined) {
+        throw new Error("JM XXX model.id is not set.  maybe it is autoset by indexeddb?");
+    }
     this.records.push(model.id.toString());
     this.save();
     return this.find(model);
@@ -88,6 +91,9 @@ extend(Backbone.LocalStorage.prototype, {
   // Update a model by replacing its copy in `this.data`.
   update: function(model) {
     this.localStorage().setItem(this._itemName(model.id), this.serializer.serialize(model));
+    if (model.id === null || model.id === undefined) {
+        throw new Error("JM XXX model.id is not set.  maybe it is autoset by indexeddb?");
+    }
     var modelId = model.id.toString();
     if (!contains(this.records, modelId)) {
       this.records.push(modelId);
@@ -115,7 +121,12 @@ extend(Backbone.LocalStorage.prototype, {
   // Delete a model from `this.data`, returning it.
   destroy: function(model) {
     this.localStorage().removeItem(this._itemName(model.id));
-    var modelId = model.id.toString();
+    if (model.id === null || model.id === undefined) {
+        console.log(model, this.data, this.records);
+        throw new Error("JM XXX model.id is not set.  maybe it is autoset by indexeddb?");
+    }
+    var modelId = '' + model.id.toString();
+    //var modelId = model.id.toString(); // XXX some records during reg don't have id.. hmmmhhhh
     for (var i = 0, id; i < this.records.length; i++) {
       if (this.records[i] === modelId) {
         this.records.splice(i, 1);
@@ -161,13 +172,10 @@ extend(Backbone.LocalStorage.prototype, {
 // localSync delegate to the model or collection's
 // *localStorage* property, which should be an instance of `Store`.
 Backbone.LocalStorage.sync = Backbone.localSync = function(method, model, options) {
-  var store = result(model, 'localStorage') || result(model.collection, 'localStorage');
+    var store = result(model, 'localStorage') || result(model.collection, 'localStorage');
 
-  var resp, errorMessage;
-  var syncDfd = Deferred();
-  console.log("SYNC", method, model, options);
-
-  try {
+    var resp, errorMessage;
+    var syncDfd = Deferred();
 
     switch (method) {
       case "read":
@@ -183,46 +191,31 @@ Backbone.LocalStorage.sync = Backbone.localSync = function(method, model, option
         resp = store.destroy(model);
         break;
     }
-
-  } catch(error) {
-    if (error.code === 22 && store._storageSize() === 0)
-      errorMessage = "Private browsing is unsupported";
-    else
-      errorMessage = error.message;
-  }
-
-  if (resp) {
-    if (options && options.success) {
-      if (Backbone.VERSION === "0.9.10") {
-        options.success(model, resp, options);
-      } else {
-        options.success(resp);
-      }
+    if (resp) {
+        if (options && options.success) {
+            if (Backbone.VERSION === "0.9.10") {
+                options.success(model, resp, options);
+            } else {
+                options.success(resp);
+            }
+        }
+        syncDfd.resolve(resp);
+    } else {
+        errorMessage = errorMessage ? errorMessage : "Record Not Found";
+        if (options && options.error) {
+            if (Backbone.VERSION === "0.9.10") {
+                options.error(model, errorMessage, options);
+            } else {
+                options.error(errorMessage);
+            }
+        }
+        syncDfd.reject(errorMessage);
     }
-    if (syncDfd) {
-      syncDfd.resolve(resp);
-    }
 
-  } else {
-    errorMessage = errorMessage ? errorMessage
-                                : "Record Not Found";
-
-    if (options && options.error)
-      if (Backbone.VERSION === "0.9.10") {
-        options.error(model, errorMessage, options);
-      } else {
-        options.error(errorMessage);
-      }
-
-    if (syncDfd)
-      syncDfd.reject(errorMessage);
-  }
-
-  // add compatibility with $.ajax
-  // always execute callback for success and error
-  if (options && options.complete) options.complete(resp);
-
-  return syncDfd && syncDfd.promise();
+    // add compatibility with $.ajax
+    // always execute callback for success and error
+    if (options && options.complete) options.complete(resp);
+    return syncDfd.promise();
 };
 
 Backbone.ajaxSync = Backbone.sync;
@@ -231,10 +224,10 @@ Backbone.getSyncMethod = function(model, options) {
   var forceAjaxSync = options && options.ajaxSync;
 
   if(!forceAjaxSync && (result(model, 'localStorage') || result(model.collection, 'localStorage'))) {
-    return Backbone.localSync;
+    return Backbone.LocalStorage.sync;
   }
 
-  throw new Error(`Missing localStorage config for ${model}`);
+  throw new Error(`Missing localStorage config for ${model.constructor.name}`);
 };
 
 Backbone.sync = function(method, model, options) {

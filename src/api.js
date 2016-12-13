@@ -98,12 +98,17 @@ var RelayServer = (function() {
                 param.urlParameters = '';
             }
             console.log(`HTTP ${param.httpType} ${param.call} [${param.urlParameters}]`);
-            const resp = await this._http({
+            const config = {
                 method: param.httpType,
-                url: URL_CALLS[param.call] + param.urlParameters,
-                data: param.jsonData,
-                auth: param.auth
-            });
+                url: URL_CALLS[param.call] + param.urlParameters
+            };
+            if (param.jsonData !== undefined) {
+                config.data = param.jsonData;
+            }
+            if (param.auth !== undefined) {
+                config.auth = param.auth;
+            }
+            const resp = await this._http(config);
             if (param.validateResponse &&
                 !validateResponse(resp.data, param.validateResponse)) {
                 throw new Error(`Invalid server response for: ${param.call}`);
@@ -112,11 +117,19 @@ var RelayServer = (function() {
         },
 
         setUsername: function(username) {
-            console.log("Setting username", username);
+            console.log("Setting username:", username);
             if (!this._http.defaults.auth) {
                 this._http.defaults.auth = {};
             }
             this._http.defaults.auth.username = username;
+        },
+
+        setPassword: function(password) {
+            console.log("Setting password: ***********");
+            if (!this._http.defaults.auth) {
+                this._http.defaults.auth = {};
+            }
+            this._http.defaults.auth.password = password;
         },
 
         requestVerificationSMS: function(number) {
@@ -126,6 +139,7 @@ var RelayServer = (function() {
                 urlParameters       : '/sms/code/' + number,
             });
         },
+
         requestVerificationVoice: function(number) {
             return this.http({
                 call                : 'accounts',
@@ -133,6 +147,7 @@ var RelayServer = (function() {
                 urlParameters       : '/voice/code/' + number,
             });
         },
+
         confirmCode: function(number, code, password, signaling_key, registrationId, deviceName) {
             var jsonData = {
                 signalingKey    : btoa(helpers.getString(signaling_key)),
@@ -165,14 +180,17 @@ var RelayServer = (function() {
                 validateResponse: schema
             });
         },
+
         getDevices: function(number) {
             return this.http({
                 call: 'devices',
                 httpType: 'GET',
             });
         },
+
         registerKeys: function(genKeys) {
             var keys = {};
+            console.log("API: registerKeys");
             keys.identityKey = btoa(helpers.getString(genKeys.identityKey));
             keys.signedPreKey = {
                 keyId: genKeys.signedPreKey.keyId,
@@ -194,11 +212,12 @@ var RelayServer = (function() {
             keys.lastResortKey = {keyId: 0x7fffFFFF, publicKey: btoa("42")};
 
             return this.http({
-                call                : 'keys',
-                httpType            : 'PUT',
-                jsonData            : keys,
+                call: 'keys',
+                httpType: 'PUT',
+                jsonData: keys,
             });
         },
+
         getMyKeys: function(number, deviceId) {
             return this.http({
                 call                : 'keys',
@@ -208,6 +227,7 @@ var RelayServer = (function() {
                 return res.count;
             });
         },
+
         getKeysForNumber: function(number, deviceId) {
             if (deviceId === undefined)
                 deviceId = "*";
@@ -235,6 +255,7 @@ var RelayServer = (function() {
                 return res;
             });
         },
+
         sendMessages: function(destination, messageArray, timestamp) {
             var jsonData = { messages: messageArray, timestamp: timestamp};
 
@@ -245,6 +266,7 @@ var RelayServer = (function() {
                 jsonData            : jsonData,
             });
         },
+
         // XXX Probably not...
         getAttachment: function(id) {
             return this.http({
@@ -266,6 +288,7 @@ var RelayServer = (function() {
                 });
             }.bind(this));
         },
+
         // XXX Probably not...
         putAttachment: function(encryptedBin) {
             return this.http({
@@ -289,6 +312,7 @@ var RelayServer = (function() {
                 }.bind(this));
             }.bind(this));
         },
+
         getMessageSocket: function() {
             console.log('opening message socket', this.url);
             // XXX NotImplemented
@@ -299,6 +323,7 @@ var RelayServer = (function() {
                     + '&agent=OWD'
             );
         },
+
         getProvisioningSocket: function () {
             console.log('opening provisioning socket', this.url);
             return new WebSocket(
