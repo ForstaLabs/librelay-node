@@ -84,22 +84,15 @@ RelayProtocolStore.prototype = {
 
     constructor: RelayProtocolStore,
 
-    getIdentityKeyPair: function() {
-        var item = new models.Item({id: 'identityKey'});
-        return new Promise(function(resolve) {
-            item.fetch().then(function() {
-                resolve(item.get('value'));
-            });
-        });
+    getIdentityKeyPair: async function() {
+        return {
+            pubKey: storage.get_arraybuffer('identityKey.pub'),
+            privKey: storage.get_arraybuffer('identityKey.priv')
+        }
     },
 
     getLocalRegistrationId: function() {
-        var item = new models.Item({id: 'registrationId'});
-        return new Promise(function(resolve) {
-            item.fetch().then(function() {
-                resolve(item.get('value'));
-            });
-        });
+        return storage.get_item('registrationId');
     },
 
     /* Returns a prekeypair object or undefined */

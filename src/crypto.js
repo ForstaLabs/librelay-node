@@ -35,7 +35,9 @@ module.exports = {
         var ivAndCiphertext = decodedMessage.slice(0, decodedMessage.byteLength - 10);
         var mac = decodedMessage.slice(decodedMessage.byteLength - 10, decodedMessage.byteLength);
 
+        console.log('asdlfjasdlkfjasdlfk', iv, ciphertext, ivAndCiphertext, mac);
         return verifyMAC(ivAndCiphertext, mac_key, mac, 10).then(function() {
+            console.log("INNNER", aes_key, ciphertext, iv);
             return decrypt(aes_key, ciphertext, iv);
         });
     },

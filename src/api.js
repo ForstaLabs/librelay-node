@@ -9,6 +9,7 @@ const http = require('http');
 const https = require('https');
 const axios = require('axios');
 const helpers = require('./helpers.js');
+const WebSocket = require('websocket').w3cwebsocket;
 
 var RelayServer = (function() {
 
@@ -58,16 +59,8 @@ var RelayServer = (function() {
             throw new Error('Invalid server url');
         }
         console.log(`Initialized RelayServer: ${url} ${username}`);
-        let auth;
-        if (username && password) {
-            auth = {
-                username,
-                password
-            };
-        }
         this._http = axios.create({
             baseURL: url,
-            auth,
             timeout: 30000,
             agent: {
                 httpAgent: new http.Agent({keepAlive: true}),
@@ -78,7 +71,11 @@ var RelayServer = (function() {
                 'Content-Type': 'application/json'
             }
         });
-
+        this.base_url = url;
+        if (username !== undefined)
+            this.setUsername(username);
+        if (password !== undefined)
+            this.setPassword(password);
         this.attachment_id_regex = RegExp("^https:\/\/.*\/(\\d+)\?");
         if (attachment_server_url) {
             // strip trailing /
@@ -122,6 +119,7 @@ var RelayServer = (function() {
                 this._http.defaults.auth = {};
             }
             this._http.defaults.auth.username = username;
+            this._username = username;
         },
 
         setPassword: function(password) {
@@ -130,6 +128,7 @@ var RelayServer = (function() {
                 this._http.defaults.auth = {};
             }
             this._http.defaults.auth.password = password;
+            this._password = password;
         },
 
         requestVerificationSMS: function(number) {
@@ -314,20 +313,19 @@ var RelayServer = (function() {
         },
 
         getMessageSocket: function() {
-            console.log('opening message socket', this.url);
-            // XXX NotImplemented
-            return new WebSocket(
-                this.url.replace('https://', 'wss://').replace('http://', 'ws://')
-                    + '/v1/websocket/?login=' + encodeURIComponent(this.username)
-                    + '&password=' + encodeURIComponent(this.password)
-                    + '&agent=OWD'
-            );
+            console.log('opening message socket', this.base_url);
+            const url = this.base_url.replace('https://', 'wss://').replace('http://', 'ws://')
+                    + '/v1/websocket/?login=' + encodeURIComponent(this._username)
+                    + '&password=' + encodeURIComponent(this._password)
+                    + '&agent=OWD';
+            console.log('WS URL:', url);
+            return new WebSocket(url);
         },
 
         getProvisioningSocket: function () {
             console.log('opening provisioning socket', this.url);
             return new WebSocket(
-                this.url.replace('https://', 'wss://').replace('http://', 'ws://')
+                this.base_url.replace('https://', 'wss://').replace('http://', 'ws://')
                     + '/v1/websocket/provisioning/?agent=OWD'
             );
         }

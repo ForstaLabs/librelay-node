@@ -4,8 +4,15 @@
 
 'use strict';
 
-const api = require('./api.js');
 const EventTarget = require('./event_target.js');
+const WebSocket = require('websocket').w3cwebsocket;
+const WebSocketResource = require('./websocket-resources.js');
+const api = require('./api.js');
+const crypto = require('./crypto.js');
+const errors = require('./errors.js');
+const libsignal = require('libsignal');
+const protobufs = require('./protobufs.js');
+const storage = require('./storage');
 
 
 function MessageReceiver(url, username, password, signalingKey, attachment_server_url) {
@@ -27,7 +34,7 @@ MessageReceiver.prototype.extend({
         if (this.socket && this.socket.readyState !== WebSocket.CLOSED) {
             this.socket.close();
         }
-        console.log('opening websocket');
+        console.log('opening websocket', this.url);
         // initialize the socket and start listening for messages
         this.socket = this.server.getMessageSocket();
         this.socket.onclose = this.onclose.bind(this);
@@ -70,8 +77,10 @@ MessageReceiver.prototype.extend({
 
         // TODO: handle different types of requests. for now we blindly assume
         // PUT /messages <encrypted Envelope>
-        textsecure.crypto.decryptWebsocketMessage(request.body, this.signalingKey).then(function(plaintext) {
-            var envelope = textsecure.protobuf.Envelope.decode(plaintext);
+        crypto.decryptWebsocketMessage(request.body, this.signalingKey).then(function(plaintext) {
+            console.log("XXXX", plaintext);
+            var envelope = protobufs.Envelope.decode(plaintext);
+            console.log("XXXX EVN", envelope);
             // After this point, decoding errors are not the server's
             // fault, and we should handle them gracefully and tell the
             // user they received an invalid message
@@ -94,7 +103,7 @@ MessageReceiver.prototype.extend({
         this.pending = this.pending.then(handleEnvelope, handleEnvelope);
     },
     handleEnvelope: function(envelope) {
-        if (envelope.type === textsecure.protobuf.Envelope.Type.RECEIPT) {
+        if (envelope.type === protobufs.Envelope.Type.RECEIPT) {
             return this.onDeliveryReceipt(envelope);
         }
 
@@ -119,9 +128,15 @@ MessageReceiver.prototype.extend({
         this.dispatchEvent(ev);
     },
     unpad: function(paddedPlaintext) {
+        console.log("IN");
+        console.log("IN");
+        console.log("IN");
+        console.log("IN");
         paddedPlaintext = new Uint8Array(paddedPlaintext);
+        console.log(11111, paddedPlaintext);
         var plaintext;
         for (var i = paddedPlaintext.length - 1; i >= 0; i--) {
+            console.log("lOOP");
             if (paddedPlaintext[i] == 0x80) {
                 plaintext = new Uint8Array(i);
                 plaintext.set(paddedPlaintext.subarray(0, i));
@@ -131,6 +146,7 @@ MessageReceiver.prototype.extend({
                 throw new Error('Invalid padding');
             }
         }
+        console.log("OUT", plaintext);
 
         return plaintext;
     },
@@ -138,13 +154,15 @@ MessageReceiver.prototype.extend({
         var promise;
         var address = new libsignal.SignalProtocolAddress(envelope.source, envelope.sourceDevice);
         // XXX This is fucked.
-        var sessionCipher = new libsignal.SessionCipher(textsecure.storage.protocol, address);
+        console.log('address', address);
+        console.log('address', address);
+        var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
         switch(envelope.type) {
-            case textsecure.protobuf.Envelope.Type.CIPHERTEXT:
+            case protobufs.Envelope.Type.CIPHERTEXT:
                 console.log('message from', envelope.source + '.' + envelope.sourceDevice, envelope.timestamp.toNumber());
                 promise = sessionCipher.decryptWhisperMessage(ciphertext).then(this.unpad);
                 break;
-            case textsecure.protobuf.Envelope.Type.PREKEY_BUNDLE:
+            case protobufs.Envelope.Type.PREKEY_BUNDLE:
                 console.log('prekey message from', envelope.source + '.' + envelope.sourceDevice, envelope.timestamp.toNumber());
                 promise = this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address);
                 break;
@@ -161,10 +179,11 @@ MessageReceiver.prototype.extend({
     },
     decryptPreKeyWhisperMessage: function(ciphertext, sessionCipher, address) {
         return sessionCipher.decryptPreKeyWhisperMessage(ciphertext).then(this.unpad).catch(function(e) {
+            console.log("NO", e);
             if (e.message === 'Unknown identity key') {
                 // create an error that the UI will pick up and ask the
                 // user if they want to re-negotiate
-                throw new textsecure.IncomingIdentityKeyError(
+                throw new errors.IncomingIdentityKeyError(
                     address.toString(),
                     ciphertext.toArrayBuffer(),
                     e.identityKey
@@ -175,8 +194,8 @@ MessageReceiver.prototype.extend({
     },
     handleSentMessage: function(destination, timestamp, message, expirationStartTimestamp) {
         var p = Promise.resolve();
-        if ((message.flags & textsecure.protobuf.DataMessage.Flags.END_SESSION) ==
-                textsecure.protobuf.DataMessage.Flags.END_SESSION ) {
+        if ((message.flags & protobufs.DataMessage.Flags.END_SESSION) ==
+                protobufs.DataMessage.Flags.END_SESSION ) {
             p = this.handleEndSession(destination);
         }
         return p.then(function() {
@@ -198,8 +217,8 @@ MessageReceiver.prototype.extend({
         var encodedNumber = envelope.source + '.' + envelope.sourceDevice;
         console.log('data message from', encodedNumber, envelope.timestamp.toNumber());
         var p = Promise.resolve();
-        if ((message.flags & textsecure.protobuf.DataMessage.Flags.END_SESSION) ==
-                textsecure.protobuf.DataMessage.Flags.END_SESSION ) {
+        if ((message.flags & protobufs.DataMessage.Flags.END_SESSION) ==
+                protobufs.DataMessage.Flags.END_SESSION ) {
             p = this.handleEndSession(envelope.source);
         }
         return p.then(function() {
@@ -216,13 +235,13 @@ MessageReceiver.prototype.extend({
     },
     handleLegacyMessage: function (envelope) {
         return this.decrypt(envelope, envelope.legacyMessage).then(function(plaintext) {
-            var message = textsecure.protobuf.DataMessage.decode(plaintext);
+            var message = protobufs.DataMessage.decode(plaintext);
             return this.handleDataMessage(envelope, message);
         }.bind(this));
     },
     handleContentMessage: function (envelope) {
         return this.decrypt(envelope, envelope.content).then(function(plaintext) {
-            var content = textsecure.protobuf.Content.decode(plaintext);
+            var content = protobufs.Content.decode(plaintext);
             if (content.syncMessage) {
                 return this.handleSyncMessage(envelope, content.syncMessage);
             } else if (content.dataMessage) {
@@ -307,14 +326,14 @@ MessageReceiver.prototype.extend({
                 var promise = (function(groupDetails) {
                     groupDetails.id = groupDetails.id.toBinary();
                     if (groupDetails.active) {
-                        return textsecure.storage.groups.getGroup(groupDetails.id).
+                        return storage.groups.getGroup(groupDetails.id).
                             then(function(existingGroup) {
                                 if (existingGroup === undefined) {
-                                    return textsecure.storage.groups.createNewGroup(
+                                    return storage.groups.createNewGroup(
                                         groupDetails.members, groupDetails.id
                                     );
                                 } else {
-                                    return textsecure.storage.groups.updateNumbers(
+                                    return storage.groups.updateNumbers(
                                         groupDetails.id, groupDetails.members
                                     );
                                 }
@@ -338,14 +357,15 @@ MessageReceiver.prototype.extend({
         });
     },
     handleBlocked: function(blocked) {
-        textsecure.storage.put('blocked', blocked.numbers);
+        storage.put('blocked', blocked.numbers);
     },
     isBlocked: function(number) {
-        return textsecure.storage.get('blocked', []).indexOf(number) >= 0;
+        return false; // XXX
+        //return storage.get('blocked', []).indexOf(number) >= 0;
     },
     handleAttachment: function(attachment) {
         function decryptAttachment(encrypted) {
-            return textsecure.crypto.decryptAttachment(
+            return crypto.decryptAttachment(
                 encrypted,
                 attachment.key.toArrayBuffer()
             );
@@ -361,14 +381,14 @@ MessageReceiver.prototype.extend({
     },
     tryMessageAgain: function(from, ciphertext) {
         var address = libsignal.SignalProtocolAddress.fromString(from);
-        var sessionCipher = new libsignal.SessionCipher(textsecure.storage.protocol, address);
+        var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
         console.log('retrying prekey whisper message');
         return this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address).then(function(plaintext) {
-            var finalMessage = textsecure.protobuf.DataMessage.decode(plaintext);
+            var finalMessage = protobufs.DataMessage.decode(plaintext);
 
             var p = Promise.resolve();
-            if ((finalMessage.flags & textsecure.protobuf.DataMessage.Flags.END_SESSION)
-                    == textsecure.protobuf.DataMessage.Flags.END_SESSION &&
+            if ((finalMessage.flags & protobufs.DataMessage.Flags.END_SESSION)
+                    == protobufs.DataMessage.Flags.END_SESSION &&
                     finalMessage.sync !== null) {
                     var number = address.getName();
                     p = this.handleEndSession(number);
@@ -381,10 +401,10 @@ MessageReceiver.prototype.extend({
     },
     handleEndSession: function(number) {
         console.log('got end session');
-        return textsecure.storage.protocol.getDeviceIds(number).then(function(deviceIds) {
+        return storage.protocol.getDeviceIds(number).then(function(deviceIds) {
             return Promise.all(deviceIds.map(function(deviceId) {
                 var address = new libsignal.SignalProtocolAddress(number, deviceId);
-                var sessionCipher = new libsignal.SessionCipher(textsecure.storage.protocol, address);
+                var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
 
                 console.log('closing session for', address.toString());
                 return sessionCipher.closeOpenSessionForDevice();
@@ -403,12 +423,12 @@ MessageReceiver.prototype.extend({
             decrypted.expireTimer = 0;
         }
 
-        if (decrypted.flags & textsecure.protobuf.DataMessage.Flags.END_SESSION) {
+        if (decrypted.flags & protobufs.DataMessage.Flags.END_SESSION) {
             decrypted.body = null;
             decrypted.attachments = [];
             decrypted.group = null;
             return Promise.resolve(decrypted);
-        } else if (decrypted.flags & textsecure.protobuf.DataMessage.Flags.EXPIRATION_TIMER_UPDATE ) {
+        } else if (decrypted.flags & protobufs.DataMessage.Flags.EXPIRATION_TIMER_UPDATE ) {
             decrypted.body = null;
             decrypted.attachments = [];
         } else if (decrypted.flags != 0) {
@@ -420,19 +440,19 @@ MessageReceiver.prototype.extend({
         if (decrypted.group !== null) {
             decrypted.group.id = decrypted.group.id.toBinary();
 
-            if (decrypted.group.type == textsecure.protobuf.GroupContext.Type.UPDATE) {
+            if (decrypted.group.type == protobufs.GroupContext.Type.UPDATE) {
                 if (decrypted.group.avatar !== null) {
                     promises.push(this.handleAttachment(decrypted.group.avatar));
                 }
             }
 
-            promises.push(textsecure.storage.groups.getNumbers(decrypted.group.id).then(function(existingGroup) {
+            promises.push(storage.groups.getNumbers(decrypted.group.id).then(function(existingGroup) {
                 if (existingGroup === undefined) {
-                    if (decrypted.group.type != textsecure.protobuf.GroupContext.Type.UPDATE) {
+                    if (decrypted.group.type != protobufs.GroupContext.Type.UPDATE) {
                         decrypted.group.members = [source];
                         console.log("Got message for unknown group");
                     }
-                    return textsecure.storage.groups.createNewGroup(decrypted.group.members, decrypted.group.id);
+                    return storage.groups.createNewGroup(decrypted.group.members, decrypted.group.id);
                 } else {
                     var fromIndex = existingGroup.indexOf(source);
 
@@ -442,8 +462,8 @@ MessageReceiver.prototype.extend({
                     }
 
                     switch(decrypted.group.type) {
-                    case textsecure.protobuf.GroupContext.Type.UPDATE:
-                        return textsecure.storage.groups.updateNumbers(
+                    case protobufs.GroupContext.Type.UPDATE:
+                        return storage.groups.updateNumbers(
                             decrypted.group.id, decrypted.group.members
                         ).then(function(added) {
                             decrypted.group.added = added;
@@ -459,15 +479,15 @@ MessageReceiver.prototype.extend({
                         });
 
                         break;
-                    case textsecure.protobuf.GroupContext.Type.QUIT:
+                    case protobufs.GroupContext.Type.QUIT:
                         decrypted.body = null;
                         decrypted.attachments = [];
                         if (source === this.number) {
-                            return textsecure.storage.groups.deleteGroup(decrypted.group.id);
+                            return storage.groups.deleteGroup(decrypted.group.id);
                         } else {
-                            return textsecure.storage.groups.removeNumber(decrypted.group.id, source);
+                            return storage.groups.removeNumber(decrypted.group.id, source);
                         }
-                    case textsecure.protobuf.GroupContext.Type.DELIVER:
+                    case protobufs.GroupContext.Type.DELIVER:
                         decrypted.group.name = null;
                         decrypted.group.members = [];
                         decrypted.group.avatar = null;
@@ -497,7 +517,7 @@ const _MessageReceiver = function(url, username, password, signalingKey, attachm
     this.close               = messageReceiver.close.bind(messageReceiver);
     messageReceiver.connect();
 
-    textsecure.replay.registerFunction(messageReceiver.tryMessageAgain.bind(messageReceiver), textsecure.replay.Type.INIT_SESSION);
+    errors.replay.registerFunction(messageReceiver.tryMessageAgain.bind(messageReceiver), errors.replay.Type.INIT_SESSION);
 };
 
 _MessageReceiver.prototype = {

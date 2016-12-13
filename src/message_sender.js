@@ -7,6 +7,7 @@ const libsignal = require('libsignal');
 const crypto = require('./crypto.js');
 const errors = require('./errors.js');
 const storage = require('./storage');
+const api = require('./api.js');
 
 
 function stringToArrayBuffer(str) {
@@ -112,7 +113,7 @@ Message.prototype = {
 };
 
 function MessageSender(url, username, password, attachment_server_url) {
-    this.server = new RelayServer(url, username, password, attachment_server_url);
+    this.server = new api.RelayServer(url, username, password, attachment_server_url);
     this.pendingMessages = {};
 }
 

@@ -30,14 +30,6 @@ const Group = Backbone.Model.extend({
     localStorage: new Backbone.LocalStorage("groups")
 });
 
-const Item = Backbone.Model.extend({
-    localStorage: new Backbone.LocalStorage("items")
-});
-
-const ItemCollection = Backbone.Collection.extend({
-    model: Item,
-    localStorage: new Backbone.LocalStorage("items")
-});
 
 module.exports = {
     PreKey,
@@ -45,7 +37,5 @@ module.exports = {
     Session,
     SessionCollection,
     IdentityKey,
-    Group,
-    Item,
-    ItemCollection
+    Group
 };

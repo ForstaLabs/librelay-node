@@ -5,6 +5,7 @@
 
 const EventTarget = require('./event_target.js');
 const ProvisioningCipher = require('./provisioning_cipher.js');
+const WebSocketResource = require('./websocket-resources.js');
 const api = require('./api.js');
 const btoa = require('bytebuffer').btoa;
 const helpers = require('./helpers.js');

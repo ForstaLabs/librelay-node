@@ -4,8 +4,11 @@
 
 'use strict';
 
-const protobufs = require('./protobufs.js');
+const FileReader = require('filereader');
+const ByteBuffer = require('bytebuffer');
+const crypto = require('crypto');
 const libsignal = require('libsignal');
+const protobufs = require('./protobufs.js');
 
 /*
  * WebSocket-Resources
@@ -39,8 +42,8 @@ var Request = function(options) {
 
     if (this.id === undefined) {
         var bits = new Uint32Array(2);
-        libsignal.crypto.getRandomValues(bits);
-        this.id = dcodeIO.Long.fromBits(bits[0], bits[1], true);
+        bits.set(crypto.randomBytes(bits.length));
+        this.id = ByteBuffer.Long.fromBits(bits[0], bits[1], true);
     }
 
     if (this.body === undefined) {
@@ -97,6 +100,42 @@ function WebSocketResource(socket, opts) {
 
     socket.onmessage = function(socketMessage) {
         var blob = socketMessage.data;
+        console.log("HOLY SHIT!", blob);
+        var message = protobufs.WebSocketMessage.decode(blob);
+        console.log("HOLY FUCK", message);
+        if (message.type === protobufs.WebSocketMessage.Type.REQUEST ) {
+            handleRequest(
+                new IncomingWebSocketRequest({
+                    verb   : message.request.verb,
+                    path   : message.request.path,
+                    body   : message.request.body,
+                    id     : message.request.id,
+                    socket : socket
+                })
+            );
+        }
+        else if (message.type === protobufs.WebSocketMessage.Type.RESPONSE ) {
+            var response = message.response;
+            var request = outgoing[response.id];
+            if (request) {
+                request.response = response;
+                var callback = request.error;
+                if (response.status >= 200 && response.status < 300) {
+                    callback = request.success;
+                }
+
+                if (typeof callback === 'function') {
+                    callback(response.message, response.status, request);
+                }
+            } else {
+                throw 'Received response for unknown request ' + message.response.id;
+            }
+        }
+    };
+
+    socket.onmessage_orig = function(socketMessage) {
+        var blob = socketMessage.data;
+        console.log("HOLY SHIT!", blob);
         var reader = new FileReader();
         reader.onload = function() {
             var message = protobufs.WebSocketMessage.decode(reader.result);
