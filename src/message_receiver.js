@@ -4,7 +4,7 @@
 
 'use strict';
 
-const EventTarget = require('./event_target.js');
+const EventEmitter = require('events');
 const WebSocket = require('websocket').w3cwebsocket;
 const WebSocketResource = require('./websocket-resources.js');
 const api = require('./api.js');
@@ -15,27 +15,32 @@ const protobufs = require('./protobufs.js');
 const storage = require('./storage');
 
 
-function MessageReceiver(url, username, password, signalingKey, attachment_server_url) {
-    this.url = url;
-    this.signalingKey = signalingKey;
-    this.username = username;
-    this.password = password;
-    this.server = new api.RelayServer(url, username, password, attachment_server_url);
+class MessageReceiver extends EventEmitter {
 
-    var address = libsignal.SignalProtocolAddress.fromString(username);
-    this.number = address.getName();
-    this.deviceId = address.getDeviceId();
-}
+    constructor(url, username, password, signalingKey, attachment_server_url) {
+        super();
+        this.url = url;
+        this.signalingKey = signalingKey;
+        this.username = username;
+        this.password = password;
+        this.server = new api.RelayServer(url, username, password, attachment_server_url);
 
-MessageReceiver.prototype = new EventTarget();
-MessageReceiver.prototype.extend({
-    constructor: MessageReceiver,
-    connect: function() {
+        var address = libsignal.SignalProtocolAddress.fromString(username);
+        this.number = address.getName();
+        this.deviceId = address.getDeviceId();
+        errors.replay.registerFunction(this.tryMessageAgain.bind(this),
+                                       errors.replay.Type.INIT_SESSION);
+        this._wait = new Promise(function(resolve, reject) {
+            this._wait_resolve = resolve;
+            this._wait_reject = reject;
+        }.bind(this));
+    }
+
+    connect() {
         if (this.socket && this.socket.readyState !== WebSocket.CLOSED) {
             this.socket.close();
         }
         console.log('opening websocket', this.url);
-        // initialize the socket and start listening for messages
         this.socket = this.server.getMessageSocket();
         this.socket.onclose = this.onclose.bind(this);
         this.socket.onerror = this.onerror.bind(this);
@@ -44,69 +49,56 @@ MessageReceiver.prototype.extend({
             handleRequest: this.handleRequest.bind(this),
             keepalive: { path: '/v1/keepalive', disconnect: true }
         });
-        this.pending = Promise.resolve();
-    },
-    close: function() {
+    }
+
+    close() {
         this.socket.close(3000, 'called close');
-        delete this.listeners;
-    },
-    onopen: function() {
+    }
+
+    onopen() {
         console.log('websocket open');
-    },
-    onerror: function(error) {
-        console.log('websocket error');
-    },
-    onclose: function(ev) {
+    }
+
+    onerror(error) {
+        console.log('websocket error', error);
+        this._wait_reject(error);
+    }
+
+    onclose(ev) {
         console.log('websocket closed', ev.code, ev.reason || '');
         if (ev.code === 3000) {
             return;
         }
-        var eventTarget = this;
+        this._wait_resolve();
+        // XXX handle this externally.
         // possible 403 or network issue. Make an request to confirm
-        this.server.getDevices(this.number).
-            then(this.connect.bind(this)). // No HTTP error? Reconnect
-            catch(function(e) {
-                var ev = new Event('error');
-                ev.error = e;
-                eventTarget.dispatchEvent(ev);
-            });
-    },
-    handleRequest: function(request) {
+        //await this.server.getDevices(this.number);
+        //await this.connect();
+    }
+
+    /* Wait until error or close. */
+    async wait() {
+        await this._wait;
+    }
+
+    async handleRequest(request) {
         // We do the message decryption here, instead of in the ordered pending queue,
         // to avoid exposing the time it took us to process messages through the time-to-ack.
 
         // TODO: handle different types of requests. for now we blindly assume
         // PUT /messages <encrypted Envelope>
-        crypto.decryptWebsocketMessage(request.body, this.signalingKey).then(function(plaintext) {
-            console.log("XXXX", plaintext);
-            var envelope = protobufs.Envelope.decode(plaintext);
-            console.log("XXXX EVN", envelope);
-            // After this point, decoding errors are not the server's
-            // fault, and we should handle them gracefully and tell the
-            // user they received an invalid message
-            request.respond(200, 'OK');
-
-            if (!this.isBlocked(envelope.source)) {
-                this.queueEnvelope(envelope);
-            }
-
-        }.bind(this)).catch(function(e) {
+        let plaintext;
+        try {
+            plaintext = await crypto.decryptWebsocketMessage(request.body, this.signalingKey);
+        } catch(e) {
             request.respond(500, 'Bad encrypted websocket message');
-            console.log("Error handling incoming message:", e);
-            var ev = new Event('error');
-            ev.error = e;
-            this.dispatchEvent(ev);
-        }.bind(this));
-    },
-    queueEnvelope: function(envelope) {
-        var handleEnvelope = this.handleEnvelope.bind(this, envelope);
-        this.pending = this.pending.then(handleEnvelope, handleEnvelope);
-    },
-    handleEnvelope: function(envelope) {
-        if (envelope.type === protobufs.Envelope.Type.RECEIPT) {
-            return this.onDeliveryReceipt(envelope);
+            throw e;
         }
-
+        request.respond(200, 'OK');
+        const envelope = protobufs.Envelope.decode(plaintext);
+        if (envelope.type === protobufs.Envelope.Type.RECEIPT) {
+            this.emit('receipt', envelope);
+        }
         if (envelope.content) {
             return this.handleContentMessage(envelope);
         } else if (envelope.legacyMessage) {
@@ -114,29 +106,20 @@ MessageReceiver.prototype.extend({
         } else {
             throw new Error('Received message with no content and no legacyMessage');
         }
-    },
-    getStatus: function() {
+    }
+
+    getStatus() {
         if (this.socket) {
             return this.socket.readyState;
         } else {
             return -1;
         }
-    },
-    onDeliveryReceipt: function (envelope) {
-        var ev = new Event('receipt');
-        ev.proto = envelope;
-        this.dispatchEvent(ev);
-    },
-    unpad: function(paddedPlaintext) {
-        console.log("IN");
-        console.log("IN");
-        console.log("IN");
-        console.log("IN");
+    }
+
+    unpad(paddedPlaintext) {
         paddedPlaintext = new Uint8Array(paddedPlaintext);
-        console.log(11111, paddedPlaintext);
-        var plaintext;
+        let plaintext;
         for (var i = paddedPlaintext.length - 1; i >= 0; i--) {
-            console.log("lOOP");
             if (paddedPlaintext[i] == 0x80) {
                 plaintext = new Uint8Array(i);
                 plaintext.set(paddedPlaintext.subarray(0, i));
@@ -146,41 +129,34 @@ MessageReceiver.prototype.extend({
                 throw new Error('Invalid padding');
             }
         }
-        console.log("OUT", plaintext);
-
+        console.log("XXX PLAINTEXT:", plaintext);
         return plaintext;
-    },
-    decrypt: function(envelope, ciphertext) {
-        var promise;
-        var address = new libsignal.SignalProtocolAddress(envelope.source, envelope.sourceDevice);
-        // XXX This is fucked.
-        console.log('address', address);
-        console.log('address', address);
-        var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
-        switch(envelope.type) {
-            case protobufs.Envelope.Type.CIPHERTEXT:
-                console.log('message from', envelope.source + '.' + envelope.sourceDevice, envelope.timestamp.toNumber());
-                promise = sessionCipher.decryptWhisperMessage(ciphertext).then(this.unpad);
-                break;
-            case protobufs.Envelope.Type.PREKEY_BUNDLE:
-                console.log('prekey message from', envelope.source + '.' + envelope.sourceDevice, envelope.timestamp.toNumber());
-                promise = this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address);
-                break;
-            default:
-                promise = Promise.reject(new Error("Unknown message type"));
+    }
+
+    async decrypt(envelope, ciphertext) {
+        const address = new libsignal.SignalProtocolAddress(envelope.source,
+                                                          envelope.sourceDevice);
+        const sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
+        if (envelope.type === protobufs.Envelope.Type.CIPHERTEXT) {
+            return this.unpad(await sessionCipher.decryptWhisperMessage(ciphertext));
+        } else if (envelope.type === protobufs.Envelope.Type.PREKEY_BUNDLE) {
+            return await this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address);
         }
-        return promise.catch(function(error) {
-            var ev = new Event('error');
-            ev.error = error;
-            ev.proto = envelope;
-            this.dispatchEvent(ev);
-            return Promise.reject(error);
-        }.bind(this));
-    },
-    decryptPreKeyWhisperMessage: function(ciphertext, sessionCipher, address) {
-        return sessionCipher.decryptPreKeyWhisperMessage(ciphertext).then(this.unpad).catch(function(e) {
-            console.log("NO", e);
+        throw new Error("Unknown message type");
+    }
+
+    async decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address) {
+        try {
+            return this.unpad(await sessionCipher.decryptPreKeyWhisperMessage(ciphertext));
+        } catch(e) {
             if (e.message === 'Unknown identity key') {
+                //console.log("XXX ULTRA HACK ACCEPT IDENT BLINDLY!!!!!", address.toString(), e.identityKey);
+                //console.log("XXX ULTRA HACK ACCEPT IDENT BLINDLY!!!!!", address.toString(), e.identityKey);
+                //console.log("XXX ULTRA HACK ACCEPT IDENT BLINDLY!!!!!", address.toString(), e.identityKey);
+                //await storage.protocol.removeIdentityKey(address.toString());
+                //await storage.protocol.saveIdentity(e.identityKey);
+                //return this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address);
+
                 // create an error that the UI will pick up and ask the
                 // user if they want to re-negotiate
                 throw new errors.IncomingIdentityKeyError(
@@ -190,68 +166,56 @@ MessageReceiver.prototype.extend({
                 );
             }
             throw e;
+        }
+    }
+
+    async handleSentMessage(destination, timestamp, msgbuf, expire) {
+        if ((msgbuf.flags & protobufs.DataMessage.Flags.END_SESSION) ==
+            protobufs.DataMessage.Flags.END_SESSION) {
+            await this.handleEndSession(destination);
+        }
+        const message = await this.processDecrypted(msgbuf, this.number);
+        this.emit('sent', {
+            destination,
+            timestamp: timestamp.toNumber(),
+            message,
+            expirationStartTimestamp: expire && expire.toNumber()
         });
-    },
-    handleSentMessage: function(destination, timestamp, message, expirationStartTimestamp) {
-        var p = Promise.resolve();
-        if ((message.flags & protobufs.DataMessage.Flags.END_SESSION) ==
-                protobufs.DataMessage.Flags.END_SESSION ) {
-            p = this.handleEndSession(destination);
-        }
-        return p.then(function() {
-            return this.processDecrypted(message, this.number).then(function(message) {
-                var ev = new Event('sent');
-                ev.data = {
-                    destination              : destination,
-                    timestamp                : timestamp.toNumber(),
-                    message                  : message
-                };
-                if (expirationStartTimestamp) {
-                  ev.data.expirationStartTimestamp = expirationStartTimestamp.toNumber();
-                }
-                this.dispatchEvent(ev);
-            }.bind(this));
-        }.bind(this));
-    },
-    handleDataMessage: function(envelope, message) {
+    }
+
+    async handleDataMessage(envelope, msgbuf) {
         var encodedNumber = envelope.source + '.' + envelope.sourceDevice;
-        console.log('data message from', encodedNumber, envelope.timestamp.toNumber());
-        var p = Promise.resolve();
-        if ((message.flags & protobufs.DataMessage.Flags.END_SESSION) ==
-                protobufs.DataMessage.Flags.END_SESSION ) {
-            p = this.handleEndSession(envelope.source);
+        if ((msgbuf.flags & protobufs.DataMessage.Flags.END_SESSION) ==
+            protobufs.DataMessage.Flags.END_SESSION) {
+            await this.handleEndSession(envelope.source);
         }
-        return p.then(function() {
-            return this.processDecrypted(message, envelope.source).then(function(message) {
-                var ev = new Event('message');
-                ev.data = {
-                    source    : envelope.source,
-                    timestamp : envelope.timestamp.toNumber(),
-                    message   : message
-                };
-                this.dispatchEvent(ev);
-            }.bind(this));
-        }.bind(this));
-    },
-    handleLegacyMessage: function (envelope) {
-        return this.decrypt(envelope, envelope.legacyMessage).then(function(plaintext) {
-            var message = protobufs.DataMessage.decode(plaintext);
-            return this.handleDataMessage(envelope, message);
-        }.bind(this));
-    },
-    handleContentMessage: function (envelope) {
-        return this.decrypt(envelope, envelope.content).then(function(plaintext) {
-            var content = protobufs.Content.decode(plaintext);
-            if (content.syncMessage) {
-                return this.handleSyncMessage(envelope, content.syncMessage);
-            } else if (content.dataMessage) {
-                return this.handleDataMessage(envelope, content.dataMessage);
-            } else {
-                throw new Error('Got Content message with no dataMessage and no syncMessage');
-            }
-        }.bind(this));
-    },
-    handleSyncMessage: function(envelope, syncMessage) {
+        const message = await this.processDecrypted(msgbuf, envelope.source);
+        this.emit('message', {
+            source: envelope.source,
+            timestamp: envelope.timestamp.toNumber(),
+            message
+        });
+    }
+
+    async handleLegacyMessage(envelope) {
+        const plaintext = await this.decrypt(envelope, envelope.legacyMessage);
+        var message = protobufs.DataMessage.decode(plaintext);
+        return await this.handleDataMessage(envelope, message);
+    }
+
+    async handleContentMessage(envelope) {
+        const plaintext = await this.decrypt(envelope, envelope.content);
+        var content = protobufs.Content.decode(plaintext);
+        if (content.syncMessage) {
+            return await this.handleSyncMessage(envelope, content.syncMessage);
+        } else if (content.dataMessage) {
+            return await this.handleDataMessage(envelope, content.dataMessage);
+        } else {
+            throw new Error('Got Content message with no dataMessage and no syncMessage');
+        }
+    }
+
+    async handleSyncMessage(envelope, syncMessage) {
         if (envelope.source !== this.number) {
             throw new Error('Received sync message from another number');
         }
@@ -265,18 +229,19 @@ MessageReceiver.prototype.extend({
                     sentMessage.timestamp.toNumber(),
                     'from', envelope.source + '.' + envelope.sourceDevice
             );
-            return this.handleSentMessage(
+            return await this.handleSentMessage(
                     sentMessage.destination,
                     sentMessage.timestamp,
                     sentMessage.message,
                     sentMessage.expirationStartTimestamp
             );
         } else if (syncMessage.contacts) {
-            this.handleContacts(syncMessage.contacts);
+            throw new Error("Not Implemented");
+            await this.handleContacts(syncMessage.contacts);
         } else if (syncMessage.groups) {
-            this.handleGroups(syncMessage.groups);
+            await this.handleGroups(syncMessage.groups);
         } else if (syncMessage.blocked) {
-            this.handleBlocked(syncMessage.blocked);
+            throw new Error("blocked handling not implemented"); // XXX Should it be?
         } else if (syncMessage.request) {
             console.log('Got SyncMessage Request');
         } else if (syncMessage.read) {
@@ -286,37 +251,35 @@ MessageReceiver.prototype.extend({
         } else {
             throw new Error('Got empty SyncMessage');
         }
-    },
-    handleRead: function(read, timestamp) {
+    }
+
+    handleRead(read, timestamp) {
         for (var i = 0; i < read.length; ++i) {
-            var ev = new Event('read');
-            ev.timestamp = timestamp.toNumber();
-            ev.read = {
-              timestamp : read[i].timestamp.toNumber(),
-              sender    : read[i].sender
-            }
-            this.dispatchEvent(ev);
+            this.emit('read', {
+                timestamp: timestamp.toNumber(),
+                read: {
+                    timestamp : read[i].timestamp.toNumber(),
+                    sender    : read[i].sender
+                }
+            });
         }
-    },
-    handleContacts: function(contacts) {
+    }
+
+    async handleContacts(contacts) {
         console.log('contact sync');
-        var eventTarget = this;
-        var attachmentPointer = contacts.blob;
-        return this.handleAttachment(attachmentPointer).then(function() {
-            var contactBuffer = new ContactBuffer(attachmentPointer.data);
-            var contactDetails = contactBuffer.next();
-            while (contactDetails !== undefined) {
-                var ev = new Event('contact');
-                ev.contactDetails = contactDetails;
-                eventTarget.dispatchEvent(ev);
-                contactDetails = contactBuffer.next();
-            }
-            eventTarget.dispatchEvent(new Event('contactsync'));
-        });
-    },
-    handleGroups: function(groups) {
+        const attachmentPointer = contacts.blob;
+        await this.handleAttachment(attachmentPointer);
+        const contactBuffer = new ContactBuffer(attachmentPointer.data);
+        let contactDetails = contactBuffer.next();
+        while (contactDetails !== undefined) {
+            this.emit('contact', contactDetails);
+            contactDetails = contactBuffer.next();
+        }
+        this.emit('contactsync');
+    }
+
+    handleGroups(groups) {
         console.log('group sync');
-        var eventTarget = this;
         var attachmentPointer = groups.blob;
         return this.handleAttachment(attachmentPointer).then(function() {
             var groupBuffer = new GroupBuffer(attachmentPointer.data);
@@ -342,9 +305,7 @@ MessageReceiver.prototype.extend({
                         return Promise.resolve(groupDetails);
                     }
                 })(groupDetails).then(function(groupDetails) {
-                    var ev = new Event('group');
-                    ev.groupDetails = groupDetails;
-                    eventTarget.dispatchEvent(ev);
+                    this.emit('group', groupDetails);
                 }).catch(function(e) {
                     console.log('error processing group', e);
                 });
@@ -352,18 +313,12 @@ MessageReceiver.prototype.extend({
                 promises.push(promise);
             }
             Promise.all(promises).then(function() {
-                eventTarget.dispatchEvent(new Event('groupsync'));
+                this.emit('groupsync');
             });
         });
-    },
-    handleBlocked: function(blocked) {
-        storage.put('blocked', blocked.numbers);
-    },
-    isBlocked: function(number) {
-        return false; // XXX
-        //return storage.get('blocked', []).indexOf(number) >= 0;
-    },
-    handleAttachment: function(attachment) {
+    }
+
+    handleAttachment(attachment) {
         function decryptAttachment(encrypted) {
             return crypto.decryptAttachment(
                 encrypted,
@@ -378,8 +333,9 @@ MessageReceiver.prototype.extend({
         return this.server.getAttachment(attachment.id.toString()).
         then(decryptAttachment).
         then(updateAttachment);
-    },
-    tryMessageAgain: function(from, ciphertext) {
+    }
+
+    tryMessageAgain(from, ciphertext) {
         var address = libsignal.SignalProtocolAddress.fromString(from);
         var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
         console.log('retrying prekey whisper message');
@@ -398,20 +354,21 @@ MessageReceiver.prototype.extend({
                 return this.processDecrypted(finalMessage);
             }.bind(this));
         }.bind(this));
-    },
-    handleEndSession: function(number) {
+    }
+
+    handleEndSession(number) {
         console.log('got end session');
         return storage.protocol.getDeviceIds(number).then(function(deviceIds) {
             return Promise.all(deviceIds.map(function(deviceId) {
                 var address = new libsignal.SignalProtocolAddress(number, deviceId);
                 var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
-
                 console.log('closing session for', address.toString());
                 return sessionCipher.closeOpenSessionForDevice();
             }));
         });
-    },
-    processDecrypted: function(decrypted, source) {
+    }
+
+    processDecrypted(decrypted, source) {
         // Now that its decrypted, validate the message and clean it up for consumer processing
         // Note that messages may (generally) only perform one action and we ignore remaining fields
         // after the first action.
@@ -507,21 +464,7 @@ MessageReceiver.prototype.extend({
             return decrypted;
         });
     }
-});
+}
 
-const _MessageReceiver = function(url, username, password, signalingKey, attachment_server_url) {
-    var messageReceiver = new MessageReceiver(url, username, password, signalingKey, attachment_server_url);
-    this.addEventListener    = messageReceiver.addEventListener.bind(messageReceiver);
-    this.removeEventListener = messageReceiver.removeEventListener.bind(messageReceiver);
-    this.getStatus           = messageReceiver.getStatus.bind(messageReceiver);
-    this.close               = messageReceiver.close.bind(messageReceiver);
-    messageReceiver.connect();
 
-    errors.replay.registerFunction(messageReceiver.tryMessageAgain.bind(messageReceiver), errors.replay.Type.INIT_SESSION);
-};
-
-_MessageReceiver.prototype = {
-    constructor: module.exports
-};
-
-module.exports = _MessageReceiver;
+module.exports = MessageReceiver;

@@ -176,6 +176,9 @@ Backbone.LocalStorage.sync = Backbone.localSync = function(method, model, option
 
     var resp, errorMessage;
     var syncDfd = Deferred();
+    // XXX 
+    //console.log("SYNC method", method);
+    //console.log("SYNC model", model.id, model.localStorage);
 
     switch (method) {
       case "read":
@@ -201,7 +204,7 @@ Backbone.LocalStorage.sync = Backbone.localSync = function(method, model, option
         }
         syncDfd.resolve(resp);
     } else {
-        errorMessage = errorMessage ? errorMessage : "Record Not Found";
+        errorMessage = errorMessage ? errorMessage : `Record Not Found: ${model.localStorage}:${model.id}`;
         if (options && options.error) {
             if (Backbone.VERSION === "0.9.10") {
                 options.error(model, errorMessage, options);
@@ -209,7 +212,7 @@ Backbone.LocalStorage.sync = Backbone.localSync = function(method, model, option
                 options.error(errorMessage);
             }
         }
-        syncDfd.reject(errorMessage);
+        syncDfd.reject(new Error(errorMessage));
     }
 
     // add compatibility with $.ajax

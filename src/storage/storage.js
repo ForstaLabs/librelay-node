@@ -10,20 +10,30 @@ const models = require('./models');
 const LocalStorage = require('node-localstorage').LocalStorage;
 const localStorage = new LocalStorage('relay.tuples');
 
-function put_arraybuffer(key, value) {
-    console.log('Storage PUT ARRAYBUFFER', key, value);
+
+function array_buffer_encode(value) {
     if (!(value instanceof ArrayBuffer)) {
-        throw new Error(`Invalid type: ${key} ${value}`);
+        throw new Error(`Invalid type for: ${value}`);
     }
     const buf = new Buffer(new Uint8Array(value));
-    localStorage.setItem("" + key, buf.toString('binary'));
+    return buf.toString('binary');
+}
+
+function array_buffer_decode(raw) {
+    const buf = new Buffer(raw, 'binary');
+    return (new Uint8Array(buf)).buffer;
+}
+
+
+function put_arraybuffer(key, value) {
+    console.log('Storage PUT ARRAYBUFFER', key, value);
+    localStorage.setItem("" + key, array_buffer_encode(value));
 }
 
 function get_arraybuffer(key) {
     console.log('Storage GET ARRAYBUFFER', key);
-    const value = localStorage.getItem("" + key);
-    const buf = new Buffer(value, 'binary');
-    return (new Uint8Array(buf)).buffer;
+    const raw = localStorage.getItem("" + key);
+    return array_buffer_decode(raw);
 }
 
 function put_item(key, value) {
@@ -39,15 +49,17 @@ function get_item(key, defaultValue) {
     return JSON.parse(value);
 }
 
-function remove_item(key) {
+function remove(key) {
     console.log('Storage REMOVE ITEM', key);
     localStorage.removeItem("" + key);
 }
 
 module.exports = {
-    put_item,
+    array_buffer_decode,
+    array_buffer_encode,
+    get_arraybuffer,
     get_item,
     put_arraybuffer,
-    get_arraybuffer,
-    remove_item
+    put_item,
+    remove,
 }

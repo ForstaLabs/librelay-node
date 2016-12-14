@@ -61,6 +61,7 @@ function convertToArrayBuffer(thing) {
     return res;
 }
 
+
 function equalArrayBuffers(ab1, ab2) {
     if (!(ab1 instanceof ArrayBuffer && ab2 instanceof ArrayBuffer)) {
         return false;
@@ -96,37 +97,36 @@ RelayProtocolStore.prototype = {
     },
 
     /* Returns a prekeypair object or undefined */
-    loadPreKey: function(keyId) {
+    loadPreKey: async function(keyId) {
         var prekey = new models.PreKey({id: keyId});
-        return new Promise(function(resolve) {
-            prekey.fetch().then(function() {
-                resolve({
-                    pubKey: prekey.attributes.publicKey,
-                    privKey: prekey.attributes.privateKey
-                });
-            }).fail(resolve);
-        });
+        try {
+            await prekey.fetch();
+        } catch(e) {
+            return undefined;
+        }
+        return {
+            pubKey: storage.array_buffer_decode(prekey.get('publicKey')),
+            privKey: storage.array_buffer_decode(prekey.get('privateKey'))
+        };
     },
 
-    storePreKey: function(keyId, keyPair) {
+    storePreKey: async function(keyId, keyPair) {
         var prekey = new models.PreKey({
             id         : keyId,
-            publicKey  : keyPair.pubKey,
-            privateKey : keyPair.privKey
+            publicKey  : storage.array_buffer_encode(keyPair.pubKey),
+            privateKey : storage.array_buffer_encode(keyPair.privKey)
         });
-        return new Promise(function(resolve) {
-            prekey.save().always(function() {
-                resolve();
-            });
-        });
+        await prekey.save();
     },
 
     removePreKey: function(keyId) {
-        var prekey = new models.PreKey({id: keyId});
+        const prekey = new models.PreKey({id: keyId});
 
-        new Promise(function(resolve) {
-            getAccountManager().refreshPreKeys().then(resolve);
-        });
+        // XXX This is suspect...
+        console.log("XXX Skipping SUSPECT refresh thing!");  // maybe this should block on refresh after the del.
+        //new Promise(function(resolve) {
+        //    getAccountManager().refreshPreKeys().then(resolve);
+        //});
 
         return new Promise(function(resolve) {
             prekey.destroy().then(function() {
@@ -136,86 +136,72 @@ RelayProtocolStore.prototype = {
     },
 
     /* Returns a signed keypair object or undefined */
-    loadSignedPreKey: function(keyId) {
-        var prekey = new models.SignedPreKey({id: keyId});
-        return new Promise(function(resolve) {
-            prekey.fetch().then(function() {
-                resolve({
-                    pubKey: prekey.attributes.publicKey,
-                    privKey: prekey.attributes.privateKey
-                });
-            }).fail(resolve);
-        });
+    loadSignedPreKey: async function(keyId) {
+        const prekey = new models.SignedPreKey({id: keyId});
+        await prekey.fetch();
+        return {
+            pubKey: storage.array_buffer_decode(prekey.get('publicKey')),
+            privKey: storage.array_buffer_decode(prekey.get('privateKey'))
+        };
     },
 
-    storeSignedPreKey: function(keyId, keyPair) {
-        var prekey = new models.SignedPreKey({
-            id         : keyId,
-            publicKey  : keyPair.pubKey,
-            privateKey : keyPair.privKey
+    storeSignedPreKey: async function(keyId, keyPair) {
+        const prekey = new models.SignedPreKey({
+            id: keyId,
+            publicKey: storage.array_buffer_encode(keyPair.pubKey),
+            privateKey: storage.array_buffer_encode(keyPair.privKey)
         });
-        return new Promise(function(resolve) {
-            prekey.save().always(function() {
-                resolve();
-            });
-        });
+        await prekey.save();
     },
 
-    removeSignedPreKey: function(keyId) {
-        var prekey = new models.SignedPreKey({id: keyId});
-        return new Promise(function(resolve) {
-            prekey.destroy().then(function() {
-                resolve();
-            });
-        });
+    removeSignedPreKey: async function(keyId) {
+        const prekey = new models.SignedPreKey({id: keyId});
+        await prekey.destroy();
     },
 
-    loadSession: function(encodedNumber) {
+    loadSession: async function(encodedNumber) {
         if (encodedNumber === null || encodedNumber === undefined) {
             throw new Error("Tried to get session for undefined/null number");
         }
-        return new Promise(function(resolve) {
-            var session = new models.Session({id: encodedNumber});
-            session.fetch().always(function() {
-                resolve(session.get('record'));
-            });
-
-        });
+        const session = new models.Session({id: encodedNumber});
+        return undefined; // XXX FUCK THIS
+        try {
+            await session.fetch();
+        } catch(e) {
+            console.log(`WARNING: Session not found for: ${encodedNumber}`);
+            return;
+        }
+        return session.get('record');
     },
 
-    storeSession: function(encodedNumber, record) {
+    storeSession: async function(encodedNumber, record) {
         if (encodedNumber === null || encodedNumber === undefined) {
             throw new Error("Tried to put session for undefined/null number");
         }
-        return new Promise(function(resolve) {
-            var number = helpers.unencodeNumber(encodedNumber)[0];
-            var deviceId = parseInt(helpers.unencodeNumber(encodedNumber)[1]);
-
-            var session = new models.Session({id: encodedNumber});
-            session.fetch().always(function() {
-                session.save({
-                    record: record,
-                    deviceId: deviceId,
-                    number: number
-                }).fail(function(e) {
-                    console.log('Failed to save session', encodedNumber, e);
-                }).always(function() {
-                    resolve();
-                });
-            });
+        const number = helpers.unencodeNumber(encodedNumber)[0];
+        const deviceId = parseInt(helpers.unencodeNumber(encodedNumber)[1]);
+        const session = new models.Session({id: encodedNumber});
+        console.log("XXX Skipping session save");
+        return; //XXX
+        try {
+            await session.fetch();
+        } catch(e) {
+            console.log(`WARNING: Storing new session: ${e}`);
+        }
+        await session.save({
+            record: record,
+            deviceId: deviceId,
+            number: number
         });
     },
 
-    getDeviceIds: function(number) {
+    getDeviceIds: async function(number) {
         if (number === null || number === undefined) {
             throw new Error("Tried to get device ids for undefined/null number");
         }
-        return new Promise(function(resolve) {
-            var sessions = new models.SessionCollection();
-            sessions.fetchSessionsForNumber(number).always(function() {
-                resolve(sessions.pluck('deviceId'));
-            });
-        });
+        const sessions = new models.SessionCollection();
+        await sessions.fetchSessionsForNumber(number);
+        return sessions.pluck('deviceId');
     },
 
     removeSession: function(encodedNumber) {
@@ -262,7 +248,12 @@ RelayProtocolStore.prototype = {
 
     },
 
-    isTrustedIdentity: function(identifier, publicKey) {
+    isTrustedIdentity: async function(identifier, publicKey) {
+        console.log("WARNING: Blind trust", identifier);
+        return true;
+    },
+
+    isTrustedIdentity_orig: function(identifier, publicKey) {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to get identity key for undefined/null key");
         }
@@ -288,86 +279,79 @@ RelayProtocolStore.prototype = {
         }.bind(this));
     },
 
-    loadIdentityKey: function(identifier) {
+    loadIdentityKey: async function(identifier) {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to get identity key for undefined/null key");
         }
-        var number = helpers.unencodeNumber(identifier)[0];
-        return new Promise(function(resolve) {
-            var identityKey = new models.IdentityKey({id: number});
-            identityKey.fetch().always(function() {
-                resolve(identityKey.get('publicKey'));
-            });
-        });
+        const number = helpers.unencodeNumber(identifier)[0];
+        const identityKey = new models.IdentityKey({id: number});
+        await identityKey.fetch();
+        return storage.array_buffe_decode(identityKey.get('publicKey'));
     },
 
-    saveIdentity: function(identifier, publicKey) {
+    saveIdentity: async function(identifier, publicKey) {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to put identity key for undefined/null key");
         }
         if (!(publicKey instanceof ArrayBuffer)) {
-            publicKey = convertToArrayBuffer(publicKey);
+            throw new Error(`Invalid type for saveIdentity: ${typeof publicKey}`);
+            //publicKey = convertToArrayBuffer(publicKey); // XXX toss this out
         }
-        var number = helpers.unencodeNumber(identifier)[0];
-        return new Promise(function(resolve, reject) {
-            var identityKey = new models.IdentityKey({id: number});
-            identityKey.fetch().always(function() {
-                var oldpublicKey = identityKey.get('publicKey');
-                if (!oldpublicKey) {
-                    // Lookup failed, or the current key was removed, so save this one.
-                    identityKey.save({publicKey: publicKey}).then(resolve);
-                } else {
-                    // Key exists, if it matches do nothing, else throw
-                    if (equalArrayBuffers(oldpublicKey, publicKey)) {
-                        resolve();
-                    } else {
-                        reject(new Error("Attempted to overwrite a different identity key"));
-                    }
-                }
+        const number = helpers.unencodeNumber(identifier)[0];
+        const identityKey = new models.IdentityKey({id: number});
+        try {
+            await identityKey.fetch();
+        } catch(e) {} // not found
+        const oldpublicKey = identityKey.get('publicKey');
+        if (!oldpublicKey) {
+            // Lookup failed, or the current key was removed, so save this one.
+            await identityKey.save({
+                publicKey: storage.array_buffer_encode(publicKey)
             });
-        });
+        } else {
+            if (!equalArrayBuffers(oldpublicKey, publicKey)) {
+                console.log("WARNING: Saving over identity key:", identifier);
+                //reject(new Error("Attempted to overwrite a different identity key"));
+                await identityKey.save({
+                    publicKey: storage.array_buffer_encode(publicKey)
+                });
+            }
+        }
     },
 
     removeIdentityKey: async function(number) {
         var identityKey = new models.IdentityKey({id: number});
         await identityKey.fetch();
         identityKey.save({publicKey: undefined});
-        await protocol.removeAllSessions(number);
+        await storage.protocol.removeAllSessions(number);
     },
 
-    getGroup: function(groupId) {
+    getGroup: async function(groupId) {
         if (groupId === null || groupId === undefined) {
             throw new Error("Tried to get group for undefined/null id");
         }
-        return new Promise(function(resolve) {
-            var group = new Group({id: groupId});
-            group.fetch().always(function() {
-                resolve(group.get('data'));
-            });
-        });
+        const group = new Group({id: groupId});
+        await group.fetch();
+        return group.get('data');
     },
 
-    putGroup: function(groupId, group) {
+    putGroup: async function(groupId, value) {
         if (groupId === null || groupId === undefined) {
             throw new Error("Tried to put group key for undefined/null id");
         }
         if (group === null || group === undefined) {
             throw new Error("Tried to put undefined/null group object");
         }
-        var group = new Group({id: groupId, data: group});
-        return new Promise(function(resolve) {
-            group.save().always(resolve);
-        });
+        const group = new Group({id: groupId, data: value});
+        await group.save();
     },
 
-    removeGroup: function(groupId) {
+    removeGroup: async function(groupId) {
         if (groupId === null || groupId === undefined) {
             throw new Error("Tried to remove group key for undefined/null id");
         }
-        return new Promise(function(resolve) {
-            var group = new Group({id: groupId});
-            group.destroy().always(resolve);
-        });
+        const group = new Group({id: groupId});
+        await group.destroy();
     },
 };
 _.extend(RelayProtocolStore.prototype, Backbone.Events);

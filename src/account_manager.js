@@ -3,7 +3,7 @@
  */
 'use strict';
 
-const EventTarget = require('./event_target.js');
+const EventEmitter = require('events');
 const ProvisioningCipher = require('./provisioning_cipher.js');
 const WebSocketResource = require('./websocket-resources.js');
 const api = require('./api.js');
@@ -14,32 +14,29 @@ const protobufs = require('./protobufs.js');
 const storage = require('./storage');
 
 
-function AccountManager(url, username, password) {
-    this.server = new api.RelayServer(url, username, password);
-}
+class AccountManager extends EventEmitter {
 
-AccountManager.prototype = new EventTarget();
+    constructor(url, username, password) {
+        super();
+        this.server = new api.RelayServer(url, username, password);
+    }
 
-AccountManager.prototype.extend({
-
-    constructor: AccountManager,
-
-    requestVoiceVerification: function(number) {
+    requestVoiceVerification(number) {
         return this.server.requestVerificationVoice(number);
-    },
+    }
 
-    requestSMSVerification: function(number) {
+    requestSMSVerification(number) {
         return this.server.requestVerificationSMS(number);
-    },
+    }
 
-    registerSingleDevice: async function(number, verificationCode) {
+    async registerSingleDevice(number, verificationCode) {
         const identityKeyPair = await libsignal.KeyHelper.generateIdentityKeyPair();
         await this.createAccount(number, verificationCode, identityKeyPair);
         const keys = await this.generateKeys(100);
         await this.server.registerKeys(keys);
-    },
+    }
 
-    registerSecondDevice: function(setProvisioningUrl, confirmNumber) {
+    registerSecondDevice(setProvisioningUrl, confirmNumber) {
         throw new Error("UNUSED?");
         var createAccount = this.createAccount.bind(this);
         var generateKeys = this.generateKeys.bind(this, 100);
@@ -88,16 +85,16 @@ AccountManager.prototype.extend({
             });
         }).then(generateKeys).
            then(registerKeys);
-    },
+    }
 
-    refreshPreKeys: async function() {
+    async refreshPreKeys() {
         if (this.server.getMyKeys() < 10) {
             const keys = await generateKeys(100);
             await this.server.registerKeys(keys);
         }
-    },
+    }
 
-    createAccount: async function(number, verificationCode, identityKeyPair, deviceName) {
+    async createAccount(number, verificationCode, identityKeyPair, deviceName) {
         var signalingKey = libsignal.crypto.getRandomBytes(32 + 20);
         var password = btoa(helpers.getString(libsignal.crypto.getRandomBytes(16)));
         password = password.substring(0, password.length - 2);
@@ -107,13 +104,13 @@ AccountManager.prototype.extend({
                                                    password, signalingKey,
                                                    registrationId, deviceName);
         await storage.protocol.clearSessionStore();
-        storage.remove_item('identityKey');
-        storage.remove_item('signaling_key');
-        storage.remove_item('password');
-        storage.remove_item('registrationId');
-        storage.remove_item('number_id');
-        storage.remove_item('device_name');
-        storage.remove_item('regionCode');
+        storage.remove('identityKey');
+        storage.remove('signaling_key');
+        storage.remove('password');
+        storage.remove('registrationId');
+        storage.remove('number_id');
+        storage.remove('device_name');
+        storage.remove('regionCode');
 
         // update our own identity key, which may have changed
         // if we're relinking after a reinstall on the master device
@@ -136,9 +133,9 @@ AccountManager.prototype.extend({
         storage.put_item('regionCode', 'ZZ'); // XXX Do we care?
         this.server.setUsername(storage.get_item('number_id'));
         this.server.setPassword(password);
-    },
+    }
 
-    generateKeys: async function (count) {
+    async generateKeys(count) {
         var startId = storage.get_item('maxPreKeyId', 1);
         var signedKeyId = storage.get_item('signedKeyId', 1);
 
@@ -180,6 +177,6 @@ AccountManager.prototype.extend({
         storage.put_item('signedKeyId', signedKeyId + 1);
         return result;
     }
-});
+}
 
 module.exports = AccountManager;
