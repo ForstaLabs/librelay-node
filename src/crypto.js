@@ -5,11 +5,10 @@
 'use strict';
 
 const libsignal = require('libsignal');
-const encrypt = libsignal.crypto.encrypt;
-const decrypt = libsignal.crypto.decrypt;
-const calculateMAC = libsignal.crypto.calculateMAC;
-const verifyMAC = libsignal.crypto.verifyMAC;
 
+/* TODO: Several of the libsignal crypto apis can be non-async now based on nodejs crypto
+ * functions.  Eval for perf gains..
+ */
 
 module.exports = {
 
@@ -35,10 +34,8 @@ module.exports = {
         var ivAndCiphertext = decodedMessage.slice(0, decodedMessage.byteLength - 10);
         var mac = decodedMessage.slice(decodedMessage.byteLength - 10, decodedMessage.byteLength);
 
-        console.log('asdlfjasdlkfjasdlfk', iv, ciphertext, ivAndCiphertext, mac);
-        return verifyMAC(ivAndCiphertext, mac_key, mac, 10).then(function() {
-            console.log("INNNER", aes_key, ciphertext, iv);
-            return decrypt(aes_key, ciphertext, iv);
+        return libsignal.crypto.verifyMAC(ivAndCiphertext, mac_key, mac, 10).then(function() {
+            return libsignal.crypto.decrypt(aes_key, ciphertext, iv);
         });
     },
 
@@ -58,8 +55,8 @@ module.exports = {
         var ivAndCiphertext = encryptedBin.slice(0, encryptedBin.byteLength - 32);
         var mac = encryptedBin.slice(encryptedBin.byteLength - 32, encryptedBin.byteLength);
 
-        return verifyMAC(ivAndCiphertext, mac_key, mac, 32).then(function() {
-            return decrypt(aes_key, ciphertext, iv);
+        return libsignal.crypto.verifyMAC(ivAndCiphertext, mac_key, mac, 32).then(function() {
+            return libsignal.crypto.decrypt(aes_key, ciphertext, iv);
         });
     },
 
@@ -73,12 +70,12 @@ module.exports = {
         var aes_key = keys.slice(0, 32);
         var mac_key = keys.slice(32, 64);
 
-        return encrypt(aes_key, plaintext, iv).then(function(ciphertext) {
+        return libsignal.crypto.encrypt(aes_key, plaintext, iv).then(function(ciphertext) {
             var ivAndCiphertext = new Uint8Array(16 + ciphertext.byteLength);
             ivAndCiphertext.set(new Uint8Array(iv));
             ivAndCiphertext.set(new Uint8Array(ciphertext), 16);
 
-            return calculateMAC(mac_key, ivAndCiphertext.buffer).then(function(mac) {
+            return libsignal.crypto.calculateMAC(mac_key, ivAndCiphertext.buffer).then(function(mac) {
                 var encryptedBin = new Uint8Array(16 + ciphertext.byteLength + 32);
                 encryptedBin.set(ivAndCiphertext);
                 encryptedBin.set(new Uint8Array(mac), 16 + ciphertext.byteLength);
