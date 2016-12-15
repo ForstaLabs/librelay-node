@@ -4,78 +4,27 @@
 'use strict';
 
 const Backbone = require('./backbone-localstorage.js');
-const Deferred = require('jquery-deferred').Deferred;
-const ByteBuffer = require('bytebuffer');
 const Database = require('./database.js');
+const Deferred = require('jquery-deferred').Deferred;
 const _ = require('underscore');
-const storage = require('./storage.js');
 const helpers = require('../helpers.js');
 const models = require('./models');
-
-var StaticByteBufferProto = new ByteBuffer().__proto__;
-var StaticArrayBufferProto = new ArrayBuffer().__proto__;
-var StaticUint8ArrayProto = new Uint8Array().__proto__;
-
-function isStringable(thing) {
-    return (thing === Object(thing) &&
-                (thing.__proto__ == StaticArrayBufferProto ||
-                thing.__proto__ == StaticUint8ArrayProto ||
-                thing.__proto__ == StaticByteBufferProto));
-}
+const storage = require('./storage.js');
 
 
-function convertToArrayBuffer(thing) {
-    if (thing === undefined) {
-        return undefined;
-    }
-    if (thing === Object(thing)) {
-        if (thing.__proto__ == StaticArrayBufferProto) {
-            return thing;
-        }
-        //TODO: Several more cases here...
-    }
-
-    if (thing instanceof Array) {
-        // Assuming Uint16Array from curve25519
-        var res = new ArrayBuffer(thing.length * 2);
-        var uint = new Uint16Array(res);
-        for (var i = 0; i < thing.length; i++) {
-            uint[i] = thing[i];
-        }
-        return res;
-    }
-
-    var str;
-    if (isStringable(thing)) {
-        str = stringObject(thing);
-    } else if (typeof thing == "string") {
-        str = thing;
-    } else {
-        throw new Error("Tried to convert a non-stringable thing of type " + typeof thing + " to an array buffer");
-    }
-    var res = new ArrayBuffer(str.length);
-    var uint = new Uint8Array(res);
-    for (var i = 0; i < str.length; i++) {
-        uint[i] = str.charCodeAt(i);
-    }
-    return res;
-}
-
-
-function equalArrayBuffers(ab1, ab2) {
-    if (!(ab1 instanceof ArrayBuffer && ab2 instanceof ArrayBuffer)) {
-        return false;
+function equalBuffers(ab1, ab2) {
+    if (!(ab1 instanceof Buffer && ab2 instanceof Buffer)) {
+        throw new Error("Invalid types");
     }
     if (ab1.byteLength !== ab2.byteLength) {
         return false;
     }
-    var result = true;
-    var ta1 = new Uint8Array(ab1);
-    var ta2 = new Uint8Array(ab2);
     for (var i = 0; i < ab1.byteLength; ++i) {
-        if (ta1[i] !== ta2[i]) { result = false; }
+        if (ab1[i] !== ab2[i]) {
+            return false;
+        }
     }
-    return result;
+    return true;
 }
 
 
@@ -105,16 +54,16 @@ RelayProtocolStore.prototype = {
             return undefined;
         }
         return {
-            pubKey: storage.array_buffer_decode(prekey.get('publicKey')),
-            privKey: storage.array_buffer_decode(prekey.get('privateKey'))
+            pubKey: Buffer.from(prekey.get('publicKey'), 'base64'),
+            privKey: Buffer.from(prekey.get('privateKey'), 'base64')
         };
     },
 
     storePreKey: async function(keyId, keyPair) {
         var prekey = new models.PreKey({
             id         : keyId,
-            publicKey  : storage.array_buffer_encode(keyPair.pubKey),
-            privateKey : storage.array_buffer_encode(keyPair.privKey)
+            publicKey  : keyPair.pubKey.toString('base64'),
+            privateKey : keyPair.privKey.toString('base64')
         });
         await prekey.save();
     },
@@ -140,16 +89,16 @@ RelayProtocolStore.prototype = {
         const prekey = new models.SignedPreKey({id: keyId});
         await prekey.fetch();
         return {
-            pubKey: storage.array_buffer_decode(prekey.get('publicKey')),
-            privKey: storage.array_buffer_decode(prekey.get('privateKey'))
+            pubKey: Buffer.from(prekey.get('publicKey'), 'base64'),
+            privKey: Buffer.from(prekey.get('privateKey'), 'base64')
         };
     },
 
     storeSignedPreKey: async function(keyId, keyPair) {
         const prekey = new models.SignedPreKey({
             id: keyId,
-            publicKey: storage.array_buffer_encode(keyPair.pubKey),
-            privateKey: storage.array_buffer_encode(keyPair.privKey)
+            publicKey: keyPair.pubKey.toString('base64'),
+            privateKey: keyPair.privKey.toString('base64')
         });
         await prekey.save();
     },
@@ -262,7 +211,7 @@ RelayProtocolStore.prototype = {
             var identityKey = new models.IdentityKey({id: number});
             identityKey.fetch().always(function() {
                 var oldpublicKey = identityKey.get('publicKey');
-                if (!oldpublicKey || equalArrayBuffers(oldpublicKey, publicKey)) {
+                if (!oldpublicKey || equalBuffers(oldpublicKey, publicKey)) {
                     resolve(true);
                 } else if (!storage.get_item('safety-numbers-approval', true)) {
                     this.removeIdentityKey(identifier).then(function() {
@@ -293,9 +242,8 @@ RelayProtocolStore.prototype = {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to put identity key for undefined/null key");
         }
-        if (!(publicKey instanceof ArrayBuffer)) {
-            throw new Error(`Invalid type for saveIdentity: ${typeof publicKey}`);
-            //publicKey = convertToArrayBuffer(publicKey); // XXX toss this out
+        if (!(publicKey instanceof Buffer)) {
+            throw new Error(`Invalid type for saveIdentity: ${publicKey.constructor.name}`);
         }
         const number = helpers.unencodeNumber(identifier)[0];
         const identityKey = new models.IdentityKey({id: number});
@@ -306,14 +254,14 @@ RelayProtocolStore.prototype = {
         if (!oldpublicKey) {
             // Lookup failed, or the current key was removed, so save this one.
             await identityKey.save({
-                publicKey: storage.array_buffer_encode(publicKey)
+                publicKey: publicKey.toString('base64')
             });
         } else {
             if (!equalArrayBuffers(oldpublicKey, publicKey)) {
                 console.log("WARNING: Saving over identity key:", identifier);
                 //reject(new Error("Attempted to overwrite a different identity key"));
                 await identityKey.save({
-                    publicKey: storage.array_buffer_encode(publicKey)
+                    publicKey: publicKey.toString('base64')
                 });
             }
         }
@@ -330,7 +278,7 @@ RelayProtocolStore.prototype = {
         if (groupId === null || groupId === undefined) {
             throw new Error("Tried to get group for undefined/null id");
         }
-        const group = new Group({id: groupId});
+        const group = new models.Group({id: groupId});
         await group.fetch();
         return group.get('data');
     },
@@ -342,7 +290,7 @@ RelayProtocolStore.prototype = {
         if (group === null || group === undefined) {
             throw new Error("Tried to put undefined/null group object");
         }
-        const group = new Group({id: groupId, data: value});
+        const group = new models.Group({id: groupId, data: value});
         await group.save();
     },
 
@@ -350,7 +298,7 @@ RelayProtocolStore.prototype = {
         if (groupId === null || groupId === undefined) {
             throw new Error("Tried to remove group key for undefined/null id");
         }
-        const group = new Group({id: groupId});
+        const group = new models.Group({id: groupId});
         await group.destroy();
     },
 };

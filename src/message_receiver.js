@@ -14,6 +14,9 @@ const libsignal = require('libsignal');
 const protobufs = require('./protobufs.js');
 const storage = require('./storage');
 
+const ENV_TYPES = protobufs.Envelope.lookup('Type').values;
+const GROUPCTX_TYPES = protobufs.GroupContext.lookup('Type').values;
+
 
 class MessageReceiver extends EventEmitter {
 
@@ -89,6 +92,7 @@ class MessageReceiver extends EventEmitter {
         // PUT /messages <encrypted Envelope>
         let plaintext;
         try {
+            console.log('XXX what is signalingkey?', this.signalingKey);
             plaintext = await crypto.decryptWebsocketMessage(request.body, this.signalingKey);
         } catch(e) {
             request.respond(500, 'Bad encrypted websocket message');
@@ -96,12 +100,13 @@ class MessageReceiver extends EventEmitter {
         }
         request.respond(200, 'OK');
         const envelope = protobufs.Envelope.decode(plaintext);
-        if (envelope.type === protobufs.Envelope.Type.RECEIPT) {
+        debugger;
+        if (envelope.type === ENV_TYPES.RECEIPT) {
             this.emit('receipt', envelope);
         }
-        if (envelope.content) {
+        if (envelope.content.byteLength) {
             return this.handleContentMessage(envelope);
-        } else if (envelope.legacyMessage) {
+        } else if (envelope.legacyMessage.byteLength) {
             return this.handleLegacyMessage(envelope);
         } else {
             throw new Error('Received message with no content and no legacyMessage');
@@ -129,7 +134,6 @@ class MessageReceiver extends EventEmitter {
                 throw new Error('Invalid padding');
             }
         }
-        console.log("XXX PLAINTEXT:", plaintext);
         return plaintext;
     }
 
@@ -137,9 +141,12 @@ class MessageReceiver extends EventEmitter {
         const address = new libsignal.SignalProtocolAddress(envelope.source,
                                                           envelope.sourceDevice);
         const sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
-        if (envelope.type === protobufs.Envelope.Type.CIPHERTEXT) {
+        if (envelope.type === ENV_TYPES.CIPHERTEXT) {
+            console.warn(envelope, ciphertext);
+            throw new Error('asdf');
             return this.unpad(await sessionCipher.decryptWhisperMessage(ciphertext));
-        } else if (envelope.type === protobufs.Envelope.Type.PREKEY_BUNDLE) {
+        } else if (envelope.type === ENV_TYPES.PREKEY_BUNDLE) {
+            console.warn(envelope, ciphertext);
             return await this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address);
         }
         throw new Error("Unknown message type");
@@ -397,7 +404,7 @@ class MessageReceiver extends EventEmitter {
         if (decrypted.group !== null) {
             decrypted.group.id = decrypted.group.id.toBinary();
 
-            if (decrypted.group.type == protobufs.GroupContext.Type.UPDATE) {
+            if (decrypted.group.type == GROUPCTX_TYPES.UPDATE) {
                 if (decrypted.group.avatar !== null) {
                     promises.push(this.handleAttachment(decrypted.group.avatar));
                 }
@@ -405,7 +412,7 @@ class MessageReceiver extends EventEmitter {
 
             promises.push(storage.groups.getNumbers(decrypted.group.id).then(function(existingGroup) {
                 if (existingGroup === undefined) {
-                    if (decrypted.group.type != protobufs.GroupContext.Type.UPDATE) {
+                    if (decrypted.group.type != GROUPCTX_TYPES.UPDATE) {
                         decrypted.group.members = [source];
                         console.log("Got message for unknown group");
                     }
@@ -419,7 +426,7 @@ class MessageReceiver extends EventEmitter {
                     }
 
                     switch(decrypted.group.type) {
-                    case protobufs.GroupContext.Type.UPDATE:
+                    case GROUPCTX_TYPES.UPDATE:
                         return storage.groups.updateNumbers(
                             decrypted.group.id, decrypted.group.members
                         ).then(function(added) {
@@ -436,7 +443,7 @@ class MessageReceiver extends EventEmitter {
                         });
 
                         break;
-                    case protobufs.GroupContext.Type.QUIT:
+                    case GROUPCTX_TYPES.QUIT:
                         decrypted.body = null;
                         decrypted.attachments = [];
                         if (source === this.number) {
@@ -444,7 +451,7 @@ class MessageReceiver extends EventEmitter {
                         } else {
                             return storage.groups.removeNumber(decrypted.group.id, source);
                         }
-                    case protobufs.GroupContext.Type.DELIVER:
+                    case GROUPCTX_TYPES.DELIVER:
                         decrypted.group.name = null;
                         decrypted.group.members = [];
                         decrypted.group.avatar = null;

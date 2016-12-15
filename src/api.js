@@ -4,12 +4,12 @@
 
 'use strict';
 
-const btoa = require('bytebuffer').btoa;
 const http = require('http');
 const https = require('https');
 const axios = require('axios');
 const helpers = require('./helpers.js');
 const WebSocket = require('websocket').w3cwebsocket;
+
 
 var RelayServer = (function() {
 
@@ -133,26 +133,26 @@ var RelayServer = (function() {
 
         requestVerificationSMS: function(number) {
             return this.http({
-                call                : 'accounts',
-                httpType            : 'GET',
-                urlParameters       : '/sms/code/' + number,
+                call: 'accounts',
+                httpType: 'GET',
+                urlParameters: '/sms/code/' + number,
             });
         },
 
         requestVerificationVoice: function(number) {
             return this.http({
-                call                : 'accounts',
-                httpType            : 'GET',
-                urlParameters       : '/voice/code/' + number,
+                call: 'accounts',
+                httpType: 'GET',
+                urlParameters: '/voice/code/' + number,
             });
         },
 
         confirmCode: function(number, code, password, signaling_key, registrationId, deviceName) {
             var jsonData = {
-                signalingKey    : btoa(helpers.getString(signaling_key)),
-                supportsSms     : false,
-                fetchesMessages : true,
-                registrationId  : registrationId,
+                signalingKey: signaling_key.toString('base64'),
+                supportsSms: false,
+                fetchesMessages: true,
+                registrationId: registrationId,
             };
 
             var call, urlPrefix, schema;
@@ -189,12 +189,11 @@ var RelayServer = (function() {
 
         registerKeys: function(genKeys) {
             var keys = {};
-            console.log("API: registerKeys");
-            keys.identityKey = btoa(helpers.getString(genKeys.identityKey));
+            keys.identityKey = genKeys.identityKey.toString('base64');
             keys.signedPreKey = {
                 keyId: genKeys.signedPreKey.keyId,
-                publicKey: btoa(helpers.getString(genKeys.signedPreKey.publicKey)),
-                signature: btoa(helpers.getString(genKeys.signedPreKey.signature))
+                publicKey: genKeys.signedPreKey.publicKey.toString('base64'),
+                signature: genKeys.signedPreKey.signature.toString('base64')
             };
 
             keys.preKeys = [];
@@ -202,13 +201,16 @@ var RelayServer = (function() {
             for (var i in genKeys.preKeys) {
                 keys.preKeys[j++] = {
                     keyId: genKeys.preKeys[i].keyId,
-                    publicKey: btoa(helpers.getString(genKeys.preKeys[i].publicKey))
+                    publicKey: genKeys.preKeys[i].publicKey.toString('base64')
                 };
             }
 
             // This is just to make the server happy
             // (v2 clients should choke on publicKey)
-            keys.lastResortKey = {keyId: 0x7fffFFFF, publicKey: btoa("42")};
+            keys.lastResortKey = {
+                keyId: 0x7fffFFFF,
+                publicKey: Buffer.from("42").toString('base64')
+            };
 
             return this.http({
                 call: 'keys',
@@ -230,12 +232,16 @@ var RelayServer = (function() {
         getKeysForNumber: function(number, deviceId) {
             if (deviceId === undefined)
                 deviceId = "*";
+            throw new Error("not ported!");
 
             return this.http({
-                call                : 'keys',
-                httpType            : 'GET',
-                urlParameters       : "/" + number + "/" + deviceId,
-                validateResponse    : {identityKey: 'string', devices: 'object'}
+                call: 'keys',
+                httpType: 'GET',
+                urlParameters: "/" + number + "/" + deviceId,
+                validateResponse: {
+                    identityKey: 'string',
+                    devices: 'object'
+                }
             }).then(function(res) {
                 if (res.devices.constructor !== Array) {
                     throw new Error("Invalid response");
@@ -313,17 +319,16 @@ var RelayServer = (function() {
         },
 
         getMessageSocket: function() {
-            console.log('opening message socket', this.base_url);
+            console.log('Opening message websocket:', this.base_url);
             const url = this.base_url.replace('https://', 'wss://').replace('http://', 'ws://')
                     + '/v1/websocket/?login=' + encodeURIComponent(this._username)
                     + '&password=' + encodeURIComponent(this._password)
                     + '&agent=OWD';
-            console.log('WS URL:', url);
             return new WebSocket(url);
         },
 
         getProvisioningSocket: function () {
-            console.log('opening provisioning socket', this.url);
+            console.log('Opening provisioning websocket:', this.url);
             return new WebSocket(
                 this.base_url.replace('https://', 'wss://').replace('http://', 'ws://')
                     + '/v1/websocket/provisioning/?agent=OWD'

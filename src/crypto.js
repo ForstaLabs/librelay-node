@@ -13,30 +13,24 @@ const libsignal = require('libsignal');
 module.exports = {
 
     // Decrypts message into a raw string
-    decryptWebsocketMessage: function(message, signaling_key) {
-        var decodedMessage = message.toArrayBuffer();
-
+    decryptWebsocketMessage: async function(message, signaling_key) {
         if (signaling_key.byteLength != 52) {
             throw new Error("Got invalid length signaling_key");
         }
-        if (decodedMessage.byteLength < 1 + 16 + 10) {
+        if (message.byteLength < 1 + 16 + 10) {
             throw new Error("Got invalid length message");
         }
-        if (new Uint8Array(decodedMessage)[0] != 1) {
-            throw new Error("Got bad version number: " + decodedMessage[0]);
+        if (message[0] != 1) {
+            throw new Error("Got bad version number: " + message[0]);
         }
-
         var aes_key = signaling_key.slice(0, 32);
         var mac_key = signaling_key.slice(32, 32 + 20);
-
-        var iv = decodedMessage.slice(1, 1 + 16);
-        var ciphertext = decodedMessage.slice(1 + 16, decodedMessage.byteLength - 10);
-        var ivAndCiphertext = decodedMessage.slice(0, decodedMessage.byteLength - 10);
-        var mac = decodedMessage.slice(decodedMessage.byteLength - 10, decodedMessage.byteLength);
-
-        return libsignal.crypto.verifyMAC(ivAndCiphertext, mac_key, mac, 10).then(function() {
-            return libsignal.crypto.decrypt(aes_key, ciphertext, iv);
-        });
+        var iv = message.slice(1, 17);
+        var ciphertext = message.slice(1 + 16, message.byteLength - 10);
+        var ivAndCiphertext = message.slice(0, message.byteLength - 10);
+        var mac = message.slice(message.byteLength - 10, message.byteLength);
+        await libsignal.crypto.verifyMAC(ivAndCiphertext, mac_key, mac, 10);
+        return await libsignal.crypto.decrypt(aes_key, ciphertext, iv);
     },
 
     decryptAttachment: function(encryptedBin, keys) {
@@ -82,9 +76,5 @@ module.exports = {
                 return encryptedBin.buffer;
             });
         });
-    },
-
-    getRandomBytes: function(size) {
-        return libsignal.crypto.getRandomBytes(size);
     }
 };

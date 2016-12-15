@@ -4,13 +4,13 @@
 'use strict';
 
 const EventEmitter = require('events');
-const ProvisioningCipher = require('./provisioning_cipher.js');
-const WebSocketResource = require('./websocket-resources.js');
-const api = require('./api.js');
-const btoa = require('bytebuffer').btoa;
-const helpers = require('./helpers.js');
+const ProvisioningCipher = require('./provisioning_cipher');
+const WebSocketResource = require('./websocket-resources');
+const api = require('./api');
+const helpers = require('./helpers');
 const libsignal = require('libsignal');
-const protobufs = require('./protobufs.js');
+const node_crypto = require('crypto');
+const protobufs = require('./protobufs');
 const storage = require('./storage');
 
 
@@ -57,7 +57,7 @@ class AccountManager extends EventEmitter {
                             var proto = protobufs.ProvisioningUuid.decode(request.body);
                             setProvisioningUrl([
                                 'tsdevice:/?uuid=', proto.uuid, '&pub_key=',
-                                encodeURIComponent(btoa(helpers.getString(pubKey)))
+                                encodeURIComponent(storage.array_buffer_encode(pubKey, 'base64')) // XXX validate
                             ].join(''));
                             request.respond(200, 'OK');
                         } else if (request.path === "/v1/message" && request.verb === "PUT") {
@@ -95,8 +95,8 @@ class AccountManager extends EventEmitter {
     }
 
     async createAccount(number, verificationCode, identityKeyPair, deviceName) {
-        var signalingKey = libsignal.crypto.getRandomBytes(32 + 20);
-        var password = btoa(helpers.getString(libsignal.crypto.getRandomBytes(16)));
+        var signalingKey = node_crypto.randomBytes(32 + 20);
+        var password = node_crypto.randomBytes(16).toString('base64');
         password = password.substring(0, password.length - 2);
         var registrationId = libsignal.KeyHelper.generateRegistrationId();
 
@@ -121,9 +121,9 @@ class AccountManager extends EventEmitter {
         }
         await storage.protocol.saveIdentity(number, identityKeyPair.pubKey);
 
-        storage.put_arraybuffer('identityKey.pub', identityKeyPair.pubKey);
-        storage.put_arraybuffer('identityKey.priv', identityKeyPair.privKey);
-        storage.put_arraybuffer('signaling_key', signalingKey);
+        storage.put_item('identityKey.pub', identityKeyPair.pubKey.toString('base64'));
+        storage.put_item('identityKey.priv', identityKeyPair.privKey.toString('base64'));
+        storage.put_item('signaling_key', signalingKey.toString('base64'));
         storage.put_item('password', password);
         storage.put_item('registrationId', registrationId);
 
@@ -148,8 +148,8 @@ class AccountManager extends EventEmitter {
 
         var store = storage.protocol;
         var identityKey = {
-            pubKey: storage.get_arraybuffer('identityKey.pub'),
-            privKey: storage.get_arraybuffer('identityKey.priv')
+            pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
+            privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
         }
         console.log('xxxxxxx', identityKey);
         var result = { preKeys: [], identityKey: identityKey.pubKey };

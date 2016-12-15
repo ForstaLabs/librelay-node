@@ -1,12 +1,7 @@
 'use strict';
 
-const ByteBuffer = require('bytebuffer');
-const ProtoBuf = require('protobufjs');
+const protobuf = require('protobufjs');
 
-function loadProtoBufs(filename) {
-    const b = ProtoBuf.loadProtoFile('./protos/' + filename);
-    return b.build('textsecure');
-}
 
 const proto_files = [
     'IncomingPushMessageSignal.proto',
@@ -15,8 +10,8 @@ const proto_files = [
 ];
 
 for (const f of proto_files) {
-    const p = loadProtoBufs(f);
-    for (const message in p) {
-        exports[message] = p[message];
+    const p = protobuf.loadSync(`./protos/${f}`).lookup('textsecure');
+    for (const message in p.nested) {
+        exports[message] = p.lookup(message);
     }
 }

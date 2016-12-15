@@ -4,11 +4,10 @@
 
 'use strict';
 
-const FileReader = require('filereader');
-const ByteBuffer = require('bytebuffer');
+const Long = require('long');
 const crypto = require('crypto');
 const libsignal = require('libsignal');
-const protobufs = require('./protobufs.js');
+const protobufs = require('./protobufs');
 
 /*
  * WebSocket-Resources
@@ -32,6 +31,9 @@ const protobufs = require('./protobufs.js');
  *
  */
 
+const MSG_TYPES = protobufs.WebSocketMessage.lookup('Type').values;
+
+
 var Request = function(options) {
     this.verb    = options.verb || options.type;
     this.path    = options.path || options.url;
@@ -41,9 +43,9 @@ var Request = function(options) {
     this.id      = options.id;
 
     if (this.id === undefined) {
-        var bits = new Uint32Array(2);
-        bits.set(crypto.randomBytes(bits.length));
-        this.id = ByteBuffer.Long.fromBits(bits[0], bits[1], true);
+        var ints = new Uint32Array(2);
+        ints.set(crypto.randomBytes(ints.length));
+        this.id = new Long(ints[0], ints[1], true /*unsigned*/);
     }
 
     if (this.body === undefined) {
@@ -60,12 +62,15 @@ var IncomingWebSocketRequest = function(options) {
     this.body = request.body;
 
     this.respond = function(status, message) {
-        socket.send(
-            new protobufs.WebSocketMessage({
-                type: protobufs.WebSocketMessage.Type.RESPONSE,
-                response: { id: request.id, message: message, status: status }
-            }).encode().toArrayBuffer()
-        );
+        const pbmsg = protobufs.WebSocketMessage.create({
+            type: MSG_TYPES.RESPONSE,
+            response: {
+                id: request.id,
+                message: message,
+                status: status
+            }
+        });
+        socket.send(protobufs.WebSocketMessage.encode(pbmsg).finish());
     };
 };
 
@@ -73,17 +78,18 @@ var outgoing = {};
 var OutgoingWebSocketRequest = function(options, socket) {
     var request = new Request(options);
     outgoing[request.id] = request;
-    socket.send(
-        new protobufs.WebSocketMessage({
-            type: protobufs.WebSocketMessage.Type.REQUEST,
-            request: {
-                verb : request.verb,
-                path : request.path,
-                body : request.body,
-                id   : request.id
-            }
-        }).encode().toArrayBuffer()
-    );
+    const pbmsg = protobufs.WebSocketMessage.create({
+        type: MSG_TYPES.REQUEST,
+        request: {
+            verb: request.verb,
+            path: request.path,
+            body: request.body,
+            id: request.id
+        }
+    });
+    const xxx = protobufs.WebSocketMessage.encode(pbmsg).finish();
+    console.log(xxx);
+    socket.send(xxx);
 };
 
 function WebSocketResource(socket, opts) {
@@ -99,20 +105,18 @@ function WebSocketResource(socket, opts) {
     };
 
     socket.onmessage = function(socketMessage) {
-        var blob = socketMessage.data;
-        var message = protobufs.WebSocketMessage.decode(blob);
-        if (message.type === protobufs.WebSocketMessage.Type.REQUEST ) {
-            handleRequest(
-                new IncomingWebSocketRequest({
-                    verb   : message.request.verb,
-                    path   : message.request.path,
-                    body   : message.request.body,
-                    id     : message.request.id,
-                    socket : socket
-                })
-            );
+        const blob = new Uint8Array(socketMessage.data);
+        const message = protobufs.WebSocketMessage.decode(blob);
+        if (message.type === MSG_TYPES.REQUEST ) {
+            handleRequest(new IncomingWebSocketRequest({
+                verb: message.request.verb,
+                path: message.request.path,
+                body: message.request.body,
+                id: message.request.id,
+                socket: socket
+            }));
         }
-        else if (message.type === protobufs.WebSocketMessage.Type.RESPONSE ) {
+        else if (message.type === MSG_TYPES.RESPONSE ) {
             var response = message.response;
             var request = outgoing[response.id];
             if (request) {
@@ -126,7 +130,7 @@ function WebSocketResource(socket, opts) {
                     callback(response.message, response.status, request);
                 }
             } else {
-                throw 'Received response for unknown request ' + message.response.id;
+                throw new Error('Received response for unknown request ' + message.response.id);
             }
         }
     };
