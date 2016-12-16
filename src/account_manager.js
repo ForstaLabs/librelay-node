@@ -146,18 +146,20 @@ class AccountManager extends EventEmitter {
             throw new Error(`Invalid signedKeyId: ${signedKeyId} ${typeof signedKeyId}`);
         }
 
-        var store = storage.protocol;
         var identityKey = {
             pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
             privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
         }
         console.log('xxxxxxx', identityKey);
-        var result = { preKeys: [], identityKey: identityKey.pubKey };
+        var result = {
+            preKeys: [],
+            identityKey: identityKey.pubKey
+        };
 
         for (var keyId = startId; keyId < startId+count; ++keyId) {
             console.log("Generating key:", keyId);
             let k = await libsignal.KeyHelper.generatePreKey(keyId);
-            store.storePreKey(k.keyId, k.keyPair);
+            storage.protocol.storePreKey(k.keyId, k.keyPair);
             result.preKeys.push({
                 keyId     : k.keyId,
                 publicKey : k.keyPair.pubKey
@@ -165,14 +167,14 @@ class AccountManager extends EventEmitter {
         }
 
         const spk = await libsignal.KeyHelper.generateSignedPreKey(identityKey, signedKeyId);
-        store.storeSignedPreKey(spk.keyId, spk.keyPair);
+        storage.protocol.storeSignedPreKey(spk.keyId, spk.keyPair);
         result.signedPreKey = {
             keyId     : spk.keyId,
             publicKey : spk.keyPair.pubKey,
             signature : spk.signature
         };
 
-        store.removeSignedPreKey(signedKeyId - 2);
+        storage.protocol.removeSignedPreKey(signedKeyId - 2);
         storage.put_item('maxPreKeyId', startId + count);
         storage.put_item('signedKeyId', signedKeyId + 1);
         return result;

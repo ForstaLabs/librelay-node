@@ -75,6 +75,7 @@ var IncomingWebSocketRequest = function(options) {
 };
 
 var outgoing = {};
+
 var OutgoingWebSocketRequest = function(options, socket) {
     var request = new Request(options);
     outgoing[request.id] = request;
@@ -83,14 +84,13 @@ var OutgoingWebSocketRequest = function(options, socket) {
         request: {
             verb: request.verb,
             path: request.path,
-            body: request.body,
+            body: request.body || Buffer.alloc(0),
             id: request.id
         }
     });
-    const xxx = protobufs.WebSocketMessage.encode(pbmsg).finish();
-    console.log(xxx);
-    socket.send(xxx);
+    socket.send(protobufs.WebSocketMessage.encode(pbmsg).finish());
 };
+
 
 function WebSocketResource(socket, opts) {
     opts = opts || {};
@@ -107,7 +107,7 @@ function WebSocketResource(socket, opts) {
     socket.onmessage = function(socketMessage) {
         const blob = new Uint8Array(socketMessage.data);
         const message = protobufs.WebSocketMessage.decode(blob);
-        if (message.type === MSG_TYPES.REQUEST ) {
+        if (message.type === MSG_TYPES.REQUEST) {
             handleRequest(new IncomingWebSocketRequest({
                 verb: message.request.verb,
                 path: message.request.path,

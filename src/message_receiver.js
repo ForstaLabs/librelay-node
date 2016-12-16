@@ -85,22 +85,16 @@ class MessageReceiver extends EventEmitter {
     }
 
     async handleRequest(request) {
-        // We do the message decryption here, instead of in the ordered pending queue,
-        // to avoid exposing the time it took us to process messages through the time-to-ack.
-
-        // TODO: handle different types of requests. for now we blindly assume
-        // PUT /messages <encrypted Envelope>
-        let plaintext;
+        let envbuf;
         try {
-            console.log('XXX what is signalingkey?', this.signalingKey);
-            plaintext = await crypto.decryptWebsocketMessage(request.body, this.signalingKey);
+            envbuf = await crypto.decryptWebsocketMessage(Buffer.from(request.body),
+                                                          this.signalingKey);
         } catch(e) {
             request.respond(500, 'Bad encrypted websocket message');
             throw e;
         }
         request.respond(200, 'OK');
-        const envelope = protobufs.Envelope.decode(plaintext);
-        debugger;
+        const envelope = protobufs.Envelope.decode(envbuf);
         if (envelope.type === ENV_TYPES.RECEIPT) {
             this.emit('receipt', envelope);
         }
@@ -146,7 +140,7 @@ class MessageReceiver extends EventEmitter {
             throw new Error('asdf');
             return this.unpad(await sessionCipher.decryptWhisperMessage(ciphertext));
         } else if (envelope.type === ENV_TYPES.PREKEY_BUNDLE) {
-            console.warn(envelope, ciphertext);
+            console.warn(ciphertext.toString("base64"));
             return await this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address);
         }
         throw new Error("Unknown message type");
