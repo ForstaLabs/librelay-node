@@ -105,7 +105,7 @@ function WebSocketResource(socket, opts) {
     };
 
     socket.onmessage = function(socketMessage) {
-        const blob = new Uint8Array(socketMessage.data);
+        const blob = Buffer.from(socketMessage.data);
         const message = protobufs.WebSocketMessage.decode(blob);
         if (message.type === MSG_TYPES.REQUEST) {
             handleRequest(new IncomingWebSocketRequest({
@@ -125,7 +125,6 @@ function WebSocketResource(socket, opts) {
                 if (response.status >= 200 && response.status < 300) {
                     callback = request.success;
                 }
-
                 if (typeof callback === 'function') {
                     callback(response.message, response.status, request);
                 }

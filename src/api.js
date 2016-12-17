@@ -246,6 +246,7 @@ var RelayServer = (function() {
                 if (res.devices.constructor !== Array) {
                     throw new Error("Invalid response");
                 }
+                // XXX I don't think we need a lib for this.
                 res.identityKey = StringView.base64ToBytes(res.identityKey);
                 res.devices.forEach(function(device) {
                     if ( !validateResponse(device, {signedPreKey: 'object', preKey: 'object'}) ||

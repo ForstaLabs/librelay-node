@@ -133,14 +133,13 @@ class MessageReceiver extends EventEmitter {
 
     async decrypt(envelope, ciphertext) {
         const address = new libsignal.SignalProtocolAddress(envelope.source,
-                                                          envelope.sourceDevice);
+                                                            envelope.sourceDevice);
         const sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
         if (envelope.type === ENV_TYPES.CIPHERTEXT) {
             console.warn(envelope, ciphertext);
             throw new Error('asdf');
             return this.unpad(await sessionCipher.decryptWhisperMessage(ciphertext));
         } else if (envelope.type === ENV_TYPES.PREKEY_BUNDLE) {
-            console.warn(ciphertext.toString("base64"));
             return await this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address);
         }
         throw new Error("Unknown message type");
@@ -160,17 +159,14 @@ class MessageReceiver extends EventEmitter {
 
                 // create an error that the UI will pick up and ask the
                 // user if they want to re-negotiate
-                throw new errors.IncomingIdentityKeyError(
-                    address.toString(),
-                    ciphertext.toArrayBuffer(),
-                    e.identityKey
-                );
+                throw new errors.IncomingIdentityKeyError(address.toString(), ciphertext, e.identityKey);
             }
             throw e;
         }
     }
 
     async handleSentMessage(destination, timestamp, msgbuf, expire) {
+        // XXX port to new protobufjs api
         if ((msgbuf.flags & protobufs.DataMessage.Flags.END_SESSION) ==
             protobufs.DataMessage.Flags.END_SESSION) {
             await this.handleEndSession(destination);
@@ -186,6 +182,7 @@ class MessageReceiver extends EventEmitter {
 
     async handleDataMessage(envelope, msgbuf) {
         var encodedNumber = envelope.source + '.' + envelope.sourceDevice;
+        // XXX port to new protobufjs api
         if ((msgbuf.flags & protobufs.DataMessage.Flags.END_SESSION) ==
             protobufs.DataMessage.Flags.END_SESSION) {
             await this.handleEndSession(envelope.source);
@@ -321,10 +318,7 @@ class MessageReceiver extends EventEmitter {
 
     handleAttachment(attachment) {
         function decryptAttachment(encrypted) {
-            return crypto.decryptAttachment(
-                encrypted,
-                attachment.key.toArrayBuffer()
-            );
+            return crypto.decryptAttachment(encrypted, attachment.key);
         }
 
         function updateAttachment(data) {
@@ -344,8 +338,8 @@ class MessageReceiver extends EventEmitter {
             var finalMessage = protobufs.DataMessage.decode(plaintext);
 
             var p = Promise.resolve();
-            if ((finalMessage.flags & protobufs.DataMessage.Flags.END_SESSION)
-                    == protobufs.DataMessage.Flags.END_SESSION &&
+            if ((finalMessage.flags & protobufs.DataMessage.lookup('Flags').values.END_SESSION)
+                    == protobufs.DataMessage.lookup('Flags').values.END_SESSION &&
                     finalMessage.sync !== null) {
                     var number = address.getName();
                     p = this.handleEndSession(number);
@@ -381,12 +375,12 @@ class MessageReceiver extends EventEmitter {
             decrypted.expireTimer = 0;
         }
 
-        if (decrypted.flags & protobufs.DataMessage.Flags.END_SESSION) {
+        if (decrypted.flags & protobufs.DataMessage.options('Flags').values.END_SESSION) {
             decrypted.body = null;
             decrypted.attachments = [];
             decrypted.group = null;
             return Promise.resolve(decrypted);
-        } else if (decrypted.flags & protobufs.DataMessage.Flags.EXPIRATION_TIMER_UPDATE ) {
+        } else if (decrypted.flags & protobufs.DataMessage.options('Flags').values.EXPIRATION_TIMER_UPDATE) {
             decrypted.body = null;
             decrypted.attachments = [];
         } else if (decrypted.flags != 0) {
