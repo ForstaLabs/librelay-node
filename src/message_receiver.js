@@ -16,6 +16,7 @@ const storage = require('./storage');
 
 const ENV_TYPES = protobufs.Envelope.lookup('Type').values;
 const GROUPCTX_TYPES = protobufs.GroupContext.lookup('Type').values;
+const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
 
 
 class MessageReceiver extends EventEmitter {
@@ -95,6 +96,9 @@ class MessageReceiver extends EventEmitter {
         }
         request.respond(200, 'OK');
         const envelope = protobufs.Envelope.decode(envbuf);
+        console.log();
+        console.log("ENVELOPE", envelope);
+        console.log();
         if (envelope.type === ENV_TYPES.RECEIPT) {
             this.emit('receipt', envelope);
         }
@@ -166,9 +170,7 @@ class MessageReceiver extends EventEmitter {
     }
 
     async handleSentMessage(destination, timestamp, msgbuf, expire) {
-        // XXX port to new protobufjs api
-        if ((msgbuf.flags & protobufs.DataMessage.Flags.END_SESSION) ==
-            protobufs.DataMessage.Flags.END_SESSION) {
+        if ((msgbuf.flags & DATA_FLAGS.END_SESSION) == DATA_FLAGS.END_SESSION) {
             await this.handleEndSession(destination);
         }
         const message = await this.processDecrypted(msgbuf, this.number);
@@ -182,9 +184,7 @@ class MessageReceiver extends EventEmitter {
 
     async handleDataMessage(envelope, msgbuf) {
         var encodedNumber = envelope.source + '.' + envelope.sourceDevice;
-        // XXX port to new protobufjs api
-        if ((msgbuf.flags & protobufs.DataMessage.Flags.END_SESSION) ==
-            protobufs.DataMessage.Flags.END_SESSION) {
+        if ((msgbuf.flags & DATA_FLAGS.END_SESSION) == DATA_FLAGS.END_SESSION) {
             await this.handleEndSession(envelope.source);
         }
         const message = await this.processDecrypted(msgbuf, envelope.source);
@@ -338,9 +338,8 @@ class MessageReceiver extends EventEmitter {
             var finalMessage = protobufs.DataMessage.decode(plaintext);
 
             var p = Promise.resolve();
-            if ((finalMessage.flags & protobufs.DataMessage.lookup('Flags').values.END_SESSION)
-                    == protobufs.DataMessage.lookup('Flags').values.END_SESSION &&
-                    finalMessage.sync !== null) {
+            if ((finalMessage.flags & DATA_FLAGS.END_SESSION) == DATA_FLAGS.END_SESSION &&
+                finalMessage.sync !== null) {
                     var number = address.getName();
                     p = this.handleEndSession(number);
             }
@@ -375,12 +374,12 @@ class MessageReceiver extends EventEmitter {
             decrypted.expireTimer = 0;
         }
 
-        if (decrypted.flags & protobufs.DataMessage.options('Flags').values.END_SESSION) {
+        if (decrypted.flags & DATA_FLAGS.END_SESSION) {
             decrypted.body = null;
             decrypted.attachments = [];
             decrypted.group = null;
             return Promise.resolve(decrypted);
-        } else if (decrypted.flags & protobufs.DataMessage.options('Flags').values.EXPIRATION_TIMER_UPDATE) {
+        } else if (decrypted.flags & DATA_FLAGS.EXPIRATION_TIMER_UPDATE) {
             decrypted.body = null;
             decrypted.attachments = [];
         } else if (decrypted.flags != 0) {

@@ -33,25 +33,21 @@ module.exports = {
         return await libsignal.crypto.decrypt(aes_key, ciphertext, iv);
     },
 
-    decryptAttachment: function(encryptedBin, keys) {
+    decryptAttachment: async function(encryptedBin, keys) {
         if (keys.byteLength != 64) {
             throw new Error("Got invalid length attachment keys");
         }
         if (encryptedBin.byteLength < 16 + 32) {
             throw new Error("Got invalid length attachment");
         }
-
         var aes_key = keys.slice(0, 32);
         var mac_key = keys.slice(32, 64);
-
         var iv = encryptedBin.slice(0, 16);
         var ciphertext = encryptedBin.slice(16, encryptedBin.byteLength - 32);
         var ivAndCiphertext = encryptedBin.slice(0, encryptedBin.byteLength - 32);
         var mac = encryptedBin.slice(encryptedBin.byteLength - 32, encryptedBin.byteLength);
-
-        return libsignal.crypto.verifyMAC(ivAndCiphertext, mac_key, mac, 32).then(function() {
-            return libsignal.crypto.decrypt(aes_key, ciphertext, iv);
-        });
+        await libsignal.crypto.verifyMAC(ivAndCiphertext, mac_key, mac, 32);
+        return libsignal.crypto.decrypt(aes_key, ciphertext, iv);
     },
 
     encryptAttachment: function(plaintext, keys, iv) {

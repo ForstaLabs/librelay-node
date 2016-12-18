@@ -12,22 +12,6 @@ const models = require('./models');
 const storage = require('./storage.js');
 
 
-function equalBuffers(ab1, ab2) {
-    if (!(ab1 instanceof Buffer && ab2 instanceof Buffer)) {
-        throw new Error("Invalid types");
-    }
-    if (ab1.byteLength !== ab2.byteLength) {
-        return false;
-    }
-    for (var i = 0; i < ab1.byteLength; ++i) {
-        if (ab1[i] !== ab2[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-
 function RelayProtocolStore() {}
 
 RelayProtocolStore.prototype = {
@@ -36,8 +20,8 @@ RelayProtocolStore.prototype = {
 
     getIdentityKeyPair: async function() {
         return {
-            pubKey: storage.get_arraybuffer('identityKey.pub'),
-            privKey: storage.get_arraybuffer('identityKey.priv')
+            pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
+            privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
         }
     },
 
@@ -113,6 +97,7 @@ RelayProtocolStore.prototype = {
             throw new Error("Tried to get session for undefined/null number");
         }
         const session = new models.Session({id: encodedNumber});
+        console.log("XXX SESSION LOADING IS BROKEN!!!!");
         return undefined; // XXX FUCK THIS
         try {
             await session.fetch();
@@ -130,7 +115,7 @@ RelayProtocolStore.prototype = {
         const number = helpers.unencodeNumber(encodedNumber)[0];
         const deviceId = parseInt(helpers.unencodeNumber(encodedNumber)[1]);
         const session = new models.Session({id: encodedNumber});
-        console.log("XXX Skipping session save");
+        console.log("XXX Skipping session save THIS NEEDS TO HAPPEN");
         return; //XXX
         try {
             await session.fetch();
@@ -210,8 +195,8 @@ RelayProtocolStore.prototype = {
         return new Promise(function(resolve) {
             var identityKey = new models.IdentityKey({id: number});
             identityKey.fetch().always(function() {
-                var oldpublicKey = identityKey.get('publicKey');
-                if (!oldpublicKey || equalBuffers(oldpublicKey, publicKey)) {
+                var oldpublicKey = Buffer.from(identityKey.get('publicKey'), 'base64');
+                if (!oldpublicKey || oldpublicKey.equals(publicKey)) {
                     resolve(true);
                 } else if (!storage.get_item('safety-numbers-approval', true)) {
                     this.removeIdentityKey(identifier).then(function() {
@@ -235,7 +220,7 @@ RelayProtocolStore.prototype = {
         const number = helpers.unencodeNumber(identifier)[0];
         const identityKey = new models.IdentityKey({id: number});
         await identityKey.fetch();
-        return storage.array_buffe_decode(identityKey.get('publicKey'));
+        return Buffer.from(identityKey.get('publicKey'), 'base64');
     },
 
     saveIdentity: async function(identifier, publicKey) {
@@ -250,14 +235,14 @@ RelayProtocolStore.prototype = {
         try {
             await identityKey.fetch();
         } catch(e) {} // not found
-        const oldpublicKey = identityKey.get('publicKey');
+        const oldpublicKey = Buffer.from(identityKey.get('publicKey'), 'base64');
         if (!oldpublicKey) {
             // Lookup failed, or the current key was removed, so save this one.
             await identityKey.save({
                 publicKey: publicKey.toString('base64')
             });
         } else {
-            if (!equalArrayBuffers(oldpublicKey, publicKey)) {
+            if (!oldpublicKey.equals(publicKey)) {
                 console.log("WARNING: Saving over identity key:", identifier);
                 //reject(new Error("Attempted to overwrite a different identity key"));
                 await identityKey.save({
