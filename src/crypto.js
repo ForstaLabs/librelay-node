@@ -6,14 +6,11 @@
 
 const libsignal = require('libsignal');
 
-/* TODO: Several of the libsignal crypto apis can be non-async now based on nodejs crypto
- * functions.  Eval for perf gains..
- */
 
 module.exports = {
 
     // Decrypts message into a raw string
-    decryptWebsocketMessage: async function(message, signaling_key) {
+    decryptWebsocketMessage: function(message, signaling_key) {
         if (signaling_key.byteLength != 52) {
             throw new Error("Got invalid length signaling_key");
         }
@@ -29,11 +26,11 @@ module.exports = {
         var ciphertext = message.slice(1 + 16, message.byteLength - 10);
         var ivAndCiphertext = message.slice(0, message.byteLength - 10);
         var mac = message.slice(message.byteLength - 10, message.byteLength);
-        await libsignal.crypto.verifyMAC(ivAndCiphertext, mac_key, mac, 10);
-        return await libsignal.crypto.decrypt(aes_key, ciphertext, iv);
+        libsignal.crypto.verifyMAC(ivAndCiphertext, mac_key, mac, 10);
+        return libsignal.crypto.decrypt(aes_key, ciphertext, iv);
     },
 
-    decryptAttachment: async function(encryptedBin, keys) {
+    decryptAttachment: function(encryptedBin, keys) {
         if (keys.byteLength != 64) {
             throw new Error("Got invalid length attachment keys");
         }
@@ -46,7 +43,7 @@ module.exports = {
         var ciphertext = encryptedBin.slice(16, encryptedBin.byteLength - 32);
         var ivAndCiphertext = encryptedBin.slice(0, encryptedBin.byteLength - 32);
         var mac = encryptedBin.slice(encryptedBin.byteLength - 32, encryptedBin.byteLength);
-        await libsignal.crypto.verifyMAC(ivAndCiphertext, mac_key, mac, 32);
+        libsignal.crypto.verifyMAC(ivAndCiphertext, mac_key, mac, 32);
         return libsignal.crypto.decrypt(aes_key, ciphertext, iv);
     },
 
@@ -60,17 +57,15 @@ module.exports = {
         var aes_key = keys.slice(0, 32);
         var mac_key = keys.slice(32, 64);
 
-        return libsignal.crypto.encrypt(aes_key, plaintext, iv).then(function(ciphertext) {
-            var ivAndCiphertext = new Uint8Array(16 + ciphertext.byteLength);
-            ivAndCiphertext.set(new Uint8Array(iv));
-            ivAndCiphertext.set(new Uint8Array(ciphertext), 16);
+        const ciphertext = libsignal.crypto.encrypt(aes_key, plaintext, iv);
+        var ivAndCiphertext = new Uint8Array(16 + ciphertext.byteLength);
+        ivAndCiphertext.set(new Uint8Array(iv));
+        ivAndCiphertext.set(new Uint8Array(ciphertext), 16);
 
-            return libsignal.crypto.calculateMAC(mac_key, ivAndCiphertext.buffer).then(function(mac) {
-                var encryptedBin = new Uint8Array(16 + ciphertext.byteLength + 32);
-                encryptedBin.set(ivAndCiphertext);
-                encryptedBin.set(new Uint8Array(mac), 16 + ciphertext.byteLength);
-                return encryptedBin.buffer;
-            });
-        });
+        const mac = libsignal.crypto.calculateMAC(mac_key, ivAndCiphertext.buffer);
+        var encryptedBin = new Uint8Array(16 + ciphertext.byteLength + 32);
+        encryptedBin.set(ivAndCiphertext);
+        encryptedBin.set(new Uint8Array(mac), 16 + ciphertext.byteLength);
+        return encryptedBin.buffer;
     }
 };

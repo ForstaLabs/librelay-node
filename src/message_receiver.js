@@ -85,11 +85,11 @@ class MessageReceiver extends EventEmitter {
         await this._wait;
     }
 
-    async handleRequest(request) {
+    handleRequest(request) {
         let envbuf;
         try {
-            envbuf = await crypto.decryptWebsocketMessage(Buffer.from(request.body),
-                                                          this.signalingKey);
+            envbuf = crypto.decryptWebsocketMessage(Buffer.from(request.body),
+                                                    this.signalingKey);
         } catch(e) {
             request.respond(500, 'Bad encrypted websocket message');
             throw e;
@@ -317,6 +317,7 @@ class MessageReceiver extends EventEmitter {
     }
 
     handleAttachment(attachment) {
+        throw new Error('not ported, async /await refactor');
         function decryptAttachment(encrypted) {
             return crypto.decryptAttachment(encrypted, attachment.key);
         }
@@ -334,19 +335,17 @@ class MessageReceiver extends EventEmitter {
         var address = libsignal.SignalProtocolAddress.fromString(from);
         var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
         console.log('retrying prekey whisper message');
-        return this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address).then(function(plaintext) {
-            var finalMessage = protobufs.DataMessage.decode(plaintext);
+        const plaintext = this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address);
+        var finalMessage = protobufs.DataMessage.decode(plaintext);
 
-            var p = Promise.resolve();
-            if ((finalMessage.flags & DATA_FLAGS.END_SESSION) == DATA_FLAGS.END_SESSION &&
-                finalMessage.sync !== null) {
-                    var number = address.getName();
-                    p = this.handleEndSession(number);
-            }
+        var p = Promise.resolve();
+        if ((finalMessage.flags & DATA_FLAGS.END_SESSION) == DATA_FLAGS.END_SESSION &&
+            finalMessage.sync !== null) {
+            p = this.handleEndSession(address.getName());
+        }
 
-            return p.then(function() {
-                return this.processDecrypted(finalMessage);
-            }.bind(this));
+        return p.then(function() {
+            return this.processDecrypted(finalMessage);
         }.bind(this));
     }
 

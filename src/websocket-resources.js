@@ -6,7 +6,6 @@
 
 const Long = require('long');
 const crypto = require('crypto');
-const libsignal = require('libsignal');
 const protobufs = require('./protobufs');
 
 /*

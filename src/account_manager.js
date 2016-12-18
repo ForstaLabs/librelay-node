@@ -30,7 +30,7 @@ class AccountManager extends EventEmitter {
     }
 
     async registerSingleDevice(number, verificationCode) {
-        const identityKeyPair = await libsignal.KeyHelper.generateIdentityKeyPair();
+        const identityKeyPair = libsignal.KeyHelper.generateIdentityKeyPair();
         await this.createAccount(number, verificationCode, identityKeyPair);
         const keys = await this.generateKeys(100);
         await this.server.registerKeys(keys);
@@ -104,21 +104,9 @@ class AccountManager extends EventEmitter {
                                                    password, signalingKey,
                                                    registrationId, deviceName);
         await storage.protocol.clearSessionStore();
-        storage.remove('identityKey');
-        storage.remove('signaling_key');
-        storage.remove('password');
-        storage.remove('registrationId');
         storage.remove('number_id');
         storage.remove('device_name');
-        storage.remove('regionCode');
 
-        // update our own identity key, which may have changed
-        // if we're relinking after a reinstall on the master device
-        try {
-            await storage.protocol.removeIdentityKey(number);
-        } catch(e) {
-            console.log("WARNING: Ignoring removeIdentityKey error");
-        }
         await storage.protocol.saveIdentity(number, identityKeyPair.pubKey);
 
         storage.put_item('identityKey.pub', identityKeyPair.pubKey.toString('base64'));
@@ -126,8 +114,6 @@ class AccountManager extends EventEmitter {
         storage.put_item('signaling_key', signalingKey.toString('base64'));
         storage.put_item('password', password);
         storage.put_item('registrationId', registrationId);
-
-        console.log("SetNumberAndDeviceId", number, resp.deviceId, deviceName);
         storage.user.setNumberAndDeviceId(number, resp.deviceId || 1, deviceName);
         //storage.put_item('regionCode', libphonenumber.util.getRegionCodeForNumber(number));
         storage.put_item('regionCode', 'ZZ'); // XXX Do we care?
@@ -138,43 +124,37 @@ class AccountManager extends EventEmitter {
     async generateKeys(count) {
         var startId = storage.get_item('maxPreKeyId', 1);
         var signedKeyId = storage.get_item('signedKeyId', 1);
-
         if (typeof startId != 'number') {
             throw new Error(`Invalid maxPreKeyId: ${startId} ${typeof startId}`);
         }
         if (typeof signedKeyId != 'number') {
             throw new Error(`Invalid signedKeyId: ${signedKeyId} ${typeof signedKeyId}`);
         }
-
         var identityKey = {
             pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
             privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
         }
-        console.log('xxxxxxx', identityKey);
         var result = {
             preKeys: [],
             identityKey: identityKey.pubKey
         };
-
         for (var keyId = startId; keyId < startId+count; ++keyId) {
             console.log("Generating key:", keyId);
-            let k = await libsignal.KeyHelper.generatePreKey(keyId);
-            storage.protocol.storePreKey(k.keyId, k.keyPair);
+            let k = libsignal.KeyHelper.generatePreKey(keyId);
+            await storage.protocol.storePreKey(k.keyId, k.keyPair);
             result.preKeys.push({
-                keyId     : k.keyId,
-                publicKey : k.keyPair.pubKey
+                keyId: k.keyId,
+                publicKey: k.keyPair.pubKey
             });
         }
-
-        const spk = await libsignal.KeyHelper.generateSignedPreKey(identityKey, signedKeyId);
-        storage.protocol.storeSignedPreKey(spk.keyId, spk.keyPair);
+        const spk = libsignal.KeyHelper.generateSignedPreKey(identityKey, signedKeyId);
+        await storage.protocol.storeSignedPreKey(spk.keyId, spk.keyPair);
         result.signedPreKey = {
             keyId     : spk.keyId,
             publicKey : spk.keyPair.pubKey,
             signature : spk.signature
         };
-
-        storage.protocol.removeSignedPreKey(signedKeyId - 2);
+        await storage.protocol.removeSignedPreKey(signedKeyId - 2);
         storage.put_item('maxPreKeyId', startId + count);
         storage.put_item('signedKeyId', signedKeyId + 1);
         return result;

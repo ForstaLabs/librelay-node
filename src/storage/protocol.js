@@ -235,16 +235,15 @@ RelayProtocolStore.prototype = {
         try {
             await identityKey.fetch();
         } catch(e) {} // not found
-        const oldpublicKey = Buffer.from(identityKey.get('publicKey'), 'base64');
+        const oldpublicKey = identityKey.get('publicKey');
         if (!oldpublicKey) {
-            // Lookup failed, or the current key was removed, so save this one.
+            console.log("Saving new identity key:", identifier);
             await identityKey.save({
                 publicKey: publicKey.toString('base64')
             });
         } else {
-            if (!oldpublicKey.equals(publicKey)) {
+            if (!Buffer.from(oldpublicKey, 'base64').equals(publicKey)) {
                 console.log("WARNING: Saving over identity key:", identifier);
-                //reject(new Error("Attempted to overwrite a different identity key"));
                 await identityKey.save({
                     publicKey: publicKey.toString('base64')
                 });
