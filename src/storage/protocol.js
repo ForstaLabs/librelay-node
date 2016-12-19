@@ -86,8 +86,6 @@ class RelayProtocolStore {
             throw new Error("Tried to get session for undefined/null number");
         }
         const session = new models.Session({id: encodedNumber});
-        console.log("XXX SESSION LOADING IS BROKEN!!!!");
-        return undefined; // XXX FUCK THIS
         try {
             await session.fetch();
         } catch(e) {
@@ -104,8 +102,6 @@ class RelayProtocolStore {
         const number = helpers.unencodeNumber(encodedNumber)[0];
         const deviceId = parseInt(helpers.unencodeNumber(encodedNumber)[1]);
         const session = new models.Session({id: encodedNumber});
-        console.log("XXX Skipping session save THIS NEEDS TO HAPPEN");
-        return; //XXX
         try {
             await session.fetch();
         } catch(e) {
