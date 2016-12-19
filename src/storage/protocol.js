@@ -3,34 +3,27 @@
  */
 'use strict';
 
-const Backbone = require('./backbone-localstorage.js');
-const Database = require('./database.js');
-const Deferred = require('jquery-deferred').Deferred;
-const _ = require('underscore');
 const helpers = require('../helpers.js');
 const models = require('./models');
 const storage = require('./storage.js');
 
 
-function RelayProtocolStore() {}
 
-RelayProtocolStore.prototype = {
+class RelayProtocolStore {
 
-    constructor: RelayProtocolStore,
-
-    getIdentityKeyPair: async function() {
+    async getIdentityKeyPair() {
         return {
             pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
             privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
         }
-    },
+    }
 
-    getLocalRegistrationId: function() {
+    getLocalRegistrationId() {
         return storage.get_item('registrationId');
-    },
+    }
 
     /* Returns a prekeypair object or undefined */
-    loadPreKey: async function(keyId) {
+    async loadPreKey(keyId) {
         var prekey = new models.PreKey({id: keyId});
         try {
             await prekey.fetch();
@@ -41,18 +34,18 @@ RelayProtocolStore.prototype = {
             pubKey: Buffer.from(prekey.get('publicKey'), 'base64'),
             privKey: Buffer.from(prekey.get('privateKey'), 'base64')
         };
-    },
+    }
 
-    storePreKey: async function(keyId, keyPair) {
+    async storePreKey(keyId, keyPair) {
         var prekey = new models.PreKey({
             id         : keyId,
             publicKey  : keyPair.pubKey.toString('base64'),
             privateKey : keyPair.privKey.toString('base64')
         });
         await prekey.save();
-    },
+    }
 
-    removePreKey: function(keyId) {
+    async removePreKey(keyId) {
         const prekey = new models.PreKey({id: keyId});
 
         // XXX This is suspect...
@@ -66,33 +59,33 @@ RelayProtocolStore.prototype = {
                 resolve();
             });
         });
-    },
+    }
 
     /* Returns a signed keypair object or undefined */
-    loadSignedPreKey: async function(keyId) {
+    async loadSignedPreKey(keyId) {
         const prekey = new models.SignedPreKey({id: keyId});
         await prekey.fetch();
         return {
             pubKey: Buffer.from(prekey.get('publicKey'), 'base64'),
             privKey: Buffer.from(prekey.get('privateKey'), 'base64')
         };
-    },
+    }
 
-    storeSignedPreKey: async function(keyId, keyPair) {
+    async storeSignedPreKey(keyId, keyPair) {
         const prekey = new models.SignedPreKey({
             id: keyId,
             publicKey: keyPair.pubKey.toString('base64'),
             privateKey: keyPair.privKey.toString('base64')
         });
         await prekey.save();
-    },
+    }
 
-    removeSignedPreKey: async function(keyId) {
+    async removeSignedPreKey(keyId) {
         const prekey = new models.SignedPreKey({id: keyId});
         await prekey.destroy();
-    },
+    }
 
-    loadSession: async function(encodedNumber) {
+    async loadSession(encodedNumber) {
         if (encodedNumber === null || encodedNumber === undefined) {
             throw new Error("Tried to get session for undefined/null number");
         }
@@ -106,9 +99,9 @@ RelayProtocolStore.prototype = {
             return;
         }
         return session.get('record');
-    },
+    }
 
-    storeSession: async function(encodedNumber, record) {
+    async storeSession(encodedNumber, record) {
         if (encodedNumber === null || encodedNumber === undefined) {
             throw new Error("Tried to put session for undefined/null number");
         }
@@ -127,27 +120,27 @@ RelayProtocolStore.prototype = {
             deviceId: deviceId,
             number: number
         });
-    },
+    }
 
-    getDeviceIds: async function(number) {
+    async getDeviceIds(number) {
         if (number === null || number === undefined) {
             throw new Error("Tried to get device ids for undefined/null number");
         }
         const sessions = new models.SessionCollection();
         await sessions.fetchSessionsForNumber(number);
         return sessions.pluck('deviceId');
-    },
+    }
 
-    removeSession: function(encodedNumber) {
+    removeSession(encodedNumber) {
         return new Promise(function(resolve) {
             var session = new models.Session({id: encodedNumber});
             session.fetch().then(function() {
                 session.destroy().then(resolve);
             });
         });
-    },
+    }
 
-    removeAllSessions: function(number) {
+    removeAllSessions(number) {
         if (number === null || number === undefined) {
             throw new Error("Tried to remove sessions for undefined/null number");
         }
@@ -163,9 +156,9 @@ RelayProtocolStore.prototype = {
                 Promise.all(promises).then(resolve);
             });
         });
-    },
+    }
 
-    clearSessionStore: function() {
+    clearSessionStore() {
         return new Promise(function(resolve) {
             var sessions = new models.SessionCollection();
             if (sessions.id) {
@@ -179,15 +172,14 @@ RelayProtocolStore.prototype = {
                 resolve();
             }
         });
+    }
 
-    },
-
-    isTrustedIdentity: async function(identifier, publicKey) {
+    async isTrustedIdentity(identifier, publicKey) {
         console.log("WARNING: Blind trust", identifier);
         return true;
-    },
+    }
 
-    isTrustedIdentity_orig: function(identifier, publicKey) {
+    isTrustedIdentity_orig(identifier, publicKey) {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to get identity key for undefined/null key");
         }
@@ -211,9 +203,9 @@ RelayProtocolStore.prototype = {
                 }
             }.bind(this));
         }.bind(this));
-    },
+    }
 
-    loadIdentityKey: async function(identifier) {
+    async loadIdentityKey(identifier) {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to get identity key for undefined/null key");
         }
@@ -221,9 +213,9 @@ RelayProtocolStore.prototype = {
         const identityKey = new models.IdentityKey({id: number});
         await identityKey.fetch();
         return Buffer.from(identityKey.get('publicKey'), 'base64');
-    },
+    }
 
-    saveIdentity: async function(identifier, publicKey) {
+    async saveIdentity(identifier, publicKey) {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to put identity key for undefined/null key");
         }
@@ -249,25 +241,25 @@ RelayProtocolStore.prototype = {
                 });
             }
         }
-    },
+    }
 
-    removeIdentityKey: async function(number) {
+    async removeIdentityKey(number) {
         var identityKey = new models.IdentityKey({id: number});
         await identityKey.fetch();
         identityKey.save({publicKey: undefined});
         await storage.protocol.removeAllSessions(number);
-    },
+    }
 
-    getGroup: async function(groupId) {
+    async getGroup(groupId) {
         if (groupId === null || groupId === undefined) {
             throw new Error("Tried to get group for undefined/null id");
         }
         const group = new models.Group({id: groupId});
         await group.fetch();
         return group.get('data');
-    },
+    }
 
-    putGroup: async function(groupId, value) {
+    async putGroup(groupId, value) {
         if (groupId === null || groupId === undefined) {
             throw new Error("Tried to put group key for undefined/null id");
         }
@@ -276,16 +268,15 @@ RelayProtocolStore.prototype = {
         }
         const group = new models.Group({id: groupId, data: value});
         await group.save();
-    },
+    }
 
-    removeGroup: async function(groupId) {
+    async removeGroup(groupId) {
         if (groupId === null || groupId === undefined) {
             throw new Error("Tried to remove group key for undefined/null id");
         }
         const group = new models.Group({id: groupId});
         await group.destroy();
-    },
-};
-_.extend(RelayProtocolStore.prototype, Backbone.Events);
+    }
+}
 
 module.exports = new RelayProtocolStore();

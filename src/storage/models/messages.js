@@ -4,10 +4,8 @@
 'use strict';
 
 const Backbone = require('../backbone-localstorage.js');
-const Database = require('../database.js');
 
 const Message = exports.Message = Backbone.Model.extend({
-    database  : Database,
     storeName : 'messages',
     localStorage: new Backbone.LocalStorage("messages_xxx"),
     initialize: function() {
@@ -480,7 +478,6 @@ const Message = exports.Message = Backbone.Model.extend({
 
 exports.MessageCollection = Backbone.Collection.extend({
     model      : Message,
-    database   : Database,
     localStorage: new Backbone.LocalStorage("messages_collections_xxx"),
     storeName  : 'messages',
     comparator : 'received_at',

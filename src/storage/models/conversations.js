@@ -5,11 +5,10 @@
 
 const Backbone = require('../backbone-localstorage.js');
 const messages = require('./messages.js')
-const Database = require('../database.js');
 const storage = require('../storage.js');
 
+
 const Conversation = exports.Conversation = Backbone.Model.extend({
-    database: Database,
     localStorage: new Backbone.LocalStorage("convos_xxx"),
     storeName: 'conversations',
     defaults: function() {
@@ -460,7 +459,6 @@ const Conversation = exports.Conversation = Backbone.Model.extend({
 });
 
 exports.ConversationCollection = Backbone.Collection.extend({
-    database: Database,
     storeName: 'conversations',
     localStorage: new Backbone.LocalStorage("convos_collections_xxx"),
     model: Conversation,
