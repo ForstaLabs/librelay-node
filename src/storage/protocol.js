@@ -47,18 +47,14 @@ class RelayProtocolStore {
 
     async removePreKey(keyId) {
         const prekey = new models.PreKey({id: keyId});
+        console.log("Removing PreKey:", keyId);
 
         // XXX This is suspect...
         console.log("XXX Skipping SUSPECT refresh thing!");  // maybe this should block on refresh after the del.
         //new Promise(function(resolve) {
         //    getAccountManager().refreshPreKeys().then(resolve);
         //});
-
-        return new Promise(function(resolve) {
-            prekey.destroy().then(function() {
-                resolve();
-            });
-        });
+        await prekey.destroy();
     }
 
     /* Returns a signed keypair object or undefined */
@@ -131,55 +127,65 @@ class RelayProtocolStore {
         return sessions.pluck('deviceId');
     }
 
-    removeSession(encodedNumber) {
-        return new Promise(function(resolve) {
-            var session = new models.Session({id: encodedNumber});
-            session.fetch().then(function() {
-                session.destroy().then(resolve);
-            });
-        });
+    async removeSession(encodedNumber) {
+        const session = new models.Session({id: encodedNumber});
+        await session.fetch();
+        await session.destroy();
     }
 
-    removeAllSessions(number) {
+    async removeAllSessions(number) {
         if (number === null || number === undefined) {
             throw new Error("Tried to remove sessions for undefined/null number");
         }
-        return new Promise(function(resolve) {
-            var sessions = new models.SessionCollection();
-            sessions.fetchSessionsForNumber(number).always(function() {
-                var promises = [];
-                while (sessions.length > 0) {
-                    promises.push(new Promise(function(res) {
-                        sessions.pop().destroy().then(res);
-                    }));
-                }
-                Promise.all(promises).then(resolve);
-            });
-        });
+        const sessions = new models.SessionCollection();
+        try {
+            await sessions.fetchSessionsForNumber(number);
+        } catch(e) {}  // XXX this is how it behaved in stock code.
+        var promises = [];
+        while (sessions.length > 0) {
+            promises.push(sessions.pop().destroy());
+        }
+        await Promise.all(promises);
     }
 
-    clearSessionStore() {
-        return new Promise(function(resolve) {
-            var sessions = new models.SessionCollection();
-            if (sessions.id) {
-                console.log("XXXX DOINGGIGNIG! session delete!!!!!!!");
-                sessions.sync('delete', sessions, {}).always(resolve);
-            } else {
-                console.log("XXXX skipping session delete!!!!!!!");
-                console.log("XXXX skipping session delete!!!!!!!");
-                console.log("XXXX skipping session delete!!!!!!!");
-                console.log("XXXX skipping session delete!!!!!!!");
-                resolve();
-            }
-        });
+    async clearSessionStore() {
+        const sessions = new models.SessionCollection();
+        if (sessions.id) {
+            console.log("XXXX DOINGGIGNIG! session delete!!!!!!!");
+            await sessions.sync('delete', sessions, {});
+        } else {
+            console.log("XXXX skipping session delete because no sessioncollection found?!!!!!!!");
+        }
     }
 
-    async isTrustedIdentity(identifier, publicKey) {
+    async isTrustedIdentity_dumb(identifier, publicKey) {
         console.log("WARNING: Blind trust", identifier);
         return true;
     }
 
-    isTrustedIdentity_orig(identifier, publicKey) {
+    /* Always trust remote identity. */
+    async isTrustedIdentity(identifier, publicKey) {
+        if (identifier === null || identifier === undefined) {
+            throw new Error("Tried to get identity key for undefined/null key");
+        }
+        const number = helpers.unencodeNumber(identifier)[0];
+        const identityKey = new models.IdentityKey({id: number});
+        await identityKey.fetch();
+        const oldpublicKey = Buffer.from(identityKey.get('publicKey'), 'base64');
+        if (!oldpublicKey || oldpublicKey.equals(publicKey)) {
+            console.log("XXXX HEY! We trust them!!!");
+            return true;
+        } else {
+            console.error("WARNING: Auto-accepting new remote identity key for:",
+                          identifier);
+            await this.removeIdentityKey(identifier);
+            await this.saveIdentity(identifier, publicKey);
+            this.trigger('keychange:' + identifier);
+            return true;
+        }
+    }
+
+    isTrustedIdentity_orig_orig(identifier, publicKey) {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to get identity key for undefined/null key");
         }

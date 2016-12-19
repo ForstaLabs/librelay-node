@@ -176,9 +176,6 @@ Backbone.LocalStorage.sync = Backbone.localSync = function(method, model, option
 
     var resp, errorMessage;
     var syncDfd = Deferred();
-    // XXX 
-    //console.log("SYNC method", method);
-    //console.log("SYNC model", model.id, model.localStorage);
 
     switch (method) {
       case "read":
