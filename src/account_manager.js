@@ -19,6 +19,7 @@ class AccountManager extends EventEmitter {
     constructor(url, username, password) {
         super();
         this.server = new api.RelayServer(url, username, password);
+        this.ourtIdentityKey = storage.protocol.getLocalIdentityKeyPair();
     }
 
     requestVoiceVerification(number) {
@@ -106,11 +107,8 @@ class AccountManager extends EventEmitter {
         await storage.protocol.clearSessionStore();
         storage.remove('number_id');
         storage.remove('device_name');
-
         await storage.protocol.saveIdentity(number, identityKeyPair.pubKey);
-
-        storage.put_item('identityKey.pub', identityKeyPair.pubKey.toString('base64'));
-        storage.put_item('identityKey.priv', identityKeyPair.privKey.toString('base64'));
+        storage.protocol.setLocalIdentityKeyPair(identityKeyPair);
         storage.put_item('signaling_key', signalingKey.toString('base64'));
         storage.put_item('password', password);
         storage.put_item('registrationId', registrationId);
@@ -122,19 +120,16 @@ class AccountManager extends EventEmitter {
     }
 
     async generateKeys(count) {
-        var startId = storage.get_item('maxPreKeyId', 1);
-        var signedKeyId = storage.get_item('signedKeyId', 1);
+        const startId = storage.get_item('maxPreKeyId', 1);
+        const signedKeyId = storage.get_item('signedKeyId', 1);
         if (typeof startId != 'number') {
             throw new Error(`Invalid maxPreKeyId: ${startId} ${typeof startId}`);
         }
         if (typeof signedKeyId != 'number') {
             throw new Error(`Invalid signedKeyId: ${signedKeyId} ${typeof signedKeyId}`);
         }
-        var identityKey = {
-            pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
-            privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
-        }
-        var result = {
+        const identityKey = storage.protocol.getLocalIdentityKeyPair();
+        const result = {
             preKeys: [],
             identityKey: identityKey.pubKey
         };

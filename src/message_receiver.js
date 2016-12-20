@@ -163,10 +163,7 @@ class MessageReceiver extends EventEmitter {
         if ((msgbuf.flags & DATA_FLAGS.END_SESSION) == DATA_FLAGS.END_SESSION) {
             await this.handleEndSession(envelope.source);
         }
-        console.log(2222, envelope);
-        console.log(3333, msgbuf);
         const message = await this.processDecrypted(msgbuf, envelope.source);
-        console.log(4444, message);
         this.emit('message', {
             source: envelope.source,
             timestamp: envelope.timestamp.toNumber(),
@@ -176,7 +173,6 @@ class MessageReceiver extends EventEmitter {
 
     async handleLegacyMessage(envelope) {
         const plaintext = await this.decrypt(envelope, envelope.legacyMessage);
-        console.log(1111, plaintext);
         var message = protobufs.DataMessage.decode(plaintext);
         return await this.handleDataMessage(envelope, message);
     }

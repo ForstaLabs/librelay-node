@@ -11,11 +11,16 @@ const storage = require('./storage.js');
 
 class RelayProtocolStore {
 
-    getIdentityKeyPair() {
+    getLocalIdentityKeyPair() {
         return {
             pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
             privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
         }
+    }
+
+    setLocalIdentityKeyPair(keys) {
+        storage.put_item('identityKey.pub'), keys.pubKey.toString('base64'),
+        storage.put_item('identityKey.priv'), keys.privKey.toString('base64')
     }
 
     getLocalRegistrationId() {
