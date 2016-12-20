@@ -219,14 +219,14 @@ var RelayServer = (function() {
             });
         },
 
-        getMyKeys: function(number, deviceId) {
-            return this.http({
-                call                : 'keys',
-                httpType            : 'GET',
-                validateResponse    : {count: 'number'}
-            }).then(function(res) {
-                return res.count;
-            });
+        getMyKeys: async function(number, deviceId) {
+            return (await this.http({
+                call: 'keys',
+                httpType: 'GET',
+                validateResponse: {
+                    count: 'number'
+                }
+            })).count;
         },
 
         getKeysForNumber: function(number, deviceId) {

@@ -11,7 +11,7 @@ const storage = require('./storage.js');
 
 class RelayProtocolStore {
 
-    async getIdentityKeyPair() {
+    getIdentityKeyPair() {
         return {
             pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
             privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
@@ -46,14 +46,8 @@ class RelayProtocolStore {
     }
 
     async removePreKey(keyId) {
-        const prekey = new models.PreKey({id: keyId});
         console.log("Removing PreKey:", keyId);
-
-        // XXX This is suspect...
-        console.log("XXX Skipping SUSPECT refresh thing!");  // maybe this should block on refresh after the del.
-        //new Promise(function(resolve) {
-        //    getAccountManager().refreshPreKeys().then(resolve);
-        //});
+        const prekey = new models.PreKey({id: keyId});
         await prekey.destroy();
     }
 
@@ -154,11 +148,6 @@ class RelayProtocolStore {
         }
     }
 
-    async isTrustedIdentity_dumb(identifier, publicKey) {
-        console.log("WARNING: Blind trust", identifier);
-        return true;
-    }
-
     /* Always trust remote identity. */
     async isTrustedIdentity(identifier, publicKey) {
         if (identifier === null || identifier === undefined) {
@@ -166,45 +155,23 @@ class RelayProtocolStore {
         }
         const number = helpers.unencodeNumber(identifier)[0];
         const identityKey = new models.IdentityKey({id: number});
-        await identityKey.fetch();
+        try {
+            await identityKey.fetch();
+        } catch(e) {
+            console.error("WARNING: Implicit trust of new peer:", identifier);
+            return true;
+        }
         const oldpublicKey = Buffer.from(identityKey.get('publicKey'), 'base64');
-        if (!oldpublicKey || oldpublicKey.equals(publicKey)) {
-            console.log("XXXX HEY! We trust them!!!");
+        if (oldpublicKey.equals(publicKey)) {
+            console.log("Known and trusted peer:", identifier);
             return true;
         } else {
-            console.error("WARNING: Auto-accepting new remote identity key for:",
+            console.error("WARNING: Auto-accepting new peer identity:",
                           identifier);
             await this.removeIdentityKey(identifier);
             await this.saveIdentity(identifier, publicKey);
-            this.trigger('keychange:' + identifier);
             return true;
         }
-    }
-
-    isTrustedIdentity_orig_orig(identifier, publicKey) {
-        if (identifier === null || identifier === undefined) {
-            throw new Error("Tried to get identity key for undefined/null key");
-        }
-        var number = helpers.unencodeNumber(identifier)[0];
-        return new Promise(function(resolve) {
-            var identityKey = new models.IdentityKey({id: number});
-            identityKey.fetch().always(function() {
-                var oldpublicKey = Buffer.from(identityKey.get('publicKey'), 'base64');
-                if (!oldpublicKey || oldpublicKey.equals(publicKey)) {
-                    resolve(true);
-                } else if (!storage.get_item('safety-numbers-approval', true)) {
-                    this.removeIdentityKey(identifier).then(function() {
-                        this.saveIdentity(identifier, publicKey).then(function() {
-                            console.log('Key changed for', identifier);
-                            this.trigger('keychange:' + identifier);
-                            resolve(true);
-                        }.bind(this));
-                    }.bind(this));
-                } else {
-                    resolve(false);
-                }
-            }.bind(this));
-        }.bind(this));
     }
 
     async loadIdentityKey(identifier) {

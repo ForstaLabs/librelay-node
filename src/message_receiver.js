@@ -96,9 +96,6 @@ class MessageReceiver extends EventEmitter {
         }
         request.respond(200, 'OK');
         const envelope = protobufs.Envelope.decode(envbuf);
-        console.log();
-        console.log("ENVELOPE", envelope);
-        console.log();
         if (envelope.type === ENV_TYPES.RECEIPT) {
             this.emit('receipt', envelope);
         }
@@ -119,20 +116,15 @@ class MessageReceiver extends EventEmitter {
         }
     }
 
-    unpad(paddedPlaintext) {
-        paddedPlaintext = new Uint8Array(paddedPlaintext);
-        let plaintext;
-        for (var i = paddedPlaintext.length - 1; i >= 0; i--) {
-            if (paddedPlaintext[i] == 0x80) {
-                plaintext = new Uint8Array(i);
-                plaintext.set(paddedPlaintext.subarray(0, i));
-                plaintext = plaintext.buffer;
-                break;
-            } else if (paddedPlaintext[i] !== 0x00) {
+    unpad(buf) {
+        for (let i = buf.byteLength - 1; i >= 0; i--) {
+            if (buf[i] == 0x80) {
+                return buf.slice(0, i);
+            } else if (buf[i] !== 0x00) {
                 throw new Error('Invalid padding');
             }
         }
-        return plaintext;
+        return buf // empty
     }
 
     async decrypt(envelope, ciphertext) {
@@ -144,29 +136,13 @@ class MessageReceiver extends EventEmitter {
             throw new Error('asdf');
             return this.unpad(await sessionCipher.decryptWhisperMessage(ciphertext));
         } else if (envelope.type === ENV_TYPES.PREKEY_BUNDLE) {
-            return await this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address);
+            return await this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher);
         }
         throw new Error("Unknown message type");
     }
 
-    async decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address) {
-        try {
-            return this.unpad(await sessionCipher.decryptPreKeyWhisperMessage(ciphertext));
-        } catch(e) {
-            if (e.message === 'Unknown identity key') {
-                //console.log("XXX ULTRA HACK ACCEPT IDENT BLINDLY!!!!!", address.toString(), e.identityKey);
-                //console.log("XXX ULTRA HACK ACCEPT IDENT BLINDLY!!!!!", address.toString(), e.identityKey);
-                //console.log("XXX ULTRA HACK ACCEPT IDENT BLINDLY!!!!!", address.toString(), e.identityKey);
-                //await storage.protocol.removeIdentityKey(address.toString());
-                //await storage.protocol.saveIdentity(e.identityKey);
-                //return this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address);
-
-                // create an error that the UI will pick up and ask the
-                // user if they want to re-negotiate
-                throw new errors.IncomingIdentityKeyError(address.toString(), ciphertext, e.identityKey);
-            }
-            throw e;
-        }
+    async decryptPreKeyWhisperMessage(ciphertext, sessionCipher) {
+        return this.unpad(await sessionCipher.decryptPreKeyWhisperMessage(ciphertext));
     }
 
     async handleSentMessage(destination, timestamp, msgbuf, expire) {
@@ -187,7 +163,10 @@ class MessageReceiver extends EventEmitter {
         if ((msgbuf.flags & DATA_FLAGS.END_SESSION) == DATA_FLAGS.END_SESSION) {
             await this.handleEndSession(envelope.source);
         }
+        console.log(2222, envelope);
+        console.log(3333, msgbuf);
         const message = await this.processDecrypted(msgbuf, envelope.source);
+        console.log(4444, message);
         this.emit('message', {
             source: envelope.source,
             timestamp: envelope.timestamp.toNumber(),
@@ -197,6 +176,7 @@ class MessageReceiver extends EventEmitter {
 
     async handleLegacyMessage(envelope) {
         const plaintext = await this.decrypt(envelope, envelope.legacyMessage);
+        console.log(1111, plaintext);
         var message = protobufs.DataMessage.decode(plaintext);
         return await this.handleDataMessage(envelope, message);
     }
