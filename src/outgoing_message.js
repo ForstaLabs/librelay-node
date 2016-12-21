@@ -34,6 +34,7 @@ OutgoingMessage.prototype = {
     },
     reloadDevicesAndSend: function(number, recurse) {
         return function() {
+            // XXX no longer async
             return textsecure.storage.protocol.getDeviceIds(number).then(function(deviceIds) {
                 if (deviceIds.length == 0) {
                     return this.registerError(number, "Got empty device list when loading device keys", null);
@@ -138,7 +139,7 @@ OutgoingMessage.prototype = {
                     p = this.removeDeviceIdsForNumber(number, error.response.extraDevices);
                 } else {
                     p = Promise.all(error.response.staleDevices.map(function(deviceId) {
-                        return ciphers[deviceId].closeOpenSessionForDevice();
+                        ciphers[deviceId].closeOpenSessionForDevice();
                     }));
                 }
 
@@ -188,11 +189,9 @@ OutgoingMessage.prototype = {
             return Promise.all(deviceIds.map(function(deviceId) {
                 var address = new libsignal.SignalProtocolAddress(number, deviceId);
                 var sessionCipher = new libsignal.SessionCipher(textsecure.storage.protocol, address);
-                return sessionCipher.hasOpenSession().then(function(hasSession) {
-                    if (!hasSession) {
-                        updateDevices.push(deviceId);
-                    }
-                });
+                if (!sessionCipher.hasOpenSession()) {
+                    updateDevices.push(deviceId);
+                }
             })).then(function() {
                 return updateDevices;
             });

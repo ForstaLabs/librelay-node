@@ -8,19 +8,27 @@ const models = require('./models');
 const storage = require('./storage.js');
 
 
-
 class RelayProtocolStore {
 
+    constructor() {
+        this._sessions = {};
+        this._sessions_by_number = {};
+    }
+
     getLocalIdentityKeyPair() {
-        return {
-            pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
-            privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
+        if (this._local_ident_key_pair === undefined) {
+            this._local_ident_key_pair = {
+                pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
+                privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
+            };
         }
+        return this._local_ident_key_pair;
     }
 
     setLocalIdentityKeyPair(keys) {
-        storage.put_item('identityKey.pub'), keys.pubKey.toString('base64'),
-        storage.put_item('identityKey.priv'), keys.privKey.toString('base64')
+        storage.put_item('identityKey.pub', keys.pubKey.toString('base64')),
+        storage.put_item('identityKey.priv', keys.privKey.toString('base64'))
+        this._local_ident_key_pair = keys;
     }
 
     getLocalRegistrationId() {
@@ -33,8 +41,10 @@ class RelayProtocolStore {
         try {
             await prekey.fetch();
         } catch(e) {
-            return undefined;
+            console.warn("Missing PreKey:", keyId);
+            return;
         }
+        console.log("Loaded PreKey:", keyId);
         return {
             pubKey: Buffer.from(prekey.get('publicKey'), 'base64'),
             privKey: Buffer.from(prekey.get('privateKey'), 'base64')
@@ -42,6 +52,7 @@ class RelayProtocolStore {
     }
 
     async storePreKey(keyId, keyPair) {
+        console.log("Storing PreKey:", keyId);
         var prekey = new models.PreKey({
             id         : keyId,
             publicKey  : keyPair.pubKey.toString('base64'),
@@ -53,13 +64,23 @@ class RelayProtocolStore {
     async removePreKey(keyId) {
         console.log("Removing PreKey:", keyId);
         const prekey = new models.PreKey({id: keyId});
-        await prekey.destroy();
+        try {
+            await prekey.destroy();
+        } catch(e) {
+            console.warn("Already removed PreKey:", keyId);
+        }
     }
 
     /* Returns a signed keypair object or undefined */
     async loadSignedPreKey(keyId) {
         const prekey = new models.SignedPreKey({id: keyId});
-        await prekey.fetch();
+        try {
+            await prekey.fetch();
+        } catch(e) {
+            console.warn("Missing SignedPreKey:", keyId);
+            return;
+        }
+        console.warn("Loaded SignedPreKey:", keyId);
         return {
             pubKey: Buffer.from(prekey.get('publicKey'), 'base64'),
             privKey: Buffer.from(prekey.get('privateKey'), 'base64')
@@ -80,77 +101,49 @@ class RelayProtocolStore {
         await prekey.destroy();
     }
 
-    async loadSession(encodedNumber) {
+    loadSession(encodedNumber) {
         if (encodedNumber === null || encodedNumber === undefined) {
             throw new Error("Tried to get session for undefined/null number");
         }
-        const session = new models.Session({id: encodedNumber});
-        try {
-            await session.fetch();
-        } catch(e) {
-            console.log(`WARNING: Session not found for: ${encodedNumber}`);
-            return;
-        }
-        return session.get('record');
+        return this._sessions[encodedNumber];
     }
 
-    async storeSession(encodedNumber, record) {
+    storeSession(encodedNumber, record) {
         if (encodedNumber === null || encodedNumber === undefined) {
             throw new Error("Tried to put session for undefined/null number");
         }
         const number = helpers.unencodeNumber(encodedNumber)[0];
-        const deviceId = parseInt(helpers.unencodeNumber(encodedNumber)[1]);
-        const session = new models.Session({id: encodedNumber});
-        try {
-            await session.fetch();
-        } catch(e) {
-            console.log(`WARNING: Storing new session: ${e}`);
+        this._sessions[encodedNumber] = record;
+        if (!this._sessions_by_number.hasOwnProperty(number)) {
+            this._sessions_by_number[number] = new Set();
         }
-        await session.save({
-            record: record,
-            deviceId: deviceId,
-            number: number
-        });
+        this._sessions_by_number[number].add(encodedNumber);
     }
 
-    async getDeviceIds(number) {
-        if (number === null || number === undefined) {
-            throw new Error("Tried to get device ids for undefined/null number");
+    removeSession(encodedNumber) {
+        if (!this._sessions.hasOwnProperty(encodedNumber)) {
+            throw new Error('Not a valid session');
         }
-        const sessions = new models.SessionCollection();
-        await sessions.fetchSessionsForNumber(number);
-        return sessions.pluck('deviceId');
+        const number = helpers.unencodeNumber(encodedNumber)[0];
+        this._sessions_by_number[number].delete(encodedNumber);
+        delete this._sessions[encodedNumber];
+        
     }
 
-    async removeSession(encodedNumber) {
-        const session = new models.Session({id: encodedNumber});
-        await session.fetch();
-        await session.destroy();
-    }
-
-    async removeAllSessions(number) {
+    removeAllSessions(number) {
         if (number === null || number === undefined) {
             throw new Error("Tried to remove sessions for undefined/null number");
         }
-        const sessions = new models.SessionCollection();
-        try {
-            await sessions.fetchSessionsForNumber(number);
-        } catch(e) {}  // XXX this is how it behaved in stock code.
-        var promises = [];
-        while (sessions.length > 0) {
-            promises.push(sessions.pop().destroy());
+        const idents = this._sessions_by_number[number];
+        for (const x of idents) {
+            delete this._sessions[x];
         }
-        await Promise.all(promises);
+        idents.clear();
     }
 
-    async clearSessionStore() {
-        const sessions = new models.SessionCollection();
-        if (sessions.id) {
-            console.log("XXXX DOINGGIGNIG! session delete!!!!!!!");
-            await sessions.sync('delete', sessions, {});
-        } else {
-            console.log("XXXX skipping session delete because no sessioncollection found?!!!!!!!");
-        }
+    clearSessionStore() {
+        this._sessions = {};
+        this._sessions_by_number = {};
     }
 
     /* Always trust remote identity. */
@@ -217,11 +210,19 @@ class RelayProtocolStore {
         }
     }
 
+    getDeviceIds(number) {
+        if (number === null || number === undefined) {
+            throw new Error("Tried to get device ids for undefined/null number");
+        }
+        const idents = this._sessions_by_number[number];
+        return Array.from(idents).map(x => helpers.unencodeNumber(x)[1]);
+    }
+
     async removeIdentityKey(number) {
         var identityKey = new models.IdentityKey({id: number});
         await identityKey.fetch();
         identityKey.save({publicKey: undefined});
-        await storage.protocol.removeAllSessions(number);
+        storage.protocol.removeAllSessions(number);
     }
 
     async getGroup(groupId) {

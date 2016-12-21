@@ -104,7 +104,7 @@ class AccountManager extends EventEmitter {
         const resp = await this.server.confirmCode(number, verificationCode,
                                                    password, signalingKey,
                                                    registrationId, deviceName);
-        await storage.protocol.clearSessionStore();
+        storage.protocol.clearSessionStore();
         storage.remove('number_id');
         storage.remove('device_name');
         await storage.protocol.saveIdentity(number, identityKeyPair.pubKey);

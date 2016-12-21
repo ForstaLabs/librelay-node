@@ -327,14 +327,13 @@ class MessageReceiver extends EventEmitter {
 
     handleEndSession(number) {
         console.log('got end session');
-        return storage.protocol.getDeviceIds(number).then(function(deviceIds) {
-            return Promise.all(deviceIds.map(function(deviceId) {
-                var address = new libsignal.SignalProtocolAddress(number, deviceId);
-                var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
-                console.log('closing session for', address.toString());
-                return sessionCipher.closeOpenSessionForDevice();
-            }));
-        });
+        const deviceIds = storage.protocol.getDeviceIds(number);
+        return Promise.all(deviceIds.map(function(deviceId) {
+            var address = new libsignal.SignalProtocolAddress(number, deviceId);
+            var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
+            console.log('closing session for', address.toString());
+            sessionCipher.closeOpenSessionForDevice();
+        }));
     }
 
     processDecrypted(decrypted, source) {

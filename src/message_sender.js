@@ -319,15 +319,14 @@ MessageSender.prototype = {
         proto.body = "TERMINATE";
         proto.flags = protobufs.DataMessage.Flags.END_SESSION;
         return this.sendIndividualProto(number, proto, timestamp).then(function(res) {
-            return storage.protocol.getDeviceIds(number).then(function(deviceIds) {
-                return Promise.all(deviceIds.map(function(deviceId) {
-                    var address = new libsignal.SignalProtocolAddress(number, deviceId);
-                    console.log('closing session for', address.toString());
-                    var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
-                    return sessionCipher.closeOpenSessionForDevice();
-                })).then(function() {
-                    return res;
-                });
+            const deviceIds = storage.protocol.getDeviceIds(number);
+            return Promise.all(deviceIds.map(function(deviceId) {
+                var address = new libsignal.SignalProtocolAddress(number, deviceId);
+                console.log('closing session for', address.toString());
+                var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
+                sessionCipher.closeOpenSessionForDevice();
+            })).then(function() {
+                return res;
             });
         });
     },

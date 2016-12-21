@@ -10,18 +10,6 @@ const SignedPreKey = Backbone.Model.extend({
     localStorage: new Backbone.LocalStorage("signedPreKeys")
 });
 
-const Session = Backbone.Model.extend({
-    localStorage: new Backbone.LocalStorage("sessions")
-});
-
-const SessionCollection = Backbone.Collection.extend({
-    localStorage: new Backbone.LocalStorage("sessions"),
-    model: Session,
-    fetchSessionsForNumber: function(number) {
-        return this.fetch({range: [number + '.1', number + '.' + ':']});
-    }
-});
-
 const IdentityKey = Backbone.Model.extend({
     localStorage: new Backbone.LocalStorage("identityKeys")
 });
@@ -34,8 +22,6 @@ const Group = Backbone.Model.extend({
 module.exports = {
     PreKey,
     SignedPreKey,
-    Session,
-    SessionCollection,
     IdentityKey,
     Group
 };
