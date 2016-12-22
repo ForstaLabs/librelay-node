@@ -80,9 +80,6 @@ extend(Backbone.LocalStorage.prototype, {
       model.set(model.idAttribute, model.id);
     }
     this.localStorage().setItem(this._itemName(model.id), this.serializer.serialize(model));
-    if (model.id === null || model.id === undefined) {
-        throw new Error("JM XXX model.id is not set.  maybe it is autoset by indexeddb?");
-    }
     this.records.push(model.id.toString());
     this.save();
     return this.find(model);
@@ -91,9 +88,6 @@ extend(Backbone.LocalStorage.prototype, {
   // Update a model by replacing its copy in `this.data`.
   update: function(model) {
     this.localStorage().setItem(this._itemName(model.id), this.serializer.serialize(model));
-    if (model.id === null || model.id === undefined) {
-        throw new Error("JM XXX model.id is not set.  maybe it is autoset by indexeddb?");
-    }
     var modelId = model.id.toString();
     if (!contains(this.records, modelId)) {
       this.records.push(modelId);
@@ -121,12 +115,7 @@ extend(Backbone.LocalStorage.prototype, {
   // Delete a model from `this.data`, returning it.
   destroy: function(model) {
     this.localStorage().removeItem(this._itemName(model.id));
-    if (model.id === null || model.id === undefined) {
-        console.log(model, this.data, this.records);
-        throw new Error("JM XXX model.id is not set.  maybe it is autoset by indexeddb?");
-    }
     var modelId = '' + model.id.toString();
-    //var modelId = model.id.toString(); // XXX some records during reg don't have id.. hmmmhhhh
     for (var i = 0, id; i < this.records.length; i++) {
       if (this.records[i] === modelId) {
         this.records.splice(i, 1);

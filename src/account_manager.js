@@ -19,7 +19,6 @@ class AccountManager extends EventEmitter {
     constructor(url, username, password) {
         super();
         this.server = new api.RelayServer(url, username, password);
-        this.ourtIdentityKey = storage.protocol.getLocalIdentityKeyPair();
     }
 
     requestVoiceVerification(number) {

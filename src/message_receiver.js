@@ -44,11 +44,9 @@ class MessageReceiver extends EventEmitter {
         if (this.socket && this.socket.readyState !== WebSocket.CLOSED) {
             this.socket.close();
         }
-        console.log('opening websocket', this.url);
         this.socket = this.server.getMessageSocket();
         this.socket.onclose = this.onclose.bind(this);
         this.socket.onerror = this.onerror.bind(this);
-        this.socket.onopen = this.onopen.bind(this);
         this.wsr = new WebSocketResource(this.socket, {
             handleRequest: this.handleRequest.bind(this),
             keepalive: { path: '/v1/keepalive', disconnect: true }
@@ -59,10 +57,6 @@ class MessageReceiver extends EventEmitter {
         this.socket.close(3000, 'called close');
     }
 
-    onopen() {
-        console.log('websocket open');
-    }
-
     onerror(error) {
         console.log('websocket error', error);
         this._wait_reject(error);
@@ -70,14 +64,7 @@ class MessageReceiver extends EventEmitter {
 
     onclose(ev) {
         console.log('websocket closed', ev.code, ev.reason || '');
-        if (ev.code === 3000) {
-            return;
-        }
         this._wait_resolve();
-        // XXX handle this externally.
-        // possible 403 or network issue. Make an request to confirm
-        //await this.server.getDevices(this.number);
-        //await this.connect();
     }
 
     /* Wait until error or close. */
@@ -133,7 +120,7 @@ class MessageReceiver extends EventEmitter {
         const sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
         if (envelope.type === ENV_TYPES.CIPHERTEXT) {
             console.warn(envelope, ciphertext);
-            throw new Error('asdf');
+            throw new Error('UNTESTED');
             return this.unpad(await sessionCipher.decryptWhisperMessage(ciphertext));
         } else if (envelope.type === ENV_TYPES.PREKEY_BUNDLE) {
             return await this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher);
@@ -215,7 +202,7 @@ class MessageReceiver extends EventEmitter {
         } else if (syncMessage.groups) {
             await this.handleGroups(syncMessage.groups);
         } else if (syncMessage.blocked) {
-            throw new Error("blocked handling not implemented"); // XXX Should it be?
+            throw new Error("blocked handling not implemented");
         } else if (syncMessage.request) {
             console.log('Got SyncMessage Request');
         } else if (syncMessage.read) {
