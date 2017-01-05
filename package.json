@@ -17,7 +17,7 @@
     "axios": "0.15.3",
     "backbone": "1.1.2",
     "jquery-deferred": "0.3.1",
-    "libsignal": "0.0.1",
+    "libsignal": "forstaathletics/libsignal-node",
     "long": "3.2.0",
     "node-localstorage": "1.3.0",
     "protobufjs": "6.2.0",
