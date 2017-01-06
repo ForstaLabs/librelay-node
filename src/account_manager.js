@@ -104,30 +104,29 @@ class AccountManager extends EventEmitter {
                                                    password, signalingKey,
                                                    registrationId, deviceName);
         storage.protocol.clearSessionStore();
-        storage.remove('number_id');
-        storage.remove('device_name');
+        await storage.remove('number_id');
+        await storage.remove('device_name');
         await storage.protocol.saveIdentity(number, identityKeyPair.pubKey);
-        storage.protocol.setLocalIdentityKeyPair(identityKeyPair);
-        storage.put_item('signaling_key', signalingKey.toString('base64'));
-        storage.put_item('password', password);
-        storage.put_item('registrationId', registrationId);
-        storage.user.setNumberAndDeviceId(number, resp.deviceId || 1, deviceName);
-        //storage.put_item('regionCode', libphonenumber.util.getRegionCodeForNumber(number));
-        storage.put_item('regionCode', 'ZZ'); // XXX Do we care?
-        this.server.setUsername(storage.get_item('number_id'));
+        await storage.protocol.setLocalIdentityKeyPair(identityKeyPair);
+        await storage.put_item('signaling_key', signalingKey.toString('base64'));
+        await storage.put_item('password', password);
+        await storage.put_item('registrationId', registrationId);
+        await storage.user.setNumberAndDeviceId(number, resp.deviceId || 1, deviceName);
+        await storage.put_item('regionCode', 'ZZ');
+        this.server.setUsername(await storage.get_item('number_id'));
         this.server.setPassword(password);
     }
 
     async generateKeys(count) {
-        const startId = storage.get_item('maxPreKeyId', 1);
-        const signedKeyId = storage.get_item('signedKeyId', 1);
+        const startId = await storage.get_item('maxPreKeyId', 1);
+        const signedKeyId = await storage.get_item('signedKeyId', 1);
         if (typeof startId != 'number') {
             throw new Error(`Invalid maxPreKeyId: ${startId} ${typeof startId}`);
         }
         if (typeof signedKeyId != 'number') {
             throw new Error(`Invalid signedKeyId: ${signedKeyId} ${typeof signedKeyId}`);
         }
-        const identityKey = storage.protocol.getLocalIdentityKeyPair();
+        const identityKey = await storage.protocol.getLocalIdentityKeyPair();
         const result = {
             preKeys: [],
             identityKey: identityKey.pubKey
@@ -149,8 +148,8 @@ class AccountManager extends EventEmitter {
             signature : spk.signature
         };
         await storage.protocol.removeSignedPreKey(signedKeyId - 2);
-        storage.put_item('maxPreKeyId', startId + count);
-        storage.put_item('signedKeyId', signedKeyId + 1);
+        await storage.put_item('maxPreKeyId', startId + count);
+        await storage.put_item('signedKeyId', signedKeyId + 1);
         return result;
     }
 }

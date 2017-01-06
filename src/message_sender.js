@@ -212,8 +212,9 @@ MessageSender.prototype = {
     },
 
     sendSyncMessage: function(encodedDataMessage, timestamp, destination, expirationStartTimestamp) {
-        var myNumber = storage.user.getNumber();
-        var myDevice = storage.user.getDeviceId();
+        // XXX Asyncify
+        var myNumber = await storage.user.getNumber();
+        var myDevice = await storage.user.getDeviceId();
         if (myDevice == 1) {
             return Promise.resolve();
         }
@@ -236,8 +237,9 @@ MessageSender.prototype = {
     },
 
     sendRequestGroupSyncMessage: function() {
-        var myNumber = storage.user.getNumber();
-        var myDevice = storage.user.getDeviceId();
+        // XXX Asyncify
+        var myNumber = await storage.user.getNumber();
+        var myDevice = await storage.user.getDeviceId();
         if (myDevice != 1) {
             var request = new protobufs.SyncMessage.Request();
             request.type = protobufs.SyncMessage.Request.Type.GROUPS;
@@ -251,8 +253,9 @@ MessageSender.prototype = {
     },
 
     sendRequestContactSyncMessage: function() {
-        var myNumber = storage.user.getNumber();
-        var myDevice = storage.user.getDeviceId();
+        // XXX Asyncify
+        var myNumber = await storage.user.getNumber();
+        var myDevice = await storage.user.getDeviceId();
         if (myDevice != 1) {
             var request = new protobufs.SyncMessage.Request();
             request.type = protobufs.SyncMessage.Request.Type.CONTACTS;
@@ -265,8 +268,9 @@ MessageSender.prototype = {
         }
     },
     syncReadMessages: function(reads) {
-        var myNumber = storage.user.getNumber();
-        var myDevice = storage.user.getDeviceId();
+        // XXX Asyncify
+        var myNumber = await storage.user.getNumber();
+        var myDevice = await storage.user.getDeviceId();
         if (myDevice != 1) {
             var syncMessage = new protobufs.SyncMessage();
             syncMessage.read = [];
@@ -284,8 +288,9 @@ MessageSender.prototype = {
     },
 
     sendGroupProto: function(numbers, proto, timestamp) {
+        // XXX Asyncify
         timestamp = timestamp || Date.now();
-        var me = storage.user.getNumber();
+        var me = await storage.user.getNumber();
         numbers = numbers.filter(function(number) { return number != me; });
         if (numbers.length === 0) {
             return Promise.reject(new Error('No other members in the group'));
@@ -314,6 +319,7 @@ MessageSender.prototype = {
     },
 
     closeSession: function(number, timestamp) {
+        // XXX Asyncify
         console.log('sending end session');
         var proto = new protobufs.DataMessage();
         proto.body = "TERMINATE";
@@ -332,6 +338,7 @@ MessageSender.prototype = {
     },
 
     sendMessageToGroup: function(groupId, messageText, attachments, timestamp, expireTimer) {
+        // XXX Asyncify
         return storage.groups.getNumbers(groupId).then(function(numbers) {
             if (numbers === undefined)
                 return Promise.reject(new Error("Unknown Group"));
@@ -358,6 +365,7 @@ MessageSender.prototype = {
     },
 
     createGroup: function(numbers, name, avatar) {
+        // XXX Asyncify
         var proto = new protobufs.DataMessage();
         proto.group = new protobufs.GroupContext();
 
@@ -379,6 +387,7 @@ MessageSender.prototype = {
     },
 
     updateGroup: function(groupId, name, avatar, numbers) {
+        // XXX Asyncify
         var proto = new protobufs.DataMessage();
         proto.group = new protobufs.GroupContext();
 

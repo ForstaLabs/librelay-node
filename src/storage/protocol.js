@@ -3,9 +3,9 @@
  */
 'use strict';
 
-const helpers = require('../helpers.js');
+const helpers = require('../helpers');
 const models = require('./models');
-const storage = require('./storage.js');
+const storage = require('./storage');
 
 
 class RelayProtocolStore {
@@ -15,23 +15,23 @@ class RelayProtocolStore {
         this._sessions_by_number = {};
     }
 
-    getLocalIdentityKeyPair() {
+    async getLocalIdentityKeyPair() {
         if (this._local_ident_key_pair === undefined) {
             this._local_ident_key_pair = {
-                pubKey: Buffer.from(storage.get_item('identityKey.pub'), 'base64'),
-                privKey: Buffer.from(storage.get_item('identityKey.priv'), 'base64')
+                pubKey: Buffer.from(await storage.get_item('identityKey.pub'), 'base64'),
+                privKey: Buffer.from(await storage.get_item('identityKey.priv'), 'base64')
             };
         }
         return this._local_ident_key_pair;
     }
 
-    setLocalIdentityKeyPair(keys) {
-        storage.put_item('identityKey.pub', keys.pubKey.toString('base64')),
-        storage.put_item('identityKey.priv', keys.privKey.toString('base64'))
+    async setLocalIdentityKeyPair(keys) {
+        await storage.put_item('identityKey.pub', keys.pubKey.toString('base64')),
+        await storage.put_item('identityKey.priv', keys.privKey.toString('base64'))
         this._local_ident_key_pair = keys;
     }
 
-    getLocalRegistrationId() {
+    async getLocalRegistrationId() {
         return storage.get_item('registrationId');
     }
 
@@ -54,9 +54,9 @@ class RelayProtocolStore {
     async storePreKey(keyId, keyPair) {
         console.log("Storing PreKey:", keyId);
         var prekey = new models.PreKey({
-            id         : keyId,
-            publicKey  : keyPair.pubKey.toString('base64'),
-            privateKey : keyPair.privKey.toString('base64')
+            id: keyId,
+            publicKey: keyPair.pubKey.toString('base64'),
+            privateKey: keyPair.privKey.toString('base64')
         });
         await prekey.save();
     }

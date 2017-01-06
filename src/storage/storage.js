@@ -4,29 +4,27 @@
 
 'use strict';
 
-const helpers = require('../helpers.js');
-const models = require('./models');
-
-const LocalStorage = require('node-localstorage').LocalStorage;
-const localStorage = new LocalStorage('relay.tuples');
+const redis = require('./redis');
 
 
-function put_item(key, value) {
+async function put_item(key, value) {
     console.log('Storage PUT ITEM', key, value);
-    localStorage.setItem("" + key, JSON.stringify(value));
+    redis.set("" + key, JSON.stringify(value));
 }
 
-function get_item(key, defaultValue) {
+async function get_item(key, defaultValue) {
     console.log('Storage GET ITEM', key);
-    const value = localStorage.getItem("" + key);
-    if (value === null)
+    const value = await redis.get("" + key);
+    console.log('Got VALUE:', value);
+    if (value === null) {
         return defaultValue;
+    }
     return JSON.parse(value);
 }
 
-function remove(key) {
+async function remove(key) {
     console.log('Storage REMOVE ITEM', key);
-    localStorage.removeItem("" + key);
+    await redis.del("" + key);
 }
 
 module.exports = {

@@ -34,7 +34,6 @@ OutgoingMessage.prototype = {
     },
     reloadDevicesAndSend: function(number, recurse) {
         return function() {
-            // XXX no longer async
             return textsecure.storage.protocol.getDeviceIds(number).then(function(deviceIds) {
                 if (deviceIds.length == 0) {
                     return this.registerError(number, "Got empty device list when loading device keys", null);

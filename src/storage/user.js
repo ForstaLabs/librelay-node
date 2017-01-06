@@ -8,29 +8,29 @@ const storage = require('./storage.js');
 const helpers = require('../helpers.js');
 
 const user = {
-    setNumberAndDeviceId: function(number, deviceId, deviceName) {
-        storage.put_item("number_id", number + "." + deviceId);
+    setNumberAndDeviceId: async function(number, deviceId, deviceName) {
+        await storage.put_item("number_id", number + "." + deviceId);
         if (deviceName) {
-            storage.put_item("device_name", deviceName);
+            await storage.put_item("device_name", deviceName);
         }
     },
 
-    getNumber: function(key, defaultValue) {
-        var number_id = storage.get_item("number_id");
+    getNumber: async function(key, defaultValue) {
+        var number_id = await storage.get_item("number_id");
         if (number_id === undefined)
             return undefined;
         return helpers.unencodeNumber(number_id)[0];
     },
 
-    getDeviceId: function(key) {
-        var number_id = storage.get_item("number_id");
+    getDeviceId: async function(key) {
+        var number_id = await storage.get_item("number_id");
         if (number_id === undefined)
             return undefined;
         return helpers.unencodeNumber(number_id)[1];
     },
 
-    getDeviceName: function(key) {
-        return storage.get_item("device_name");
+    getDeviceName: async function(key) {
+        return await storage.get_item("device_name");
     }
 };
 

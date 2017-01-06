@@ -6,12 +6,12 @@
 
 const EventEmitter = require('events');
 const WebSocket = require('websocket').w3cwebsocket;
-const WebSocketResource = require('./websocket-resources.js');
-const api = require('./api.js');
-const crypto = require('./crypto.js');
-const errors = require('./errors.js');
+const WebSocketResource = require('./websocket-resources');
+const api = require('./api');
+const crypto = require('./crypto');
+const errors = require('./errors');
 const libsignal = require('libsignal');
-const protobufs = require('./protobufs.js');
+const protobufs = require('./protobufs');
 const storage = require('./storage');
 
 const ENV_TYPES = protobufs.Envelope.lookup('Type').values;
