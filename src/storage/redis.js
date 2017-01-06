@@ -1,10 +1,17 @@
 
 
-const redis = require("redis");
+const redis = require('redis');
+const process = require('process');
+const unifyOptions = require('redis/lib/createClient');
 
 
 /* A proper async redis client */
 class AsyncRedisClient extends redis.RedisClient {
+
+    static createClient(...args) {
+        const options = unifyOptions.apply(null, args);
+        return new this(options);
+    }
 
     _async(func, ...args) {
         return new Promise(function(resolve, reject) {
@@ -37,4 +44,5 @@ class AsyncRedisClient extends redis.RedisClient {
 }
 
 
-module.exports = new AsyncRedisClient();
+console.log(`Connecting to redis: ${process.env.REDIS_URL || "localhost"}`);
+module.exports = new AsyncRedisClient(process.env.REDIS_URL);
