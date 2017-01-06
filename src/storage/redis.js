@@ -45,4 +45,4 @@ class AsyncRedisClient extends redis.RedisClient {
 
 
 console.log(`Connecting to redis: ${process.env.REDIS_URL || "localhost"}`);
-module.exports = new AsyncRedisClient(process.env.REDIS_URL);
+module.exports = AsyncRedisClient.createClient(process.env.REDIS_URL);
