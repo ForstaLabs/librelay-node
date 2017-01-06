@@ -1,6 +1,6 @@
 librelay - Forsta Relay Node library
 ==========================
-Bad idea jeans.
+Hacked up version of textsecure library found in chrome web app.
 
 ## Cryptography Notice
 
