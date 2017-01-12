@@ -138,7 +138,7 @@ OutgoingMessage.prototype = {
                     p = this.removeDeviceIdsForNumber(number, error.response.extraDevices);
                 } else {
                     p = Promise.all(error.response.staleDevices.map(function(deviceId) {
-                        ciphers[deviceId].closeOpenSessionForDevice();
+                        return ciphers[deviceId].closeOpenSessionForDevice();
                     }));
                 }
 
@@ -188,9 +188,11 @@ OutgoingMessage.prototype = {
             return Promise.all(deviceIds.map(function(deviceId) {
                 var address = new libsignal.SignalProtocolAddress(number, deviceId);
                 var sessionCipher = new libsignal.SessionCipher(textsecure.storage.protocol, address);
-                if (!sessionCipher.hasOpenSession()) {
-                    updateDevices.push(deviceId);
-                }
+                return sessionCipher.hasOpenSession().then(function(has_open) {
+                    if (!has_open) {
+                        updateDevices.push(deviceId);
+                    }
+                });
             })).then(function() {
                 return updateDevices;
             });

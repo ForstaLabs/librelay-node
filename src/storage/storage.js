@@ -26,6 +26,11 @@ async function remove(key) {
 }
 
 
+async function keys(glob_pattern) {
+    return await redis.keys(glob_pattern);
+}
+
+
 function shutdown() {
     console.warn("Shutting down storage (redis connection)");
     redis.quit();
@@ -36,5 +41,6 @@ module.exports = {
     get_item,
     put_item,
     remove,
-    shutdown
+    shutdown,
+    keys
 }

@@ -6,14 +6,10 @@
 const helpers = require('../helpers');
 const models = require('./models');
 const storage = require('./storage');
+const libsignal = require('libsignal');
 
 
 class RelayProtocolStore {
-
-    constructor() {
-        this._sessions = {};
-        this._sessions_by_number = {};
-    }
 
     async getLocalIdentityKeyPair() {
         if (this._local_ident_key_pair === undefined) {
@@ -101,49 +97,40 @@ class RelayProtocolStore {
         await prekey.destroy();
     }
 
-    loadSession(encodedNumber) {
+    async loadSession(encodedNumber) {
         if (encodedNumber === null || encodedNumber === undefined) {
             throw new Error("Tried to get session for undefined/null number");
         }
-        return this._sessions[encodedNumber];
+        const data = await storage.get_item(`session-${encodedNumber}`);
+        if (data !== undefined) {
+            return libsignal.SessionRecord.deserialize(data);
+        }
     }
 
-    storeSession(encodedNumber, record) {
+    async storeSession(encodedNumber, record) {
         if (encodedNumber === null || encodedNumber === undefined) {
             throw new Error("Tried to put session for undefined/null number");
         }
-        const number = helpers.unencodeNumber(encodedNumber)[0];
-        this._sessions[encodedNumber] = record;
-        if (!this._sessions_by_number.hasOwnProperty(number)) {
-            this._sessions_by_number[number] = new Set();
-        }
-        this._sessions_by_number[number].add(encodedNumber);
+        await storage.put_item(`session-${encodedNumber}`, record.serialize());
     }
 
-    removeSession(encodedNumber) {
-        if (!this._sessions.hasOwnProperty(encodedNumber)) {
-            throw new Error('Not a valid session');
-        }
-        const number = helpers.unencodeNumber(encodedNumber)[0];
-        this._sessions_by_number[number].delete(encodedNumber);
-        delete this._sessions[encodedNumber];
-        
+    async removeSession(encodedNumber) {
+        await storage.remove(`session-${encodedNumber}`);
     }
 
-    removeAllSessions(number) {
+    async removeAllSessions(number) {
         if (number === null || number === undefined) {
             throw new Error("Tried to remove sessions for undefined/null number");
         }
-        const idents = this._sessions_by_number[number];
-        for (const x of idents) {
-            delete this._sessions[x];
+        for (const x of await storage.keys(`session-${number}.*`)) {
+            await storage.remove(x);
         }
-        idents.clear();
     }
 
-    clearSessionStore() {
-        this._sessions = {};
-        this._sessions_by_number = {};
+    async clearSessionStore() {
+        for (const x of await storage.keys('session-*')) {
+            await storage.remove(x);
+        }
     }
 
     /* Always trust remote identity. */
@@ -210,19 +197,19 @@ class RelayProtocolStore {
         }
     }
 
-    getDeviceIds(number) {
+    async getDeviceIds(number) {
         if (number === null || number === undefined) {
             throw new Error("Tried to get device ids for undefined/null number");
         }
-        const idents = this._sessions_by_number[number];
-        return Array.from(idents).map(x => helpers.unencodeNumber(x)[1]);
+        const idents = await storage.keys(`session-${number}.*`);
+        return Array.from(idents).map(x => x.split('.')[1]);
     }
 
     async removeIdentityKey(number) {
         var identityKey = new models.IdentityKey({id: number});
         await identityKey.fetch();
         identityKey.save({publicKey: undefined});
-        storage.protocol.removeAllSessions(number);
+        await storage.protocol.removeAllSessions(number);
     }
 
     async getGroup(groupId) {
