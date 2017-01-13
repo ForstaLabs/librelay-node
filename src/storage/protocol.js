@@ -208,8 +208,8 @@ class RelayProtocolStore {
     async removeIdentityKey(number) {
         var identityKey = new models.IdentityKey({id: number});
         await identityKey.fetch();
-        identityKey.save({publicKey: undefined});
-        await storage.protocol.removeAllSessions(number);
+        await identityKey.save({publicKey: undefined});
+        await this.removeAllSessions(number);
     }
 
     async getGroup(groupId) {
