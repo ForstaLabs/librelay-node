@@ -16,10 +16,8 @@
   "dependencies": {
     "axios": "0.15.3",
     "backbone": "1.1.2",
-    "jquery-deferred": "0.3.1",
     "libsignal": "forstaathletics/libsignal-node#f005fbe646b13a95b8839b57d7544f070f27df7b",
     "long": "3.2.0",
-    "node-localstorage": "1.3.0",
     "protobufjs": "6.2.0",
     "redis": "2.6.3",
     "websocket": "1.0.24",
