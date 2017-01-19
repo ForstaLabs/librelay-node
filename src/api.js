@@ -220,13 +220,14 @@ var RelayServer = (function() {
         },
 
         getMyKeys: async function(number, deviceId) {
-            return (await this.http({
+            const resp = await this.http({
                 call: 'keys',
                 httpType: 'GET',
                 validateResponse: {
                     count: 'number'
                 }
-            })).count;
+            });
+            return resp.count;
         },
 
         getKeysForNumber: function(number, deviceId) {

@@ -63,7 +63,7 @@ class MessageReceiver extends EventEmitter {
     }
 
     onclose(ev) {
-        console.log('websocket closed', ev.code, ev.reason || '');
+        console.error('websocket closed', ev.code, ev.reason || '');
         this._wait_resolve();
     }
 

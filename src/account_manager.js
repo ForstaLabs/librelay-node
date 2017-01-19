@@ -16,9 +16,12 @@ const storage = require('./storage');
 
 class AccountManager extends EventEmitter {
 
-    constructor(url, username, password) {
+    constructor(url, username, password, prekey_low_water=100,
+                prekey_high_water=500) {
         super();
         this.server = new api.RelayServer(url, username, password);
+        this.prekey_low_water = prekey_low_water;
+        this.prekey_high_water = prekey_high_water;
     }
 
     requestVoiceVerification(number) {
@@ -32,64 +35,17 @@ class AccountManager extends EventEmitter {
     async registerSingleDevice(number, verificationCode) {
         const identityKeyPair = libsignal.KeyHelper.generateIdentityKeyPair();
         await this.createAccount(number, verificationCode, identityKeyPair);
-        const keys = await this.generateKeys(100);
+        const keys = await this.generateKeys(this.prekey_high_water);
         await this.server.registerKeys(keys);
     }
 
-    registerSecondDevice(setProvisioningUrl, confirmNumber) {
-        throw new Error("UNUSED?");
-        var createAccount = this.createAccount.bind(this);
-        var generateKeys = this.generateKeys.bind(this, 100);
-        var registerKeys = this.server.registerKeys.bind(this.server);
-        var getSocket = this.server.getProvisioningSocket.bind(this.server);
-        var provisioningCipher = new ProvisioningCipher();
-        return provisioningCipher.getPublicKey().then(function(pubKey) {
-            return new Promise(function(resolve, reject) {
-                var socket = getSocket();
-                socket.onclose = function(e) {
-                    console.log('websocket closed', e.code);
-                    reject(new Error('websocket closed'));
-                };
-                var wsr = new WebSocketResource(socket, {
-                    keepalive: { path: '/v1/keepalive/provisioning' },
-                    handleRequest: function(request) {
-                        if (request.path === "/v1/address" && request.verb === "PUT") {
-                            var proto = protobufs.ProvisioningUuid.decode(request.body);
-                            setProvisioningUrl([
-                                'tsdevice:/?uuid=', proto.uuid, '&pub_key=',
-                                encodeURIComponent(storage.array_buffer_encode(pubKey, 'base64')) // XXX validate
-                            ].join(''));
-                            request.respond(200, 'OK');
-                        } else if (request.path === "/v1/message" && request.verb === "PUT") {
-                            var envelope = protobufs.ProvisionEnvelope.decode(request.body, 'binary');
-                            request.respond(200, 'OK');
-                            wsr.close();
-                            resolve(provisioningCipher.decrypt(envelope).then(function(provisionMessage) {
-                                return confirmNumber(provisionMessage.number).then(function(deviceName) {
-                                    if (typeof deviceName !== 'string' || deviceName.length === 0) {
-                                        throw new Error('Invalid device name');
-                                    }
-                                    return createAccount(
-                                        provisionMessage.number,
-                                        provisionMessage.provisioningCode,
-                                        provisionMessage.identityKeyPair,
-                                        deviceName
-                                    );
-                                });
-                            }));
-                        } else {
-                            console.log('Unknown websocket message', request.path);
-                        }
-                    }
-                });
-            });
-        }).then(generateKeys).
-           then(registerKeys);
-    }
-
-    async refreshPreKeys() {
-        if (this.server.getMyKeys() < 10) {
-            const keys = await generateKeys(100);
+    async maybeRefreshPreKeys() {
+        const available = await this.server.getMyKeys()
+        if (available < this.prekey_low_water) {
+            // XXX We can't extend the existing list of keys so we have to go
+            // all the way to the high mark.
+            console.log('WARNING: Refilling prekey pool');
+            const keys = await this.generateKeys(this.prekey_high_water);
             await this.server.registerKeys(keys);
         }
     }
