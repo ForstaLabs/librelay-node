@@ -16,8 +16,8 @@
   "dependencies": {
     "axios": "0.15.3",
     "backbone": "1.1.2",
-    "libsignal": "forstalabs/libsignal-node#f005fbe646b13a95b8839b57d7544f070f27df7b",
-    "long": "3.2.0",
+    "libsignal": "forstalabs/libsignal-node#37968034cacbec105b8d6ca70a9badb77528271b",
+    "@protobufjs/codegen": "1.0.2",
     "protobufjs": "6.2.0",
     "redis": "2.6.3",
     "websocket": "1.0.24",

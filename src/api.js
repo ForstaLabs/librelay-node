@@ -58,7 +58,6 @@ var RelayServer = (function() {
         if (typeof url !== 'string') {
             throw new Error('Invalid server url');
         }
-        console.log(`Initialized RelayServer: ${url} ${username}`);
         this._http = axios.create({
             baseURL: url,
             timeout: 30000,
@@ -94,11 +93,11 @@ var RelayServer = (function() {
             if (!param.urlParameters) {
                 param.urlParameters = '';
             }
-            console.log(`HTTP ${param.httpType} ${param.call} [${param.urlParameters}]`);
             const config = {
                 method: param.httpType,
                 url: URL_CALLS[param.call] + param.urlParameters
             };
+            console.log(`RelayServer Request: ${param.httpType} ${config.url}`);
             if (param.jsonData !== undefined) {
                 config.data = param.jsonData;
             }
@@ -114,7 +113,6 @@ var RelayServer = (function() {
         },
 
         setUsername: function(username) {
-            console.log("Setting username:", username);
             if (!this._http.defaults.auth) {
                 this._http.defaults.auth = {};
             }
@@ -123,7 +121,6 @@ var RelayServer = (function() {
         },
 
         setPassword: function(password) {
-            console.log("Setting password: ***********");
             if (!this._http.defaults.auth) {
                 this._http.defaults.auth = {};
             }
