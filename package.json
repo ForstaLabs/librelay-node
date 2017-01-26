@@ -5,18 +5,18 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/forstaathletics/librelay-node.git"
+    "url": "git+https://github.com/forstalabs/librelay-node.git"
   },
   "author": "",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/forstaathletics/librelay-node/issues"
+    "url": "https://github.com/forstalabs/librelay-node/issues"
   },
-  "homepage": "https://github.com/forstaathletics/librelay-node#readme",
+  "homepage": "https://github.com/forstalabs/librelay-node#readme",
   "dependencies": {
     "axios": "0.15.3",
     "backbone": "1.1.2",
-    "libsignal": "forstaathletics/libsignal-node#f005fbe646b13a95b8839b57d7544f070f27df7b",
+    "libsignal": "forstalabs/libsignal-node#f005fbe646b13a95b8839b57d7544f070f27df7b",
     "long": "3.2.0",
     "protobufjs": "6.2.0",
     "redis": "2.6.3",
