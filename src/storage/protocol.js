@@ -133,7 +133,6 @@ class RelayProtocolStore {
         }
     }
 
-    /* Always trust remote identity. */
     async isTrustedIdentity(identifier, publicKey) {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to get identity key for undefined/null key");
@@ -143,20 +142,11 @@ class RelayProtocolStore {
         try {
             await identityKey.fetch();
         } catch(e) {
-            console.error("WARNING: Implicit trust of new peer:", identifier);
+            console.warn("WARNING: Implicit trust of new peer:", identifier);
             return true;
         }
-        const oldpublicKey = Buffer.from(identityKey.get('publicKey'), 'base64');
-        if (oldpublicKey.equals(publicKey)) {
-            console.log("Known and trusted peer:", identifier);
-            return true;
-        } else {
-            console.error("WARNING: Auto-accepting new peer identity:",
-                          identifier);
-            await this.removeIdentityKey(identifier);
-            await this.saveIdentity(identifier, publicKey);
-            return true;
-        }
+        const knownPublicKey = Buffer.from(identityKey.get('publicKey'), 'base64');
+        return knownPublicKey.equals(publicKey);
     }
 
     async loadIdentityKey(identifier) {
