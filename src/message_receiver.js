@@ -279,19 +279,9 @@ class MessageReceiver extends EventEmitter {
         });
     }
 
-    handleAttachment(attachment) {
-        throw new Error('not ported, async /await refactor');
-        function decryptAttachment(encrypted) {
-            return crypto.decryptAttachment(encrypted, attachment.key);
-        }
-
-        function updateAttachment(data) {
-            attachment.data = data;
-        }
-
-        return this.server.getAttachment(attachment.id.toString()).
-        then(decryptAttachment).
-        then(updateAttachment);
+    async handleAttachment(attachment) {
+        const encrypted = await this.server.getAttachment(attachment.id.toString());
+        attachment.data = await crypto.decryptAttachment(encrypted, attachment.key);
     }
 
     tryMessageAgain(from, ciphertext) {

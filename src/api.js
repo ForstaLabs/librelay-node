@@ -271,26 +271,26 @@ var RelayServer = (function() {
             });
         },
 
-        // XXX Probably not...
-        getAttachment: function(id) {
-            return this.http({
-                call                : 'attachment',
-                httpType            : 'GET',
-                urlParameters       : '/' + id,
-                validateResponse    : {location: 'string'}
-            }).then(function(response) {
-                var match = response.location.match(this.attachment_id_regex);
-                if (!match) {
-                    console.log('Invalid attachment url for incoming message', response.location);
-                    throw new Error('Received invalid attachment url');
+        getAttachment: async function(id) {
+            const response = await this.http({
+                call: 'attachment',
+                httpType: 'GET',
+                urlParameters: '/' + id,
+                validateResponse: {
+                    location: 'string'
                 }
-                // XXX not implemented
-                return ajax(response.location, {
-                    type: "GET",
-                    responseType: "arraybuffer",
-                    contentType: "application/octet-stream"
-                });
-            }.bind(this));
+            });
+            const match = response.location.match(this.attachment_id_regex);
+            if (!match) {
+                throw new Error(`Invalid attachment URL: ${response.location}`);
+            }
+            const resp = await axios.get(response.location, {
+                responseType: 'arraybuffer', // NOTE: Actually becomes a Buffer.
+                headers: {
+                    "Content-Type": "application/octet-stream"
+                }
+            });
+            return resp.data;
         },
 
         // XXX Probably not...
