@@ -101,12 +101,14 @@ Backbone.sync = async function(method, model, options) {
         }
         return resp;
     } catch(e) {
-        if (options && options.error)
-            options.error(errorMessage);
+        if (options && options.error) {
+            options.error(e);
+        }
         throw e;
     } finally {
-        if (options && options.complete)
+        if (options && options.complete) {
             options.complete(resp);
+        }
     }
 };
 
