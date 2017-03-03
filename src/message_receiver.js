@@ -248,7 +248,7 @@ class MessageReceiver extends EventEmitter {
             var promises = [];
             while (groupDetails !== undefined) {
                 var promise = (function(groupDetails) {
-                    groupDetails.id = groupDetails.id.toBinary();
+                    groupDetails.id = groupDetails.id.toString('binary');
                     if (groupDetails.active) {
                         return storage.groups.getGroup(groupDetails.id).
                             then(function(existingGroup) {
@@ -339,7 +339,7 @@ class MessageReceiver extends EventEmitter {
         var promises = [];
 
         if (decrypted.group !== null) {
-            decrypted.group.id = decrypted.group.id.toBinary();
+            decrypted.group.id = decrypted.group.id.toString('binary');
 
             if (decrypted.group.type == GROUPCTX_TYPES.UPDATE) {
                 if (decrypted.group.avatar !== null) {
