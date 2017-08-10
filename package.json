@@ -14,10 +14,11 @@
   },
   "homepage": "https://github.com/forstalabs/librelay-node#readme",
   "dependencies": {
+    "@protobufjs/codegen": "1.0.2",
     "axios": "0.15.3",
     "backbone": "1.1.2",
     "libsignal": "forstalabs/libsignal-node#2f24534689761b19b7f40e7ba0493db3eac0887f",
-    "@protobufjs/codegen": "1.0.2",
+    "node-fetch": "1.7.2",
     "protobufjs": "6.2.0",
     "redis": "2.6.3",
     "websocket": "1.0.24",
