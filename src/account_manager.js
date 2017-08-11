@@ -35,6 +35,7 @@ class AccountManager extends EventEmitter {
             signalingKey,
             registrationId,
             deviceName,
+            fetchesMessages: true,
             userAgent: 'librelay-node'
         };
 
