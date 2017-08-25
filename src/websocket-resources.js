@@ -191,7 +191,7 @@ KeepAlive.prototype = {
             } else {
                 this.reset();
             }
-        }.bind(this), 55000);
+        }.bind(this), 500000); // XXX Testing retry...
     },
 };
 

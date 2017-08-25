@@ -62,10 +62,20 @@ class MessageReceiver extends EventEmitter {
         this._wait_reject(error);
     }
 
-    onclose(ev) {
-        console.error('websocket closed', ev.code, ev.reason || '');
-        this._wait_resolve();
-    }
+    async onclose(ev) {
+        console.warn('Websocket closed:', ev.code, ev.reason || '');
+        if (ev.code === 3000) {
+            return;
+        }
+        // possible 403 or network issue. Make a request to confirm
+        try {
+            await this.server.getDevices();
+        } catch(e) {
+            this._wait_reject(e);
+            return;
+        }
+        this.connect();
+    },
 
     /* Wait until error or close. */
     async wait() {
@@ -303,7 +313,6 @@ class MessageReceiver extends EventEmitter {
     }
 
     async handleEndSession(number) {
-        console.log('got end session');
         for (const deviceId of await storage.protocol.getDeviceIds(number)) {
             var address = new libsignal.SignalProtocolAddress(number, deviceId);
             var sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
