@@ -75,7 +75,7 @@ class MessageReceiver extends EventEmitter {
             return;
         }
         this.connect();
-    },
+    }
 
     /* Wait until error or close. */
     async wait() {
