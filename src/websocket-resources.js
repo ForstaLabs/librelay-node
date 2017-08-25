@@ -191,7 +191,7 @@ KeepAlive.prototype = {
             } else {
                 this.reset();
             }
-        }.bind(this), 500000); // XXX Testing retry...
+        }.bind(this), 50000); // Set lower than Heroku timeout of 55 seconds.
     },
 };
 
