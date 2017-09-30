@@ -7,11 +7,9 @@
 const http = require('http');
 const https = require('https');
 const axios = require('axios');
-const helpers = require('./helpers.js');
-const WebSocket = require('websocket').w3cwebsocket;
 
 
-var RelayServer = (function() {
+var TextSecureServer = (function() {
 
     function validateResponse(response, schema) {
         try {
@@ -32,20 +30,6 @@ var RelayServer = (function() {
         return true;
     }
 
-    function HTTPError(code, response, stack) {
-        if (code > 999 || code < 100) {
-            code = -1;
-        }
-        var e = new Error();
-        e.name     = 'HTTPError';
-        e.code     = code;
-        e.stack    = stack;
-        if (response) {
-            e.response = response;
-        }
-        return e;
-    }
-
     var URL_CALLS = {
         accounts   : "/v1/accounts",
         devices    : "/v1/devices",
@@ -54,7 +38,7 @@ var RelayServer = (function() {
         attachment : "/v1/attachments"
     };
 
-    function RelayServer(url, username, password, attachment_server_url) {
+    function TextSecureServer(url, username, password) {
         if (typeof url !== 'string') {
             throw new Error('Invalid server url');
         }
@@ -71,23 +55,18 @@ var RelayServer = (function() {
             }
         });
         this.base_url = url;
-        if (username !== undefined)
+        if (username !== undefined) {
             this.setUsername(username);
-        if (password !== undefined)
-            this.setPassword(password);
-        this.attachment_id_regex = RegExp("^https:\/\/.*\/(\\d+)\?");
-        if (attachment_server_url) {
-            // strip trailing /
-            attachment_server_url = attachment_server_url.replace(/\/$/,'');
-            // and escape
-            attachment_server_url = attachment_server_url.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-            this.attachment_id_regex = RegExp( "^" + attachment_server_url + "\/(\\d+)\?");
         }
+        if (password !== undefined) {
+            this.setPassword(password);
+        }
+        this.attachment_id_regex = RegExp("^https://.*/(\\d+)?");
     }
 
-    RelayServer.prototype = {
+    TextSecureServer.prototype = {
 
-        constructor: RelayServer,
+        constructor: TextSecureServer,
 
         http: async function(param) {
             if (!param.urlParameters) {
@@ -97,7 +76,7 @@ var RelayServer = (function() {
                 method: param.httpType,
                 url: URL_CALLS[param.call] + param.urlParameters
             };
-            console.log(`RelayServer Request: ${param.httpType} ${config.url}`);
+            console.log(`TextSecureServer Request: ${param.httpType} ${config.url}`);
             if (param.jsonData !== undefined) {
                 config.data = param.jsonData;
             }
@@ -110,6 +89,26 @@ var RelayServer = (function() {
                 throw new Error(`Invalid server response for: ${param.call}`);
             }
             return resp.data;
+        },
+
+        createAccount: async function(url, authToken, info) {
+            const accountInfo = {
+                signalingKey: info.signalingKey.toString('base64'),
+                supportsSms: false,
+                fetchesMessages: true,
+                registrationId: info.registrationId,
+                name: info.name,
+                password: info.password
+            };
+            const resp = await axios.put(url, {
+                headers: {"Authorization": `Token ${authToken}`},
+                data: accountInfo
+            });
+            Object.assign(info, resp.data);
+            /* Save the new creds to our instance for future TSS API calls. */
+            this.username = info.username = `${info.addr}.${info.deviceId}`;
+            this.password = info.password;
+            return info;
         },
 
         setUsername: function(username) {
@@ -128,60 +127,12 @@ var RelayServer = (function() {
             this._password = password;
         },
 
-        requestVerificationSMS: function(number) {
-            return this.http({
-                call: 'accounts',
-                httpType: 'GET',
-                urlParameters: '/sms/code/' + number,
-            });
-        },
-
-        requestVerificationVoice: function(number) {
-            return this.http({
-                call: 'accounts',
-                httpType: 'GET',
-                urlParameters: '/voice/code/' + number,
-            });
-        },
-
-        confirmCode: function(number, code, password, signaling_key, registrationId, deviceName) {
-            var jsonData = {
-                signalingKey: signaling_key.toString('base64'),
-                supportsSms: false,
-                fetchesMessages: true,
-                registrationId: registrationId,
-            };
-
-            var call, urlPrefix, schema;
-            if (deviceName) {
-                jsonData.name = deviceName;
-                call = 'devices';
-                urlPrefix = '/';
-                schema = { deviceId: 'number' };
-            } else {
-                call = 'accounts';
-                urlPrefix = '/code/';
-            }
-
-            const auth = {
-                username: number,
-                password
-            };
-            return this.http({
-                auth,
-                call: call,
-                httpType: 'PUT',
-                urlParameters: urlPrefix + code,
-                jsonData: jsonData,
-                validateResponse: schema
-            });
-        },
-
-        getDevices: function(number) {
-            return this.http({
+        getDevices: async function() {
+            const data = await this.http({
                 call: 'devices',
                 httpType: 'GET',
             });
+            return data && data.devices;
         },
 
         registerKeys: function(genKeys) {
@@ -201,14 +152,11 @@ var RelayServer = (function() {
                     publicKey: genKeys.preKeys[i].publicKey.toString('base64')
                 };
             }
-
-            // This is just to make the server happy
-            // (v2 clients should choke on publicKey)
+            // Newer generation servers don't expect this BTW.
             keys.lastResortKey = {
-                keyId: 0x7fffFFFF,
-                publicKey: Buffer.from("42").toString('base64')
+                keyId: genKeys.lastResortKey.keyId,
+                publicKey: genKeys.lastResortKey.publicKey.toString('base64')
             };
-
             return this.http({
                 call: 'keys',
                 httpType: 'PUT',
@@ -216,7 +164,7 @@ var RelayServer = (function() {
             });
         },
 
-        getMyKeys: async function(number, deviceId) {
+        getMyKeys: async function() {
             const resp = await this.http({
                 call: 'keys',
                 httpType: 'GET',
@@ -227,37 +175,31 @@ var RelayServer = (function() {
             return resp.count;
         },
 
-        getKeysForNumber: function(number, deviceId) {
-            if (deviceId === undefined)
+        getKeysForAddr: async function(addr, deviceId) {
+            if (deviceId === undefined) {
                 deviceId = "*";
-            throw new Error("not ported!");
-
-            return this.http({
+            }
+            const res = await this.http({
                 call: 'keys',
                 httpType: 'GET',
-                urlParameters: "/" + number + "/" + deviceId,
-                validateResponse: {
-                    identityKey: 'string',
-                    devices: 'object'
-                }
-            }).then(function(res) {
-                if (res.devices.constructor !== Array) {
-                    throw new Error("Invalid response");
-                }
-                // XXX I don't think we need a lib for this.
-                res.identityKey = StringView.base64ToBytes(res.identityKey);
-                res.devices.forEach(function(device) {
-                    if ( !validateResponse(device, {signedPreKey: 'object', preKey: 'object'}) ||
-                         !validateResponse(device.signedPreKey, {publicKey: 'string', signature: 'string'}) ||
-                         !validateResponse(device.preKey, {publicKey: 'string'})) {
-                        throw new Error("Invalid response");
-                    }
-                    device.signedPreKey.publicKey = StringView.base64ToBytes(device.signedPreKey.publicKey);
-                    device.signedPreKey.signature = StringView.base64ToBytes(device.signedPreKey.signature);
-                    device.preKey.publicKey       = StringView.base64ToBytes(device.preKey.publicKey);
-                });
-                return res;
+                urlParameters: "/" + addr + "/" + deviceId,
+                validateResponse: {identityKey: 'string', devices: 'object'}
             });
+            if (res.devices.constructor !== Array) {
+                throw new TypeError("Invalid response");
+            }
+            res.identityKey = Buffer.from(res.identityKey, 'base64');
+            res.devices.forEach(device => {
+                if (!validateResponse(device, {signedPreKey: 'object', preKey: 'object'}) ||
+                    !validateResponse(device.signedPreKey, {publicKey: 'string', signature: 'string'}) ||
+                    !validateResponse(device.preKey, {publicKey: 'string'})) {
+                    throw new TypeError("Invalid response");
+                }
+                device.signedPreKey.publicKey = Buffer.from(device.signedPreKey.publicKey, 'base64');
+                device.signedPreKey.signature = Buffer.from(device.signedPreKey.signature, 'base64');
+                device.preKey.publicKey = Buffer.from(device.preKey.publicKey, 'base64');
+            });
+            return res;
         },
 
         sendMessages: function(destination, messageArray, timestamp) {
@@ -287,56 +229,48 @@ var RelayServer = (function() {
             const resp = await axios.get(response.location, {
                 responseType: 'arraybuffer', // NOTE: Actually becomes a Buffer.
                 headers: {
-                    "Content-Type": "application/octet-stream"
+                    "Content-Type": "application/octet-stream" // XXX suspect..
                 }
             });
             return resp.data;
         },
 
-        // XXX Probably not...
-        putAttachment: function(encryptedBin) {
-            return this.http({
-                call     : 'attachment',
-                httpType : 'GET',
-            }).then(function(response) {
-                // Extract the id as a string from the location url
-                // (workaround for ids too large for Javascript numbers)
-                var match = response.location.match(this.attachment_id_regex);
-                if (!match) {
-                    console.log('Invalid attachment url for outgoing message', response.location);
-                    throw new Error('Received invalid attachment url');
-                }
-                return ajax(response.location, {
-                    type: "PUT",
-                    contentType: "application/octet-stream",
-                    data: encryptedBin,
-                    processData: false,
-                }).then(function() {
-                    return match[1];
-                }.bind(this));
-            }.bind(this));
+        putAttachment: async function(data) {
+            // XXX Build in retry handling...
+            const ptrResp = await this.http({call: 'attachment', httpType: 'GET'});
+            // Extract the id as a string from the location url
+            // (workaround for ids too large for Javascript numbers)
+            //  XXX find way around having to know the S3 url.
+            const match = ptrResp.location.match(this.attachment_id_regex);
+            if (!match) {
+                console.error('Invalid attachment url for outgoing message',
+                              ptrResp.location);
+                throw new TypeError('Received invalid attachment url');
+            }
+            await axios.put(ptrResp.location, {
+                headers: {
+                    'Content-Type': 'application/octet-stream'
+                },
+                data
+            });
+            return match[1];
         },
 
-        getMessageSocket: function() {
-            console.log('Opening message websocket:', this.base_url);
-            const url = this.base_url.replace('https://', 'wss://').replace('http://', 'ws://')
-                    + '/v1/websocket/?login=' + encodeURIComponent(this._username)
-                    + '&password=' + encodeURIComponent(this._password)
-                    + '&agent=OWD';
-            return new WebSocket(url);
+        getMessageWebSocketURL: function() {
+            return [
+                this.base_url.replace('https://', 'wss://').replace('http://', 'ws://'),
+                '/v1/websocket/?login=', encodeURIComponent(this._username),
+                '&password=', encodeURIComponent(this._password)].join('');
         },
 
-        getProvisioningSocket: function () {
-            console.log('Opening provisioning websocket:', this.url);
-            return new WebSocket(
-                this.base_url.replace('https://', 'wss://').replace('http://', 'ws://')
-                    + '/v1/websocket/provisioning/?agent=OWD'
-            );
+        getProvisioningWebSocketURL: function () {
+            return this.base_url.replace('https://', 'wss://').replace('http://', 'ws://') +
+                                    '/v1/websocket/provisioning/';
         }
     };
 
-    return RelayServer;
+    return TextSecureServer;
 })();
 
 
-exports.RelayServer = RelayServer;
+exports.TextSecureServer = TextSecureServer;

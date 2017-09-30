@@ -6,12 +6,8 @@
 
 
 module.exports = {
-    unencodeNumber: function(number) {
+    unencodeAddr: function(number) {
         return number.split(".");
-    },
-
-    isNumberSane: function(number) {
-        return number[0] == "+" && /^[0-9]+$/.test(number.substring(1));
     }
 };
 

@@ -14,16 +14,20 @@ class AsyncRedisClient extends redis.RedisClient {
     }
 
     _async(func, ...args) {
-        return new Promise(function(resolve, reject) {
-            args.push(function(err, reply) {
-                if (err !== null) {
-                    reject(err);
-                } else {
-                    resolve(reply);
-                }
-            });
-            func.apply(this, args);
-        }.bind(this));
+        return new Promise((resolve, reject) => {
+            try {
+                args.push((err, reply) => {
+                    if (err !== null) {
+                        reject(err);
+                    } else {
+                        resolve(reply);
+                    }
+                });
+                func.apply(this, args);
+            } catch(e) {
+                reject(e);
+            }
+        });
     }
 
     async get(key) {

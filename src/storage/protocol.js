@@ -1,6 +1,5 @@
-/*
- * vim: ts=4:sw=4:expandtab
- */
+// vim: ts=4:sw=4:expandtab
+
 'use strict';
 
 const helpers = require('../helpers');
@@ -22,8 +21,8 @@ class RelayProtocolStore {
     }
 
     async setLocalIdentityKeyPair(keys) {
-        await storage.put_item('identityKey.pub', keys.pubKey.toString('base64')),
-        await storage.put_item('identityKey.priv', keys.privKey.toString('base64'))
+        await storage.put_item('identityKey.pub', keys.pubKey.toString('base64'));
+        await storage.put_item('identityKey.priv', keys.privKey.toString('base64'));
         this._local_ident_key_pair = keys;
     }
 
@@ -97,32 +96,32 @@ class RelayProtocolStore {
         await prekey.destroy();
     }
 
-    async loadSession(encodedNumber) {
-        if (encodedNumber === null || encodedNumber === undefined) {
-            throw new Error("Tried to get session for undefined/null number");
+    async loadSession(encodedAddr) {
+        if (encodedAddr === null || encodedAddr === undefined) {
+            throw new Error("Tried to get session for undefined/null addr");
         }
-        const data = await storage.get_item(`session-${encodedNumber}`);
+        const data = await storage.get_item(`session-${encodedAddr}`);
         if (data !== undefined) {
             return libsignal.SessionRecord.deserialize(data);
         }
     }
 
-    async storeSession(encodedNumber, record) {
-        if (encodedNumber === null || encodedNumber === undefined) {
-            throw new Error("Tried to put session for undefined/null number");
+    async storeSession(encodedAddr, record) {
+        if (encodedAddr === null || encodedAddr === undefined) {
+            throw new Error("Tried to put session for undefined/null addr");
         }
-        await storage.put_item(`session-${encodedNumber}`, record.serialize());
+        await storage.put_item(`session-${encodedAddr}`, record.serialize());
     }
 
-    async removeSession(encodedNumber) {
-        await storage.remove(`session-${encodedNumber}`);
+    async removeSession(encodedAddr) {
+        await storage.remove(`session-${encodedAddr}`);
     }
 
-    async removeAllSessions(number) {
-        if (number === null || number === undefined) {
-            throw new Error("Tried to remove sessions for undefined/null number");
+    async removeAllSessions(addr) {
+        if (addr === null || addr === undefined) {
+            throw new Error("Tried to remove sessions for undefined/null addr");
         }
-        for (const x of await storage.keys(`session-${number}.*`)) {
+        for (const x of await storage.keys(`session-${addr}.*`)) {
             await storage.remove(x);
         }
     }
@@ -137,8 +136,8 @@ class RelayProtocolStore {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to get identity key for undefined/null key");
         }
-        const number = helpers.unencodeNumber(identifier)[0];
-        const identityKey = new models.IdentityKey({id: number});
+        const addr = helpers.unencodeAddr(identifier)[0];
+        const identityKey = new models.IdentityKey({id: addr});
         try {
             await identityKey.fetch();
         } catch(e) {
@@ -153,8 +152,8 @@ class RelayProtocolStore {
         if (identifier === null || identifier === undefined) {
             throw new Error("Tried to get identity key for undefined/null key");
         }
-        const number = helpers.unencodeNumber(identifier)[0];
-        const identityKey = new models.IdentityKey({id: number});
+        const addr = helpers.unencodeAddr(identifier)[0];
+        const identityKey = new models.IdentityKey({id: addr});
         await identityKey.fetch();
         return Buffer.from(identityKey.get('publicKey'), 'base64');
     }
@@ -166,11 +165,11 @@ class RelayProtocolStore {
         if (!(publicKey instanceof Buffer)) {
             throw new Error(`Invalid type for saveIdentity: ${publicKey.constructor.name}`);
         }
-        const number = helpers.unencodeNumber(identifier)[0];
-        const identityKey = new models.IdentityKey({id: number});
+        const addr = helpers.unencodeAddr(identifier)[0];
+        const identityKey = new models.IdentityKey({id: addr});
         try {
             await identityKey.fetch();
-        } catch(e) {} // not found
+        } catch(e) { /* not found */ }
         const oldpublicKey = identityKey.get('publicKey');
         if (!oldpublicKey) {
             console.log("Saving new identity key:", identifier);
@@ -187,47 +186,19 @@ class RelayProtocolStore {
         }
     }
 
-    async getDeviceIds(number) {
-        if (number === null || number === undefined) {
-            throw new Error("Tried to get device ids for undefined/null number");
+    async getDeviceIds(addr) {
+        if (addr === null || addr === undefined) {
+            throw new Error("Tried to get device ids for undefined/null addr");
         }
-        const idents = await storage.keys(`session-${number}.*`);
+        const idents = await storage.keys(`session-${addr}.*`);
         return Array.from(idents).map(x => x.split('.')[1]);
     }
 
-    async removeIdentityKey(number) {
-        var identityKey = new models.IdentityKey({id: number});
+    async removeIdentityKey(addr) {
+        var identityKey = new models.IdentityKey({id: addr});
         await identityKey.fetch();
         await identityKey.save({publicKey: undefined});
-        await this.removeAllSessions(number);
-    }
-
-    async getGroup(groupId) {
-        if (groupId === null || groupId === undefined) {
-            throw new Error("Tried to get group for undefined/null id");
-        }
-        const group = new models.Group({id: groupId});
-        await group.fetch();
-        return group.get('data');
-    }
-
-    async putGroup(groupId, value) {
-        if (groupId === null || groupId === undefined) {
-            throw new Error("Tried to put group key for undefined/null id");
-        }
-        if (group === null || group === undefined) {
-            throw new Error("Tried to put undefined/null group object");
-        }
-        const group = new models.Group({id: groupId, data: value});
-        await group.save();
-    }
-
-    async removeGroup(groupId) {
-        if (groupId === null || groupId === undefined) {
-            throw new Error("Tried to remove group key for undefined/null id");
-        }
-        const group = new models.Group({id: groupId});
-        await group.destroy();
+        await this.removeAllSessions(addr);
     }
 }
 

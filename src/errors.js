@@ -30,37 +30,37 @@ ReplayableError.prototype.replay = function() {
     return registeredFunctions[this.functionCode].apply(null, this.args);
 };
 
-function IncomingIdentityKeyError(number, message, key) {
+function IncomingIdentityKeyError(addr, message, key) {
     ReplayableError.call(this, {
         functionCode : Type.INIT_SESSION,
-        args         : [number, message]
+        args         : [addr, message]
 
     });
-    this.number = number.split('.')[0];
+    this.addr = addr.split('.')[0];
     this.name = 'IncomingIdentityKeyError';
-    this.message = "The identity of " + this.number + " has changed.";
+    this.message = "The identity of " + this.addr + " has changed.";
     this.identityKey = key;
 }
 IncomingIdentityKeyError.prototype = new ReplayableError();
 IncomingIdentityKeyError.prototype.constructor = IncomingIdentityKeyError;
 
-function OutgoingIdentityKeyError(number, message, timestamp, identityKey) {
+function OutgoingIdentityKeyError(addr, message, timestamp, identityKey) {
     ReplayableError.call(this, {
         functionCode : Type.ENCRYPT_MESSAGE,
-        args         : [number, message, timestamp]
+        args         : [addr, message, timestamp]
     });
-    this.number = number.split('.')[0];
+    this.addr = addr.split('.')[0];
     this.name = 'OutgoingIdentityKeyError';
-    this.message = "The identity of " + this.number + " has changed.";
+    this.message = "The identity of " + this.addr + " has changed.";
     this.identityKey = identityKey;
 }
 OutgoingIdentityKeyError.prototype = new ReplayableError();
 OutgoingIdentityKeyError.prototype.constructor = OutgoingIdentityKeyError;
 
-function OutgoingMessageError(number, message, timestamp, httpError) {
+function OutgoingMessageError(addr, message, timestamp, httpError) {
     ReplayableError.call(this, {
         functionCode : Type.ENCRYPT_MESSAGE,
-        args         : [number, message, timestamp]
+        args         : [addr, message, timestamp]
     });
     this.name = 'OutgoingMessageError';
     if (httpError) {
@@ -72,13 +72,13 @@ function OutgoingMessageError(number, message, timestamp, httpError) {
 OutgoingMessageError.prototype = new ReplayableError();
 OutgoingMessageError.prototype.constructor = OutgoingMessageError;
 
-function SendMessageNetworkError(number, jsonData, httpError, timestamp) {
+function SendMessageNetworkError(addr, jsonData, httpError, timestamp) {
     ReplayableError.call(this, {
         functionCode : Type.TRANSMIT_MESSAGE,
-        args         : [number, jsonData, timestamp]
+        args         : [addr, jsonData, timestamp]
     });
     this.name = 'SendMessageNetworkError';
-    this.number = number;
+    this.addr = addr;
     this.code = httpError.code;
     this.message = httpError.message;
     this.stack = httpError.stack;
@@ -99,9 +99,9 @@ function MessageError(message, httpError) {
 MessageError.prototype = new ReplayableError();
 MessageError.prototype.constructor = MessageError;
 
-function UnregisteredUserError(number, httpError) {
+function UnregisteredUserError(addr, httpError) {
     this.name = 'UnregisteredUserError';
-    this.number = number;
+    this.addr = addr;
     this.code = httpError.code;
     this.message = httpError.message;
     this.stack = httpError.stack;

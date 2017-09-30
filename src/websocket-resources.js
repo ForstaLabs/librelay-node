@@ -5,153 +5,68 @@
 'use strict';
 
 const Long = require('long');
+const WebSocket = require('websocket').w3cwebsocket;
 const crypto = require('crypto');
 const protobufs = require('./protobufs');
 
-/*
- * WebSocket-Resources
- *
- * Create a request-response interface over websockets using the
- * WebSocket-Resources sub-protocol[1].
- *
- * var client = new WebSocketResource(socket, function(request) {
- *    request.respond(200, 'OK');
- * });
- *
- * client.sendRequest({
- *    verb: 'PUT',
- *    path: '/v1/messages',
- *    body: '{ some: "json" }',
- *    success: function(message, status, request) {...},
- *    error: function(message, status, request) {...}
- * });
- *
- * 1. https://github.com/WhisperSystems/WebSocket-Resources
- *
- */
 
 const MSG_TYPES = protobufs.WebSocketMessage.lookup('Type').values;
 
 
-var Request = function(options) {
-    this.verb    = options.verb || options.type;
-    this.path    = options.path || options.url;
-    this.body    = options.body || options.data;
-    this.success = options.success;
-    this.error   = options.error;
-    this.id      = options.id;
-
-    if (this.id === undefined) {
-        var ints = new Uint32Array(2);
-        ints.set(crypto.randomBytes(ints.length));
-        this.id = new Long(ints[0], ints[1], true /*unsigned*/);
+class Request {
+    constructor(wsr, options) {
+        this.wsr = wsr;
+        this.verb = options.verb || options.type;
+        this.path = options.path || options.url;
+        this.body = options.body || options.data;
+        this.success = options.success;
+        this.error = options.error;
+        this.id = options.id;
+        if (!this.id) {
+            var ints = new Uint32Array(2);
+            ints.set(crypto.randomBytes(ints.length));
+            this.id = new Long(ints[0], ints[1], true /*unsigned*/);
+        }
+        if (this.body === undefined) {
+            this.body = null;
+        }
     }
+}
 
-    if (this.body === undefined) {
-        this.body = null;
-    }
-};
-
-var IncomingWebSocketRequest = function(options) {
-    var request = new Request(options);
-    var socket = options.socket;
-
-    this.verb = request.verb;
-    this.path = request.path;
-    this.body = request.body;
-
-    this.respond = function(status, message) {
+class IncomingWebSocketRequest extends Request {
+    respond(status, message) {
         const pbmsg = protobufs.WebSocketMessage.create({
             type: MSG_TYPES.RESPONSE,
             response: {
-                id: request.id,
-                message: message,
-                status: status
+                id: this.id,
+                message,
+                status
             }
         });
-        socket.send(protobufs.WebSocketMessage.encode(pbmsg).finish());
-    };
-};
-
-var outgoing = {};
-
-var OutgoingWebSocketRequest = function(options, socket) {
-    var request = new Request(options);
-    outgoing[request.id] = request;
-    const pbmsg = protobufs.WebSocketMessage.create({
-        type: MSG_TYPES.REQUEST,
-        request: {
-            verb: request.verb,
-            path: request.path,
-            body: request.body || Buffer.alloc(0),
-            id: request.id
-        }
-    });
-    socket.send(protobufs.WebSocketMessage.encode(pbmsg).finish());
-};
-
-
-function WebSocketResource(socket, opts) {
-    opts = opts || {};
-    var handleRequest = opts.handleRequest;
-    if (typeof handleRequest !== 'function') {
-        handleRequest = function(request) {
-            request.respond(404, 'Not found');
-        };
+        return this.wsr.socket.send(protobufs.WebSocketMessage.encode(pbmsg).finish());
     }
-    this.sendRequest = function(options) {
-        return new OutgoingWebSocketRequest(options, socket);
-    };
-
-    socket.onmessage = function(socketMessage) {
-        const blob = Buffer.from(socketMessage.data);
-        const message = protobufs.WebSocketMessage.decode(blob);
-        if (message.type === MSG_TYPES.REQUEST) {
-            handleRequest(new IncomingWebSocketRequest({
-                verb: message.request.verb,
-                path: message.request.path,
-                body: message.request.body,
-                id: message.request.id,
-                socket: socket
-            }));
-        }
-        else if (message.type === MSG_TYPES.RESPONSE ) {
-            var response = message.response;
-            var request = outgoing[response.id];
-            if (request) {
-                request.response = response;
-                var callback = request.error;
-                if (response.status >= 200 && response.status < 300) {
-                    callback = request.success;
-                }
-                if (typeof callback === 'function') {
-                    callback(response.message, response.status, request);
-                }
-            } else {
-                throw new Error('Received response for unknown request ' + message.response.id);
-            }
-        }
-    };
-
-    if (opts.keepalive) {
-        var keepalive = new KeepAlive(this, {
-            path       : opts.keepalive.path,
-            disconnect : opts.keepalive.disconnect
-        });
-        var resetKeepAliveTimer = keepalive.reset.bind(keepalive);
-        socket.addEventListener('open', resetKeepAliveTimer);
-        socket.addEventListener('message', resetKeepAliveTimer);
-        socket.addEventListener('close', keepalive.stop.bind(keepalive));
-    }
-
-    this.close = function(code, reason) {
-        if (!code) { code = 3000; }
-        socket.close(code, reason);
-    };
 }
 
-function KeepAlive(websocketResource, opts) {
-    if (websocketResource instanceof WebSocketResource) {
+class OutgoingWebSocketRequest extends Request {
+    send() {
+        const pbmsg = protobufs.WebSocketMessage.create({
+            type: MSG_TYPES.REQUEST,
+            request: {
+                verb: this.verb,
+                path: this.path,
+                body: this.body,
+                id: this.id
+            }
+        });
+        return this.wsr.socket.send(protobufs.WebSocketMessage.encode(pbmsg).finish());
+    }
+}
+
+class KeepAlive {
+    constructor(websocketResource, opts) {
+        if (!(websocketResource instanceof WebSocketResource)) {
+            throw new TypeError('KeepAlive expected a WebSocketResource');
+        }
         opts = opts || {};
         this.path = opts.path;
         if (this.path === undefined) {
@@ -162,18 +77,14 @@ function KeepAlive(websocketResource, opts) {
             this.disconnect = true;
         }
         this.wsr = websocketResource;
-    } else {
-        throw new TypeError('KeepAlive expected a WebSocketResource');
     }
-}
 
-KeepAlive.prototype = {
-    constructor: KeepAlive,
-    stop: function() {
+    stop() {
         clearTimeout(this.keepAliveTimer);
         clearTimeout(this.disconnectTimer);
-    },
-    reset: function() {
+    }
+
+    reset() {
         clearTimeout(this.keepAliveTimer);
         clearTimeout(this.disconnectTimer);
         this.keepAliveTimer = setTimeout(function() {
@@ -191,8 +102,108 @@ KeepAlive.prototype = {
             } else {
                 this.reset();
             }
-        }.bind(this), 50000); // Set lower than Heroku timeout of 55 seconds.
-    },
-};
+        }.bind(this), 50000);
+    }
+}
+
+class WebSocketResource {
+
+    constructor(url, opts) {
+        this.url = url;
+        this.socket = null;
+        this._outgoingRequests = new Map();
+        this._listeners = [];
+        opts = opts || {};
+        this.handleRequest = opts.handleRequest;
+        if (typeof this.handleRequest !== 'function') {
+            this.handleRequest = request => request.respond(404, 'Not found');
+        }
+        this.addEventListener('message', this.onMessage.bind(this));
+        if (opts.keepalive) {
+            const keepalive = new KeepAlive(this, {
+                path: opts.keepalive.path,
+                disconnect: opts.keepalive.disconnect
+            });
+            const resetKeepAliveTimer = keepalive.reset.bind(keepalive);
+            this.addEventListener('open', resetKeepAliveTimer);
+            this.addEventListener('message', resetKeepAliveTimer);
+            this.addEventListener('close', keepalive.stop.bind(keepalive));
+        }
+    }
+
+    addEventListener(event, callback) {
+        this._listeners.push([event, callback]);
+        if (this.socket) {
+            this.socket.addEventListener(event, callback);
+        }
+    }
+
+    removeEventListener(event, callback) {
+        if (this.socket) {
+            this.socket.removeEventListener(event, callback);
+        }
+        this._listeners = this._listeners.filter(x => !(x[0] === event && x[1] === callback));
+    }
+
+    connect() {
+        this.close();
+        this.socket = new WebSocket(this.url);
+        for (const x of this._listeners) {
+            this.socket.addEventListener(x[0], x[1]);
+        }
+        console.info('Websocket connecting:', this.url.split('?', 1)[0]);
+    }
+
+    close(code, reason) {
+        if (this.socket && this.socket.readyState !== WebSocket.CLOSED) {
+            if (!code) {
+                code = 3000;
+            }
+            this.socket.close(code, reason);
+        }
+        this.socket = null;
+    }
+
+    sendRequest(options) {
+        const request = new OutgoingWebSocketRequest(this, options);
+        this._outgoingRequests.set(request.id.toNumber(), request);
+        request.send();
+        return request;
+    }
+
+    async onMessage(encodedMsg) {
+        const message = protobufs.WebSocketMessage.decode(Buffer.from(encodedMsg.data));
+        if (message.type === MSG_TYPES.REQUEST) {
+            await this.handleRequest(new IncomingWebSocketRequest(this, {
+                verb: message.request.verb,
+                path: message.request.path,
+                body: message.request.body,
+                id: message.request.id
+            }));
+        } else if (message.type === MSG_TYPES.RESPONSE) {
+            const response = message.response;
+            const key = response.id.toNumber();
+            if (this._outgoingRequests.has(key)) {
+                const request = this._outgoingRequests.get(key);
+                this._outgoingRequests.delete(key);
+                request.response = response;
+                let callback;
+                if (response.status >= 200 && response.status < 300) {
+                    callback = request.success;
+                } else {
+                    callback = request.error;
+                }
+                if (typeof callback === 'function') {
+                    await callback(response.message, response.status, request);
+                }
+            } else {
+                console.error('Unmatched websocket response', key, message, encodedMsg);
+                throw ReferenceError('Unmatched WebSocket Response');
+            }
+        } else {
+            throw new TypeError(`Unhandled message type: ${message.type}`);
+        }
+    }
+}
 
 module.exports = WebSocketResource;
