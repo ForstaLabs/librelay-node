@@ -3,10 +3,11 @@
 const Event = require('./event');
 const EventTarget = require('./event_target');
 const OutgoingMessage = require('./outgoing_message');
-const crypto = require('./crypto.js');
+const crypto = require('./crypto');
 const errors = require('./errors.js');
 const libsignal = require('libsignal');
-const protobufs = require('./protobufs.js');
+const node_crypto = require('crypto');
+const protobufs = require('./protobufs');
 const queueAsync = require('./queue_async');
 const storage = require('./storage');
 
@@ -86,8 +87,8 @@ class MessageSender extends EventTarget {
             return;
         }
         const ptr = new protobufs.AttachmentPointer();
-        ptr.key = libsignal.crypto.getRandomBytes(64);
-        const iv = libsignal.crypto.getRandomBytes(16);
+        ptr.key = node_crypto.randomBytes(64);
+        const iv = node_crypto.randomBytes(16);
         const encryptedBin = await crypto.encryptAttachment(attachment.data, ptr.key, iv);
         const id = await this.server.putAttachment(encryptedBin);
         ptr.id = id;
@@ -218,14 +219,14 @@ class MessageSender extends EventTarget {
         const data = content.dataMessage = new protobufs.DataMessage();
         data.flags = protobufs.DataMessage.Flags.END_SESSION;
         const outmsg = this.sendMessageProto(timestamp, [addr], content);
-        const deviceIds = await storage.protocol.getDeviceIds(addr);
+        const deviceIds = await storage.getDeviceIds(addr);
         await new Promise(resolve => {
             outmsg.on('complete', resolve);
             outmsg.on('error', resolve);
         });
         await Promise.all(deviceIds.map(deviceId => {
             const address = new libsignal.SignalProtocolAddress(addr, deviceId);
-            const sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
+            const sessionCipher = new libsignal.SessionCipher(storage, address);
             return sessionCipher.closeOpenSessionForDevice();
         }));
     }

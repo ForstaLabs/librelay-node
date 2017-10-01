@@ -36,13 +36,13 @@ class RedisStorage {
             model.id = guid();
             model.set(model.idAttribute, model.id);
         }
-        await this.redis.set(this._itemName(model.id),
+        await this.redis.put(this._itemName(model.id),
                              this.serialize(model));
         return await this.find(model);
     }
 
     async update(model) {
-        await this.redis.set(this._itemName(model.id),
+        await this.redis.put(this._itemName(model.id),
                              this.encode(model));
         return await this.find(model);
     }
@@ -65,7 +65,7 @@ class RedisStorage {
     }
 
     async destroy(model) {
-        await this.redis.del(this._itemName(model.id));
+        await this.redis.remove(this._itemName(model.id));
         return model;
     }
 

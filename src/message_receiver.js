@@ -198,7 +198,7 @@ class MessageReceiver extends EventTarget {
     async decrypt(envelope, ciphertext) {
         const addr = new libsignal.SignalProtocolAddress(envelope.source,
                                                          envelope.sourceDevice);
-        const sessionCipher = new libsignal.SessionCipher(storage.protocol, addr);
+        const sessionCipher = new libsignal.SessionCipher(storage, addr);
         if (envelope.type === ENV_TYPES.CIPHERTEXT) {
             return this.unpad(await sessionCipher.decryptWhisperMessage(ciphertext));
         } else if (envelope.type === ENV_TYPES.PREKEY_BUNDLE) {
@@ -325,7 +325,7 @@ class MessageReceiver extends EventTarget {
 
     tryMessageAgain(from, ciphertext) {
         const address = libsignal.SignalProtocolAddress.fromString(from);
-        const sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
+        const sessionCipher = new libsignal.SessionCipher(storage, address);
         console.warn('retrying prekey whisper message');
         return this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address).then(function(plaintext) {
             const finalMessage = protobufs.DataMessage.decode(plaintext);
@@ -341,10 +341,10 @@ class MessageReceiver extends EventTarget {
     }
 
     async handleEndSession(addr) {
-        const deviceIds = await storage.protocol.getDeviceIds(addr);
+        const deviceIds = await storage.getDeviceIds(addr);
         await Promise.all(deviceIds.map(deviceId => {
             const address = new libsignal.SignalProtocolAddress(addr, deviceId);
-            const sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
+            const sessionCipher = new libsignal.SessionCipher(storage, address);
             console.warn('Closing session for', addr, deviceId);
             return sessionCipher.closeOpenSessionForDevice();
         }));

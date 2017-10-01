@@ -67,9 +67,9 @@ class OutgoingMessage {
     }
 
     async reloadDevicesAndSend(addr, recurse) {
-        const deviceIds = await storage.protocol.getDeviceIds(addr);
+        const deviceIds = await storage.getDeviceIds(addr);
         if (!deviceIds.length) {
-            const ourAddr = await storage.protocol.getState('addr');
+            const ourAddr = await storage.getState('addr');
             if (addr === ourAddr) {
                 await this.emitSent(addr);
             } else {
@@ -89,7 +89,7 @@ class OutgoingMessage {
                     device.identityKey = response.identityKey;
                     if (updateDevices === undefined || updateDevices.indexOf(device.deviceId) > -1) {
                         const address = new libsignal.SignalProtocolAddress(addr, device.deviceId);
-                        const builder = new libsignal.SessionBuilder(storage.protocol, address);
+                        const builder = new libsignal.SessionBuilder(storage, address);
                         try {
                             await builder.processPreKey(device);
                         } catch(e) {
@@ -168,7 +168,7 @@ class OutgoingMessage {
         try {
             messages = await Promise.all(deviceIds.map(id => {
                 const address = new libsignal.SignalProtocolAddress(addr, id);
-                const sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
+                const sessionCipher = new libsignal.SessionCipher(storage, address);
                 ciphers[address.getDeviceId()] = sessionCipher;
                 return this.encryptToDevice(address, paddedPlaintext, sessionCipher);
             }));
@@ -221,9 +221,9 @@ class OutgoingMessage {
     }
 
     async getStaleDeviceIdsForAddr(addr) {
-        const deviceIds = await storage.protocol.getDeviceIds(addr);
+        const deviceIds = await storage.getDeviceIds(addr);
         if (!deviceIds.length) {
-            const ourAddr = await storage.protocol.getState('addr');
+            const ourAddr = await storage.getState('addr');
             if (addr !== ourAddr) {
                 deviceIds.push(1); // Just try ID 1 first; The server will correct us as needed.
             }
@@ -242,7 +242,7 @@ class OutgoingMessage {
     async removeDeviceIdsForAddr(addr, deviceIdsToRemove) {
         for (const id of deviceIdsToRemove) {
             const encodedAddr = addr + "." + id;
-            await storage.protocol.removeSession(encodedAddr);
+            await storage.removeSession(encodedAddr);
         }
     }
 

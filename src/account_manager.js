@@ -2,7 +2,9 @@
 
 'use strict';
 
-const api = require('./api');
+const TextSecureServer = require('./textsecure_server');
+const crypto = require('crypto');
+const fetch = require('node-fetch');
 const libsignal = require('libsignal');
 const storage = require('./storage');
 
@@ -12,34 +14,60 @@ const lastResortKeyId = 0xdeadbeef & ((2 ** 31) - 1); // Must fit inside signed 
 class AccountManager {
 
     constructor(url, username, password, prekeyLowWater=20, prekeyHighWater=200) {
-        this.server = new api.TextSecureServer(url, username, password);
+        this.server = new TextSecureServer(url, username, password);
         this.preKeyLowWater = prekeyLowWater;  // Add more keys when we get this low.
         this.preKeyHighWater = prekeyHighWater; // Max fill level for prekeys.
     }
 
-    _generateDeviceInfo(identityKeyPair, name) {
-        const passwd = libsignal.crypto.getRandomBytes(16).toString('base64');
-        return {
+    static async registerAccount({token, jwt, url='https://ccsm-dev-api.forsta.io', name='librelay'}) {
+        if (!token && !jwt) {
+            throw TypeError("`token` or `jwt` required");
+        }
+        const authHeader = token ? `Token ${token}` : `JWT ${jwt}`;
+        const identityKeyPair = libsignal.KeyHelper.generateIdentityKeyPair();
+        const passwordB64 = crypto.randomBytes(16).toString('base64');
+        const password = passwordB64.substring(0, passwordB64.length - 2);
+        const deviceInfo = {
             name,
             identityKeyPair,
-            signalingKey: libsignal.crypto.getRandomBytes(32 + 20),
+            signalingKey: crypto.randomBytes(32 + 20),
             registrationId: libsignal.KeyHelper.generateRegistrationId(),
-            password: passwd.substring(0, passwd.length - 2)
+            password
         };
-    }
-
-    async registerAccount(authToken, url='https://api.forsta.io', name='librelay') {
-        const identity = await libsignal.KeyHelper.generateIdentityKeyPair();
-        const devInfo = await this._generateDeviceInfo(identity, name);
-        await this.server.createAccount(url, authToken, devInfo);
-        await this.saveDeviceState(devInfo);
-        const keys = await this.generateKeys(this.preKeyHighWater);
-        await this.server.registerKeys(keys);
+        const accountInfo = {
+            signalingKey: deviceInfo.signalingKey.toString('base64'),
+            supportsSms: false,
+            fetchesMessages: true,
+            registrationId: deviceInfo.registrationId,
+            name,
+            password
+        };
+        const resp = await fetch(url + '/v1/provision-proxy/', {
+            method: 'PUT',
+            headers: {
+                "Authorization": authHeader,
+                "Content-Type": 'application/json'
+            },
+            body: JSON.stringify(accountInfo)
+        });
+        if (!resp.ok) {
+            throw new Error(await resp.text());
+        }
+        const respData = await resp.json();
+        deviceInfo.addr = respData.userId;
+        deviceInfo.deviceId = respData.deviceId;
+        deviceInfo.serverUrl = respData.serverUrl;
+        deviceInfo.username = `${deviceInfo.addr}.${deviceInfo.deviceId}`;
+        const instance = new this(deviceInfo.serverUrl, deviceInfo.username, deviceInfo.password);
+        await instance.saveDeviceState(deviceInfo);
+        const keys = await instance.generateKeys(instance.preKeyHighWater);
+        await instance.server.registerKeys(keys);
+        return instance;
     }
 
     async refreshPreKeys() {
         const preKeyCount = await this.server.getMyKeys();
-        const lastResortKey = await storage.protocol.loadPreKey(lastResortKeyId);
+        const lastResortKey = await storage.loadPreKey(lastResortKeyId);
         if (preKeyCount <= this.preKeyLowWater || !lastResortKey) {
             // The server replaces existing keys so just go to the hilt.
             console.info("Refreshing pre-keys...");
@@ -49,9 +77,9 @@ class AccountManager {
     }
 
     async saveDeviceState(info) {
-        await storage.protocol.clearSessionStore();
-        await storage.protocol.removeOurIdentity();
-        const wipestate = [
+        await storage.clearSessionStore();
+        await storage.removeOurIdentity();
+        const state = [
             'addr',
             'deviceId',
             'name',
@@ -60,21 +88,21 @@ class AccountManager {
             'signalingKey',
             'username',
         ];
-        await Promise.all(wipestate.map(key => storage.protocol.removeState(key)));
+        await Promise.all(state.map(k => storage.removeState(k)));
         // update our own identity key, which may have changed
         // if we're relinking after a reinstall on the master device
-        await storage.protocol.removeIdentityKey(info.addr);
-        await storage.protocol.saveIdentity(info.addr, info.identityKeyPair.pubKey);
-        await storage.protocol.saveOurIdentity(info.identityKeyPair);
-        await storage.protocol.putStateDict(info);
+        await storage.removeIdentityKey(info.addr);
+        await storage.saveIdentity(info.addr, info.identityKeyPair.pubKey);
+        await storage.saveOurIdentity(info.identityKeyPair);
+        await Promise.all(state.map(k => storage.putState(k, info[k])));
     }
 
     async generateKeys(count, progressCallback) {
         if (typeof progressCallback !== 'function') {
             progressCallback = undefined;
         }
-        const startId = await storage.protocol.getState('maxPreKeyId', 1);
-        const signedKeyId = await storage.protocol.getState('signedKeyId', 1);
+        const startId = await storage.getState('maxPreKeyId', 1);
+        const signedKeyId = await storage.getState('signedKeyId', 1);
 
         if (typeof startId != 'number') {
             throw new Error('Invalid maxPreKeyId');
@@ -83,17 +111,17 @@ class AccountManager {
             throw new Error('Invalid signedKeyId');
         }
 
-        let lastResortKey = await storage.protocol.loadPreKey(lastResortKeyId);
+        let lastResortKey = await storage.loadPreKey(lastResortKeyId);
         if (!lastResortKey) {
             // Last resort key only used if our prekey pool is drained faster than
             // we refresh it.  This prevents message dropping at the expense of
             // forward secrecy impairment.
             const pk = await libsignal.KeyHelper.generatePreKey(lastResortKeyId);
-            await storage.protocol.storePreKey(lastResortKeyId, pk.keyPair);
+            await storage.storePreKey(lastResortKeyId, pk.keyPair);
             lastResortKey = pk.keyPair;
         }
 
-        const ourIdent = await storage.protocol.getOurIdentity();
+        const ourIdent = await storage.getOurIdentity();
         const result = {
             preKeys: [],
             identityKey: ourIdent.pubKey,
@@ -105,7 +133,7 @@ class AccountManager {
 
         for (let keyId = startId; keyId < startId + count; ++keyId) {
             const preKey = await libsignal.KeyHelper.generatePreKey(keyId);
-            await storage.protocol.storePreKey(preKey.keyId, preKey.keyPair);
+            await storage.storePreKey(preKey.keyId, preKey.keyPair);
             result.preKeys.push({
                 keyId: preKey.keyId,
                 publicKey: preKey.keyPair.pubKey
@@ -116,15 +144,15 @@ class AccountManager {
         }
 
         const sprekey = await libsignal.KeyHelper.generateSignedPreKey(ourIdent, signedKeyId);
-        await storage.protocol.storeSignedPreKey(sprekey.keyId, sprekey.keyPair);
+        await storage.storeSignedPreKey(sprekey.keyId, sprekey.keyPair);
         result.signedPreKey = {
             keyId: sprekey.keyId,
             publicKey: sprekey.keyPair.pubKey,
             signature: sprekey.signature
         };
 
-        await storage.protocol.removeSignedPreKey(signedKeyId - 2);
-        await storage.protocol.putStateDict({
+        await storage.removeSignedPreKey(signedKeyId - 2);
+        await storage.putStateDict({
             maxPreKeyId: startId + count,
             signedKeyId: signedKeyId + 1
         });

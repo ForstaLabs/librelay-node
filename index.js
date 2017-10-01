@@ -4,4 +4,5 @@ module.exports = {
     MessageReceiver: require('./src/message_receiver.js'),
     MessageSender: require('./src/message_sender.js'),
     storage: require('./src/storage'),
+    auth: require('./src/auth')
 };
