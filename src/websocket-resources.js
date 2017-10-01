@@ -5,7 +5,7 @@
 'use strict';
 
 const Long = require('long');
-const WebSocket = require('websocket').w3cwebsocket;
+const WebSocket = require('ws');
 const crypto = require('crypto');
 const protobufs = require('./protobufs');
 
