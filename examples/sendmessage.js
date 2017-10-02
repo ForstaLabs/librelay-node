@@ -1,31 +1,43 @@
 const relay = require('..');
 const process = require('process');
-const readline = require('readline');
+const uuid4 = require('uuid/v4');
 
 process.on('unhandledRejection', error => {
     console.error(error);
-    //process.exit(1);
 });
 
-const rl = readline.createInterface(process.stdin, process.stdout);
-
-async function input(prompt) {
-    return await new Promise(resolve => rl.question(prompt, resolve));
-};
-
-async function onMessage(ev) {
-    console.log("Got Message", ev.data);
-}
-
 (async function main() {
-    const msgReceiver = await relay.MessageReceiver.factory();
-    msgReceiver.addEventListener('message', onMessage);
-    msgReceiver.connect();
     const msgSender = await relay.MessageSender.factory();
-    debugger;
-    const bus = await msgSender.sendMessageToAddrs(["76399cf3-0898-4000-a565-0119fd1c2284"], [], [], Date.now());
-    bus.on('error', ev => console.error(ev));
-    bus.on('sent', ev => console.info('Sent', ev));
-    bus.on('deliver', ev => console.info('Delivered', ev));
-    debugger;
+    async function send(msg) {
+        const bus = await msgSender.sendMessageToAddrs(["76399cf3-0898-4000-a565-0119fd1c2284"], [{
+            version: 1,
+            threadType: 'conversation',
+            threadId: 'ae6a43d4-f0cd-41fc-9457-0d98fd11da36',
+            messageType: 'content',
+            messageId: uuid4(),
+            userAgent: 'librelay',
+            data: {
+                body: [{
+                    type: 'text/plain',
+                    value: msg
+                }]
+            },
+            sender: {
+                userId: await relay.storage.getState('addr')
+            },
+            distribution: {
+                expression: '(<0ceeb1aa-fd9a-4df3-931d-864481574c54>+<cb6eb937-67e2-4cca-849a-d640b88d9eae>)',
+            }
+        }], [], Date.now());
+        await new Promise((resolve, reject) => {
+            bus.on('error', ev => reject(ev));
+            bus.on('sent', ev => resolve(ev));
+        });
+    }
+    const sendJobs = [];
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', chunk => {
+        sendJobs.push(send(chunk));
+    });
+    process.stdin.on('close', () => Promise.all(sendJobs).then(() => process.exit(0)));
 })();
