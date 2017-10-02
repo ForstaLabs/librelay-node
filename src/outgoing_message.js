@@ -2,17 +2,15 @@
 
 const errors = require('./errors.js');
 const libsignal = require('libsignal');
-const protobufs = require('./protobufs.js');
 const storage = require('./storage');
 
 
 class OutgoingMessage {
 
-    constructor(server, timestamp, message) {
-        console.assert(message instanceof protobufs.Content);
+    constructor(server, timestamp, messageBuffer) {
         this.server = server;
         this.timestamp = timestamp;
-        this.message = message;
+        this.messageBuffer = messageBuffer;
         this.sent = [];
         this.errors = [];
         this.created = Date.now();
@@ -44,7 +42,7 @@ class OutgoingMessage {
 
     async emitError(addr, reason, error) {
         if (!error || error instanceof errors.ProtocolError && error.code !== 404) {
-            error = new errors.OutgoingMessageError(addr, this.message.toArrayBuffer(),
+            error = new errors.OutgoingMessageError(addr, this.messageBuffer,
                                                     this.timestamp, error);
         }
         error.addr = addr;
@@ -99,7 +97,7 @@ class OutgoingMessage {
                                     await _this.getKeysForAddr(addr, updateDevices, /*reentrant*/ true);
                                 } else {
                                     throw new errors.OutgoingIdentityKeyError(addr,
-                                        _this.message.toArrayBuffer(), _this.timestamp,
+                                        _this.messageBuffer, _this.timestamp,
                                         device.identityKey);
                                 }
                             } else {
@@ -158,19 +156,18 @@ class OutgoingMessage {
 
     async doSendMessage(addr, deviceIds, recurse) {
         const ciphers = {};
-        const plaintext = this.message.toArrayBuffer();
-        const paddedPlaintext = new Uint8Array(
-            this.getPaddedMessageLength(plaintext.byteLength + 1) - 1
-        );
-        paddedPlaintext.set(new Uint8Array(plaintext));
-        paddedPlaintext[plaintext.byteLength] = 0x80;
+        let mBuf = this.messageBuffer;
+        const minLen = this.getPaddedMessageLength(mBuf.byteLength + 1) - 1;
+        const paddedBuf = new Buffer(minLen);
+        paddedBuf.set(mBuf);
+        paddedBuf[mBuf.byteLength] = 0x80;
         let messages;
         try {
             messages = await Promise.all(deviceIds.map(id => {
                 const address = new libsignal.SignalProtocolAddress(addr, id);
                 const sessionCipher = new libsignal.SessionCipher(storage, address);
                 ciphers[address.getDeviceId()] = sessionCipher;
-                return this.encryptToDevice(address, paddedPlaintext, sessionCipher);
+                return this.encryptToDevice(address, paddedBuf, sessionCipher);
             }));
         } catch(e) {
             this.emitError(addr, "Failed to create message", e);
@@ -206,9 +203,9 @@ class OutgoingMessage {
         this.emitSent(addr);
     }
 
-    async encryptToDevice(address, plaintext, sessionCipher) {
-        const ciphertext = await sessionCipher.encrypt(plaintext);
-        return this.toJSON(address, ciphertext);
+    async encryptToDevice(address, mBuf, sessionCipher) {
+        const encrypted = await sessionCipher.encrypt(mBuf);
+        return this.toJSON(address, encrypted);
     }
 
     toJSON(address, encryptedMsg) {
@@ -231,7 +228,7 @@ class OutgoingMessage {
         const updateDevices = [];
         for (const id of deviceIds) {
             const address = new libsignal.SignalProtocolAddress(addr, id);
-            const sessionCipher = new libsignal.SessionCipher(storage.protocol, address);
+            const sessionCipher = new libsignal.SessionCipher(storage, address);
             if (!(await sessionCipher.hasOpenSession())) {
                 updateDevices.push(id);
             }

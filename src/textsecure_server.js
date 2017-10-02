@@ -6,6 +6,7 @@ const http = require('http');
 const https = require('https');
 const fetch = require('node-fetch');
 const errors = require('./errors');
+const storage = require('./storage');
 
 const URL_CALLS = {
     accounts: "/v1/accounts",
@@ -43,8 +44,15 @@ class TextSecureServer {
         this.attachment_id_regex = RegExp("^https://.*/(\\d+)?");
     }
 
+    static async factory() {
+        const url = await storage.getState('serverUrl');
+        const username = await storage.getState('username');
+        const password = await storage.getState('password');
+        return new this(url, username, password);
+    }
+
     authHeader(username, password) {
-        const token = (username + ':' + password).toString('base64');
+        const token = Buffer.from(username + ':' + password).toString('base64');
         return 'Basic ' + token;
     }
 
@@ -222,7 +230,7 @@ class TextSecureServer {
             console.error("Download attachement error:", msg);
             throw new Error('Download Attachment Error: ' + msg);
         }
-        return await attachment.arrayBuffer();
+        return await attachment.buffer();
     }
 
     async putAttachment(body) {
@@ -255,13 +263,13 @@ class TextSecureServer {
 
     getMessageWebSocketURL() {
         return [
-            this.base_url.replace('https://', 'wss://').replace('http://', 'ws://'),
-            '/v1/websocket/?login=', encodeURIComponent(this._username),
-            '&password=', encodeURIComponent(this._password)].join('');
+            this.url.replace('https://', 'wss://').replace('http://', 'ws://'),
+            '/v1/websocket/?login=', encodeURIComponent(this.username),
+            '&password=', encodeURIComponent(this.password)].join('');
     }
 
     getProvisioningWebSocketURL () {
-        return this.base_url.replace('https://', 'wss://').replace('http://', 'ws://') +
+        return this.url.replace('https://', 'wss://').replace('http://', 'ws://') +
                                 '/v1/websocket/provisioning/';
     }
 

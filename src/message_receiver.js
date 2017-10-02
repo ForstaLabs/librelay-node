@@ -6,6 +6,7 @@
 
 const Event = require('./event');
 const EventTarget = require('./event_target');
+const TextSecureServer = require('./textsecure_server');
 const WebSocketResource = require('./websocket-resources');
 const crypto = require('./crypto');
 const errors = require('./errors');
@@ -20,9 +21,12 @@ const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
 
 class MessageReceiver extends EventTarget {
 
-    constructor(tss, signalingKey, noWebSocket) {
+    constructor(tss, addr, deviceId, signalingKey, noWebSocket) {
         super();
+        console.assert(tss && addr && deviceId && signalingKey);
         this.tss = tss;
+        this.addr = addr;
+        this.deviceId = deviceId;
         this.signalingKey = signalingKey;
         if (!noWebSocket) {
             const url = this.tss.getMessageWebSocketURL();
@@ -36,9 +40,14 @@ class MessageReceiver extends EventTarget {
             this.wsr.addEventListener('close', this.onSocketClose.bind(this));
             this.wsr.addEventListener('error', this.onSocketError.bind(this));
         }
-        // XXX strange (unused?) api...
-        errors.replay.registerFunction(this.tryMessageAgain.bind(this),
-                                       errors.replay.Type.INIT_SESSION);
+    }
+
+    static async factory(noWebSocket) {
+        const tss = await TextSecureServer.factory();
+        const addr = await storage.getState('addr');
+        const deviceId = await storage.getState('deviceId');
+        const signalingKey = await storage.getState('signalingKey');
+        return new this(tss, addr, deviceId, signalingKey, noWebSocket);
     }
 
     connect() {
@@ -223,7 +232,7 @@ class MessageReceiver extends EventTarget {
         if (sent.message.flags & DATA_FLAGS.END_SESSION) {
             await this.handleEndSession(sent.destination);
         }
-        await this.processDecrypted(sent.message, this.tss.addr);
+        await this.processDecrypted(sent.message, this.addr);
         const ev = new Event('sent');
         ev.data = {
             source: envelope.source,
@@ -273,10 +282,10 @@ class MessageReceiver extends EventTarget {
     }
 
     async handleSyncMessage(message, envelope, content) {
-        if (envelope.source !== this.tss.addr) {
+        if (envelope.source !== this.addr) {
             throw new ReferenceError('Received sync message from another addr');
         }
-        if (envelope.sourceDevice == this.tss.deviceId) {
+        if (envelope.sourceDevice == this.deviceId) {
             throw new ReferenceError('Received sync message from our own device');
         }
         if (message.sent) {

@@ -13,7 +13,7 @@ async function requestCode(org, user, url=DEFAULT_URL) {
         console.error('Request error:', await resp.text());
         throw Error(resp.status);
     }
-    return code => validateCode(org, user, code, url=url);
+    return code => validateCode(org, user, code, url);
 }
 
 async function validateCode(org, user, code, url=DEFAULT_URL) {

@@ -2,26 +2,23 @@ const relay = require('..');
 const process = require('process');
 const readline = require('readline');
 
-const ORG = 'robots';
-const USER = 'bot.1';
+process.on('unhandledRejection', error => {
+    console.error(error);
+    process.exit(1);
+});
 
-var rl = readline.createInterface(process.stdin, process.stdout);
+const rl = readline.createInterface(process.stdin, process.stdout);
+
 async function input(prompt) {
     return await new Promise(resolve => rl.question(prompt, resolve));
 };
 
-(async function() {
-    let am;
-    const validate = await relay.auth.requestCode(ORG, USER);
-    const code = await input("Verification Code: ");
+(async function main() {
+    const org = await input("Organization: ");
+    const user = await input("Username: ");
+    const validate = await relay.auth.requestCode(org, user);
+    const code = await input("SMS Verification Code: ");
     const auth = await validate(code);
-    const jwt = auth.token;
-    
-    try {
-        am = await relay.AccountManager.registerAccount({jwt});
-    } catch(e) {
-        debugger;
-    }
-    debugger;
+    await relay.AccountManager.register({jwt: auth.token});
+    process.exit(0);
 })();
-

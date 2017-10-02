@@ -50,16 +50,46 @@ class AsyncRedisClient extends redis.RedisClient {
 }
 
 
-console.log(`Connecting to redis: ${process.env.REDIS_URL || "localhost"}`);
 const client = AsyncRedisClient.createClient(process.env.REDIS_URL);
 const cache = new Map();
+
+function encode(data) {
+    const o = {};
+    if (data instanceof Buffer) {
+        o.type = 'buffer';
+        o.data = data.toString('base64');
+    } else if (data instanceof ArrayBuffer) {
+        throw TypeError("ArrayBuffer not supported");
+    } else if (data instanceof Uint8Array) {
+        o.type = 'uint8array';
+        o.data = Buffer.from(data).toString('base64');
+    } else {
+        o.data = data;
+    }
+    return JSON.stringify(o);
+}
+
+function decode(obj) {
+    const o = JSON.parse(obj);
+    if (o.type) {
+        if (o.type === 'buffer') {
+            return Buffer.from(o.data, 'base64');
+        } else if (o.type === 'uint8array') {
+            return Uint8Array.from(Buffer.from(o.data, 'base64'));
+        } else {
+            throw TypeError("Unsupported type: " + o.type);
+        }
+    } else {
+        return o.data;
+    }
+}
 
 
 async function put(key, value) {
     if (value === undefined) {
         throw new Error("Tried to store undefined");
     }
-    await client.set(key, JSON.stringify(value));
+    await client.set(key, encode(value));
     cache.set(key, value);
 }
 
@@ -67,7 +97,7 @@ async function putDict(dict) {
     const saves = [];
     for (const x of Object.entries(dict)) {
         cache.set(x[0], x[1]);
-        saves.push(client.set(x[0], JSON.stringify(x[1])).catch(() => cache.delete(x[0])));
+        saves.push(client.set(x[0], encode(x[1])).catch(() => cache.delete(x[0])));
     }
     await Promise.all(saves);
 }
@@ -77,7 +107,7 @@ async function get(key, defaultValue) {
         return cache.get(key);
     }
     if (await client.exists(key)) {
-        const value = JSON.parse(await client.get(key));
+        const value = decode(await client.get(key));
         cache.set(key, value);
         return value;
     } else {
@@ -89,7 +119,7 @@ async function getDict(keys) {
     const values = await Promise.all(keys.map(k => client.get(k)));
     const dict = {};
     for (let i = 0; i < keys.length; i++) {
-        dict[keys[i]] = JSON.parse(values[i]);
+        dict[keys[i]] = decode(values[i]);
     }
     return dict;
 }

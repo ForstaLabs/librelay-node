@@ -13,7 +13,7 @@ class EventTarget {
         if (!(ev instanceof Event)) {
             throw new TypeError('Expects an event');
         }
-        if (!this._listeners) {
+        if (!this._listeners || !this._listeners[ev.type]) {
             return;
         }
         for (const callback of this._listeners[ev.type]) {

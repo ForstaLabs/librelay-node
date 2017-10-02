@@ -1,21 +1,15 @@
-/*
- * vim: ts=4:sw=4:expandtab
- */
+// vim: ts=4:sw=4:expandtab
+
 'use strict';
 
-var registeredFunctions = {};
-var Type = {
+const Type = {
     ENCRYPT_MESSAGE: 1,
     INIT_SESSION: 2,
     TRANSMIT_MESSAGE: 3,
     REBUILD_MESSAGE: 4,
 };
-exports.replay = {
-    Type: Type,
-    registerFunction: function(func, functionCode) {
-        registeredFunctions[functionCode] = func;
-    }
-};
+
+class TextSecureError extends Error {}
 
 function ReplayableError(options) {
     options = options || {};
@@ -23,12 +17,8 @@ function ReplayableError(options) {
     this.functionCode = options.functionCode;
     this.args         = options.args;
 }
-ReplayableError.prototype = new Error();
+ReplayableError.prototype = new TextSecureError();
 ReplayableError.prototype.constructor = ReplayableError;
-
-ReplayableError.prototype.replay = function() {
-    return registeredFunctions[this.functionCode].apply(null, this.args);
-};
 
 function IncomingIdentityKeyError(addr, message, key) {
     ReplayableError.call(this, {
@@ -72,19 +62,19 @@ function OutgoingMessageError(addr, message, timestamp, httpError) {
 OutgoingMessageError.prototype = new ReplayableError();
 OutgoingMessageError.prototype.constructor = OutgoingMessageError;
 
-function SendMessageNetworkError(addr, jsonData, httpError, timestamp) {
+function SendMessageError(addr, jsonData, httpError, timestamp) {
     ReplayableError.call(this, {
         functionCode : Type.TRANSMIT_MESSAGE,
         args         : [addr, jsonData, timestamp]
     });
-    this.name = 'SendMessageNetworkError';
+    this.name = 'SendMessageError';
     this.addr = addr;
     this.code = httpError.code;
     this.message = httpError.message;
     this.stack = httpError.stack;
 }
-SendMessageNetworkError.prototype = new ReplayableError();
-SendMessageNetworkError.prototype.constructor = SendMessageNetworkError;
+SendMessageError.prototype = new ReplayableError();
+SendMessageError.prototype.constructor = SendMessageError;
 
 function MessageError(message, httpError) {
     ReplayableError.call(this, {
@@ -106,13 +96,38 @@ function UnregisteredUserError(addr, httpError) {
     this.message = httpError.message;
     this.stack = httpError.stack;
 }
-UnregisteredUserError.prototype = new Error();
+UnregisteredUserError.prototype = new TextSecureError();
 UnregisteredUserError.prototype.constructor = UnregisteredUserError;
 
-exports.UnregisteredUserError = UnregisteredUserError;
-exports.SendMessageNetworkError = SendMessageNetworkError;
-exports.IncomingIdentityKeyError = IncomingIdentityKeyError;
-exports.OutgoingIdentityKeyError = OutgoingIdentityKeyError;
-exports.ReplayableError = ReplayableError;
-exports.OutgoingMessageError = OutgoingMessageError;
-exports.MessageError = MessageError;
+class ProtocolError extends TextSecureError {
+    constructor(code, response) {
+        super();
+        this.name = 'ProtocolError';
+        if (code > 999 || code < 100) {
+            code = -1;
+        }
+        this.code = code;
+        this.response = response;
+    }
+}
+
+class NetworkError extends TextSecureError {
+    constructor(a, b, c) {
+        super(a, b, c);
+        this.name = 'NetworkError';
+    }
+}
+
+
+module.exports = {
+    IncomingIdentityKeyError,
+    MessageError,
+    NetworkError,
+    OutgoingIdentityKeyError,
+    OutgoingMessageError,
+    ProtocolError,
+    ReplayableError,
+    SendMessageError,
+    TextSecureError,
+    UnregisteredUserError
+};

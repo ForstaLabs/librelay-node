@@ -12,7 +12,7 @@
   "dependencies": {
     "backbone": "1.3.3",
     "bufferutil": "3.0.2",
-    "libsignal": "forstalabs/libsignal-node#2f24534689761b19b7f40e7ba0493db3eac0887f",
+    "libsignal": "forstalabs/libsignal-node#6150f0f06b17ee9b942bac3c3cee4e8527ffacb5",
     "long": "3.2.0",
     "node-fetch": "1.7.3",
     "protobufjs": "6.8.0",

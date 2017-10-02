@@ -42,6 +42,12 @@ class StorageInterface {
     }
 
     async getIdentityKeyPair() {
+        // XXX Deprecate this...
+        return await this.getOurIdentity();
+    }
+
+    async getLocalIdentityKeyPair() {
+        // XXX Deprecate this...
         return await this.getOurIdentity();
     }
 
@@ -59,16 +65,19 @@ class StorageInterface {
         return await this.store.get('ourRegistrationId');
     }
 
+    async getLocalRegistrationId() {
+        // XXX Deprecate this...
+        return await this.getOurRegistrationId();
+    }
+
     /* Returns a prekeypair object or undefined */
     async loadPreKey(keyId) {
         var prekey = new models.PreKey({id: keyId});
         try {
             await prekey.fetch();
         } catch(e) {
-            console.warn("Missing PreKey:", keyId);
             return;
         }
-        console.log("Loaded PreKey:", keyId);
         return {
             pubKey: Buffer.from(prekey.get('publicKey'), 'base64'),
             privKey: Buffer.from(prekey.get('privateKey'), 'base64')
@@ -76,7 +85,6 @@ class StorageInterface {
     }
 
     async storePreKey(keyId, keyPair) {
-        console.log("Storing PreKey:", keyId);
         var prekey = new models.PreKey({
             id: keyId,
             publicKey: keyPair.pubKey.toString('base64'),
@@ -86,7 +94,6 @@ class StorageInterface {
     }
 
     async removePreKey(keyId) {
-        console.log("Removing PreKey:", keyId);
         const prekey = new models.PreKey({id: keyId});
         try {
             await prekey.destroy();
@@ -202,7 +209,6 @@ class StorageInterface {
         } catch(e) { /* not found */ }
         const oldpublicKey = identityKey.get('publicKey');
         if (!oldpublicKey) {
-            console.log("Saving new identity key:", identifier);
             await identityKey.save({
                 publicKey: publicKey.toString('base64')
             });

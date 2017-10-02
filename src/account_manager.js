@@ -9,17 +9,18 @@ const libsignal = require('libsignal');
 const storage = require('./storage');
 
 const lastResortKeyId = 0xdeadbeef & ((2 ** 31) - 1); // Must fit inside signed 32bit int.
+const defaultRegisterURL = 'https://ccsm-dev-api.forsta.io';
 
 
 class AccountManager {
 
-    constructor(url, username, password, prekeyLowWater=20, prekeyHighWater=200) {
+    constructor(url, username, password, prekeyLowWater=10, prekeyHighWater=100) {
         this.server = new TextSecureServer(url, username, password);
         this.preKeyLowWater = prekeyLowWater;  // Add more keys when we get this low.
         this.preKeyHighWater = prekeyHighWater; // Max fill level for prekeys.
     }
 
-    static async registerAccount({token, jwt, url='https://ccsm-dev-api.forsta.io', name='librelay'}) {
+    static async register({token, jwt, url=defaultRegisterURL, name='librelay'}) {
         if (!token && !jwt) {
             throw TypeError("`token` or `jwt` required");
         }
@@ -85,8 +86,9 @@ class AccountManager {
             'name',
             'password',
             'registrationId',
+            'serverUrl',
             'signalingKey',
-            'username',
+            'username'
         ];
         await Promise.all(state.map(k => storage.removeState(k)));
         // update our own identity key, which may have changed
