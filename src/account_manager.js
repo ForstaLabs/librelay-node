@@ -14,10 +14,15 @@ const defaultRegisterURL = 'https://ccsm-dev-api.forsta.io';
 
 class AccountManager {
 
-    constructor(url, username, password, prekeyLowWater=10, prekeyHighWater=100) {
-        this.server = new TextSecureServer(url, username, password);
+    constructor(textSecureServer, prekeyLowWater=10, prekeyHighWater=100) {
+        this.tss = textSecureServer;
         this.preKeyLowWater = prekeyLowWater;  // Add more keys when we get this low.
         this.preKeyHighWater = prekeyHighWater; // Max fill level for prekeys.
+    }
+
+    static async factory() {
+        const tss = await TextSecureServer.factory();
+        return new this(tss);
     }
 
     static async register({token, jwt, url=defaultRegisterURL, name='librelay'}) {
@@ -62,18 +67,18 @@ class AccountManager {
         const instance = new this(deviceInfo.serverUrl, deviceInfo.username, deviceInfo.password);
         await instance.saveDeviceState(deviceInfo);
         const keys = await instance.generateKeys(instance.preKeyHighWater);
-        await instance.server.registerKeys(keys);
+        await instance.tss.registerKeys(keys);
         return instance;
     }
 
     async refreshPreKeys() {
-        const preKeyCount = await this.server.getMyKeys();
+        const preKeyCount = await this.tss.getMyKeys();
         const lastResortKey = await storage.loadPreKey(lastResortKeyId);
         if (preKeyCount <= this.preKeyLowWater || !lastResortKey) {
             // The server replaces existing keys so just go to the hilt.
             console.info("Refreshing pre-keys...");
             const keys = await this.generateKeys(this.preKeyHighWater);
-            await this.server.registerKeys(keys);
+            await this.tss.registerKeys(keys);
         }
     }
 

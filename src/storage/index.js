@@ -99,6 +99,11 @@ class StorageInterface {
             await prekey.destroy();
         } catch(e) {
             console.warn("Already removed PreKey:", keyId);
+        } finally {
+            // Avoid circular require..
+            const AccountManager = require('../account_manager');
+            const am = await AccountManager.factory();
+            await am.refreshPreKeys();
         }
     }
 
