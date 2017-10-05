@@ -20,7 +20,7 @@ class EventTarget {
             try {
                 await callback.call(this, ev);
             } catch(e) {
-                console.error("Event Listener Exception", this, callback);
+                console.error(`Event Listener Exception [${ev.type}]:`, e);
             }
         }
     }
