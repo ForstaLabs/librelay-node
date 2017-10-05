@@ -64,7 +64,9 @@ class AccountManager {
         deviceInfo.deviceId = respData.deviceId;
         deviceInfo.serverUrl = respData.serverUrl;
         deviceInfo.username = `${deviceInfo.addr}.${deviceInfo.deviceId}`;
-        const instance = new this(deviceInfo.serverUrl, deviceInfo.username, deviceInfo.password);
+        const tss = new TextSecureServer(deviceInfo.serverUrl, deviceInfo.username,
+                                         deviceInfo.password);
+        const instance = new this(tss);
         await instance.saveDeviceState(deviceInfo);
         const keys = await instance.generateKeys(instance.preKeyHighWater);
         await instance.tss.registerKeys(keys);
