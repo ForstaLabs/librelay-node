@@ -11,7 +11,7 @@ const rl = readline.createInterface(process.stdin, process.stdout);
 
 async function input(prompt) {
     return await new Promise(resolve => rl.question(prompt, resolve));
-};
+}
 
 (async function main() {
     const org = await input("Organization: ");
