@@ -133,11 +133,16 @@ async function keys(glob_pattern) {
     return await client.keys(glob_pattern);
 }
 
+function shutdown() {
+    return client.quit();
+}
+
 module.exports = {
     put,
     putDict,
     get,
     getDict,
     remove,
-    keys
+    keys,
+    shutdown
 };

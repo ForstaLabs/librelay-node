@@ -14,6 +14,10 @@ class StorageInterface {
         this.store = store;
     }
 
+    async shutdown() {
+        return await this.store.shutdown();
+    }
+
     async getState(key, defaultValue) {
         return await this.store.get(key, defaultValue);
     }
