@@ -110,8 +110,8 @@ class AccountManager {
         if (typeof progressCallback !== 'function') {
             progressCallback = undefined;
         }
-        const startId = await storage.getState('maxPreKeyId', 1);
-        const signedKeyId = await storage.getState('signedKeyId', 1);
+        const startId = await storage.getState('maxPreKeyId') || 1;
+        const signedKeyId = await storage.getState('signedKeyId') || 1;
 
         if (typeof startId != 'number') {
             throw new Error('Invalid maxPreKeyId');
