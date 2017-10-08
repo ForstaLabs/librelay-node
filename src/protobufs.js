@@ -8,9 +8,10 @@ const proto_files = [
     'SubProtocol.proto',
     'DeviceMessages.proto'
 ];
+const protodir = __dirname + '/../protos/';
 
 for (const f of proto_files) {
-    const p = protobuf.loadSync(`./protos/${f}`).lookup('textsecure');
+    const p = protobuf.loadSync(protodir + f).lookup('textsecure');
     for (const message in p.nested) {
         exports[message] = p.lookup(message);
     }
