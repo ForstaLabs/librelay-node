@@ -89,6 +89,7 @@ class OutgoingMessage {
                         const address = new libsignal.SignalProtocolAddress(addr, device.deviceId);
                         const builder = new libsignal.SessionBuilder(storage, address);
                         try {
+                            debugger;
                             await builder.processPreKey(device);
                         } catch(e) {
                             if (e.message === "Identity key changed") {
@@ -222,7 +223,7 @@ class OutgoingMessage {
         if (!deviceIds.length) {
             const ourAddr = await storage.getState('addr');
             if (addr !== ourAddr) {
-                deviceIds.push(1); // Just try ID 1 first; The server will correct us as needed.
+                deviceIds.push(1); // XXX Mabye just return [];
             }
         }
         const updateDevices = [];
