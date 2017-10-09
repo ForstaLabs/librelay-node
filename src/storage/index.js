@@ -45,16 +45,6 @@ class StorageInterface {
         };
     }
 
-    async getIdentityKeyPair() {
-        // XXX Deprecate this...
-        return await this.getOurIdentity();
-    }
-
-    async getLocalIdentityKeyPair() {
-        // XXX Deprecate this...
-        return await this.getOurIdentity();
-    }
-
     async saveOurIdentity(keyPair) {
         await this.store.put('ourIdentityKey.pub', keyPair.pubKey.toString('base64'));
         await this.store.put('ourIdentityKey.priv', keyPair.privKey.toString('base64'));
@@ -66,12 +56,7 @@ class StorageInterface {
     }
 
     async getOurRegistrationId() {
-        return await this.store.get('ourRegistrationId');
-    }
-
-    async getLocalRegistrationId() {
-        // XXX Deprecate this...
-        return await this.getOurRegistrationId();
+        return await this.store.get('registrationId');
     }
 
     /* Returns a prekeypair object or undefined */
@@ -164,7 +149,6 @@ class StorageInterface {
 
     async removeAllSessions(addr) {
         if (addr === null || addr === undefined) {
-            debugger;
             throw new Error("Tried to remove sessions for undefined/null addr");
         }
         for (const x of await this.store.keys(`session-${addr}.*`)) {

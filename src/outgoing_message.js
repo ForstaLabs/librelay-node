@@ -89,7 +89,6 @@ class OutgoingMessage {
                         const address = new libsignal.SignalProtocolAddress(addr, device.deviceId);
                         const builder = new libsignal.SessionBuilder(storage, address);
                         try {
-                            debugger;
                             await builder.processPreKey(device);
                         } catch(e) {
                             if (e.message === "Identity key changed") {
