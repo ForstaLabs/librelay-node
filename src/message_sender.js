@@ -148,10 +148,11 @@ class MessageSender extends EventTarget {
         await this.dispatchEvent(ev);
     }
 
-    async sendSyncMessage(content, timestamp, threadId, expirationStartTimestamp) {
-        if (!(content instanceof protobufs.Content)) {
-            content = protobufs.Content.decode(content);
+    async sendSyncMessage(contentBuffer, timestamp, threadId, expirationStartTimestamp) {
+        if (!(contentBuffer instanceof Buffer)) {
+            throw TypeError("Expected Buffer for content");
         }
+        const content = protobufs.Content.decode(contentBuffer);
         const sentMessage = protobufs.SyncMessage.Sent.create({
             timestamp,
             message: content.dataMessage
@@ -170,13 +171,6 @@ class MessageSender extends EventTarget {
         // be cataloged separately and might want their own timestamps (which are the index for receipts).
         return this.sendMessageProto(timestamp, [this.addr], syncContent);
         //return this.sendMessageProto(Date.now(), [this.addr], syncContent);
-    }
-
-    async _sendRequestSyncMessage(type) {
-        const request = protobufs.SyncMessage.Request.create({type});
-        const syncMessage = protobufs.SyncMessage.create({request});
-        const content = protobufs.Content.create({syncMessage});
-        return this.sendMessageProto(Date.now(), [this.addr], content);
     }
 
     async syncReadMessages(reads) {

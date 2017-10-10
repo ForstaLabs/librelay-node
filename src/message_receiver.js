@@ -129,7 +129,8 @@ class MessageReceiver extends EventTarget {
         try {
             const data = crypto.decryptWebsocketMessage(Buffer.from(request.body),
                                                         this.signalingKey);
-            envelope = protobufs.Envelope.decode(data);
+            const envelopeProto = protobufs.Envelope.decode(data);
+            envelope = protobufs.Envelope.toObject(envelopeProto);
             envelope.timestamp = envelope.timestamp.toNumber();
         } catch(e) {
             request.respond(500, 'Bad encrypted websocket message');
@@ -265,13 +266,15 @@ class MessageReceiver extends EventTarget {
 
     async handleLegacyMessage(envelope) {
         const data = await this.decrypt(envelope, envelope.legacyMessage);
-        const message = protobufs.DataMessage.decode(data);
+        const messageProto = protobufs.DataMessage.decode(data);
+        const message = protobufs.DataMessage.toObject(messageProto);
         await this.handleDataMessage(message, envelope);
     }
 
     async handleContentMessage(envelope) {
         const data = await this.decrypt(envelope, envelope.content);
-        const content = protobufs.Content.decode(data);
+        const contentProto = protobufs.Content.decode(data);
+        const content = protobufs.Content.toObject(contentProto);
         if (content.syncMessage) {
             await this.handleSyncMessage(content.syncMessage, envelope, content);
         } else if (content.dataMessage) {
@@ -337,7 +340,8 @@ class MessageReceiver extends EventTarget {
         const sessionCipher = new libsignal.SessionCipher(storage, address);
         console.warn('retrying prekey whisper message');
         return this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address).then(function(plaintext) {
-            const finalMessage = protobufs.DataMessage.decode(plaintext);
+            const finalMessageProto = protobufs.DataMessage.decode(plaintext);
+            const finalMessage = protobufs.DataMessage.toObject(finalMessageProto);
             let p = Promise.resolve();
             if ((finalMessage.flags & DATA_FLAGS.END_SESSION) == DATA_FLAGS.END_SESSION &&
                 finalMessage.sync !== null) {
