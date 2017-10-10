@@ -84,13 +84,14 @@ class MessageSender extends EventTarget {
             console.warn("Attempt to make attachment pointer from nothing:", attachment);
             return;
         }
-        const ptr = new protobufs.AttachmentPointer();
-        ptr.key = node_crypto.randomBytes(64);
+        const key = node_crypto.randomBytes(64);
+        const ptr = protobufs.AttachmentPointer.create({
+            key,
+            contentType: attachment.type
+        });
         const iv = node_crypto.randomBytes(16);
-        const encryptedBin = await crypto.encryptAttachment(attachment.data, ptr.key, iv);
-        const id = await this.tss.putAttachment(encryptedBin);
-        ptr.id = id;
-        ptr.contentType = attachment.type;
+        const encryptedBin = await crypto.encryptAttachment(attachment.data, key, iv);
+        ptr.id = await this.tss.putAttachment(encryptedBin);
         return ptr;
     }
 
@@ -100,8 +101,9 @@ class MessageSender extends EventTarget {
     }
 
     async tryMessageAgain(addr, encodedMessage, timestamp) {
-        const content = new protobufs.Content();
-        content.dataMessage = protobufs.DataMessage.decode(encodedMessage);
+        const content = protobufs.Content.create({
+            dataMessage: protobufs.DataMessage.decode(encodedMessage)
+        });
         return this.sendMessageProto(timestamp, [addr], content);
     }
 
@@ -150,19 +152,18 @@ class MessageSender extends EventTarget {
         if (!(content instanceof protobufs.Content)) {
             content = protobufs.Content.decode(content);
         }
-        const sentMessage = new protobufs.SyncMessage.Sent();
-        sentMessage.timestamp = timestamp;
-        sentMessage.message = content.dataMessage;
+        const sentMessage = protobufs.SyncMessage.Sent.create({
+            timestamp,
+            message: content.dataMessage
+        });
         if (threadId) {
             sentMessage.destination = threadId;
         }
         if (expirationStartTimestamp) {
             sentMessage.expirationStartTimestamp = expirationStartTimestamp;
         }
-        const syncMessage = new protobufs.SyncMessage();
-        syncMessage.sent = sentMessage;
-        const syncContent = new protobufs.Content();
-        syncContent.syncMessage = syncMessage;
+        const syncMessage = protobufs.SyncMessage.create({sent: sentMessage});
+        const syncContent = protobufs.Content.create({syncMessage});
         // Originally this sent the sync message with a unique timestamp on the envelope but this
         // led to consistency problems with Android clients that were using that timestamp for delivery
         // receipts.  It's hard to say what the correct behavior is given that sync messages could
@@ -172,25 +173,19 @@ class MessageSender extends EventTarget {
     }
 
     async _sendRequestSyncMessage(type) {
-        const request = new protobufs.SyncMessage.Request();
-        request.type = type;
-        const syncMessage = new protobufs.SyncMessage();
-        syncMessage.request = request;
-        const content = new protobufs.Content();
-        content.syncMessage = syncMessage;
+        const request = protobufs.SyncMessage.Request.create({type});
+        const syncMessage = protobufs.SyncMessage.create({request});
+        const content = protobufs.Content.create({syncMessage});
         return this.sendMessageProto(Date.now(), [this.addr], content);
     }
 
     async syncReadMessages(reads) {
-        const syncMessage = new protobufs.SyncMessage();
-        syncMessage.read = reads.map(r => {
-            const read = new protobufs.SyncMessage.Read();
-            read.timestamp = r.timestamp;
-            read.sender = r.sender;
-            return read;
-        });
-        const content = new protobufs.Content();
-        content.syncMessage = syncMessage;
+        const read = reads.map(r => protobufs.SyncMessage.Read.create({
+            timestamp: r.timestamp,
+            sender: r.sender
+        }));
+        const syncMessage = protobufs.SyncMessage.create({read});
+        const content = protobufs.Content.create({syncMessage});
         return this.sendMessageProto(Date.now(), [this.addr], content);
     }
 
@@ -213,9 +208,10 @@ class MessageSender extends EventTarget {
     }
 
     async closeSession(addr, timestamp) {
-        const content = new protobufs.Content();
-        const data = content.dataMessage = new protobufs.DataMessage();
-        data.flags = protobufs.DataMessage.Flags.END_SESSION;
+        const dataMessage = protobufs.DataMessage.create({
+            flags: protobufs.DataMessage.Flags.END_SESSION
+        });
+        const content = protobufs.Content.create({dataMessage});
         const outmsg = this.sendMessageProto(timestamp, [addr], content);
         const deviceIds = await storage.getDeviceIds(addr);
         await new Promise(resolve => {

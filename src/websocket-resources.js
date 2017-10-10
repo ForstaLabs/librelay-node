@@ -172,7 +172,8 @@ class WebSocketResource {
     }
 
     async onMessage(encodedMsg) {
-        const message = protobufs.WebSocketMessage.decode(Buffer.from(encodedMsg.data));
+        const messageProto = protobufs.WebSocketMessage.decode(Buffer.from(encodedMsg.data));
+        const message = protobufs.WebSocketMessage.toObject(messageProto);
         if (message.type === MSG_TYPES.REQUEST) {
             await this.handleRequest(new IncomingWebSocketRequest(this, {
                 verb: message.request.verb,
