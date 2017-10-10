@@ -67,15 +67,10 @@ class OutgoingMessage {
     async reloadDevicesAndSend(addr, recurse) {
         const deviceIds = await storage.getDeviceIds(addr);
         if (!deviceIds.length) {
-            const ourAddr = await storage.getState('addr');
-            if (addr === ourAddr) {
-                await this.emitSent(addr);
-            } else {
-                console.warn("Unregistered address:", addr);
-                return;
-            }
+            throw new errors.ProtocolError("No Active Devices");
+        } else {
+            return await this.doSendMessage(addr, deviceIds, recurse, {});
         }
-        return await this.doSendMessage(addr, deviceIds, recurse, {});
     }
 
     async getKeysForAddr(addr, updateDevices, reentrant) {
@@ -187,10 +182,11 @@ class OutgoingMessage {
                     await Promise.all(e.response.staleDevices.map(x =>
                         ciphers[x].closeOpenSessionForDevice()));
                 }
-                const resetDevices = e.code === 410 ? e.response.staleDevices : e.response.missingDevices;
+                const resetDevices = e.code === 410 ? e.response.staleDevices :
+                                                      e.response.missingDevices;
                 await this.getKeysForAddr(addr, resetDevices);
                 try {
-                    await this.reloadDevicesAndSend(addr, (e.code === 409));
+                    await this.reloadDevicesAndSend(addr, /*recurse*/ (e.code === 409));
                 } catch(e) {
                     this.emitError(addr, "Failed to reload device keys", e);
                     return;
@@ -220,10 +216,7 @@ class OutgoingMessage {
     async getStaleDeviceIdsForAddr(addr) {
         const deviceIds = await storage.getDeviceIds(addr);
         if (!deviceIds.length) {
-            const ourAddr = await storage.getState('addr');
-            if (addr !== ourAddr) {
-                deviceIds.push(1); // XXX Mabye just return [];
-            }
+            return [1];  // Just try ID 1 first; The server will correct us as needed.
         }
         const updateDevices = [];
         for (const id of deviceIds) {
@@ -247,21 +240,23 @@ class OutgoingMessage {
         let updateDevices;
         try {
             updateDevices = await this.getStaleDeviceIdsForAddr(addr);
-        } catch (error) {
-            this.emitError(addr, "Failed to get device ids for address " + addr, error);
+        } catch (e) {
+            this.emitError(addr, "Failed to get device ids for address " + addr, e);
+            return;
         }
         try {
             await this.getKeysForAddr(addr, updateDevices);
-        } catch(error) {
-            this.emitError(addr, "Failed to retrieve new device keys for address " + addr, error);
+        } catch(e) {
+            this.emitError(addr, "Failed to retrieve new device keys for address " + addr, e);
+            return;
         }
         try {
-            await this.reloadDevicesAndSend(addr, true);
-        } catch(error) {
-            this.emitError(addr, "Failed to send to address " + addr, error);
+            await this.reloadDevicesAndSend(addr, /*recurse*/ true);
+        } catch(e) {
+            this.emitError(addr, "Failed to send to address " + addr, e);
+            return;
         }
     }
 }
 
 module.exports = OutgoingMessage;
-
