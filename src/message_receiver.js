@@ -242,8 +242,8 @@ class MessageReceiver extends EventTarget {
             destination: sent.destination,
             message: sent.message
         };
-        if (sent.expire) {
-          ev.data.expirationStartTimestamp = sent.expire.toNumber();
+        if (sent.expirationStartTimestamp) {
+          ev.data.expirationStartTimestamp = sent.expirationStartTimestamp.toNumber();
         }
         await this.dispatchEvent(ev);
     }
