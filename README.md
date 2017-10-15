@@ -1,8 +1,13 @@
 librelay - Forsta Relay Node library
-==========================
-Node port of WhisperSystem's libtextsecure library found at
-<https://github.com/WhisperSystems/Signal-Desktop/tree/master/libtextsecure>.
+========
+Signal based node library for end-to-end crypto with Forata Messaging Platform.
 
+[![npm](https://img.shields.io/npm/v/librelay.svg)](https://www.npmjs.com/package/librelay)
+[![npm](https://img.shields.io/npm/l/librelay.svg)](https://github.com/ForstaLabs/librelay-node)
+
+
+About
+--------
 This is a Node.js library used to communicate with the Forsta messaging
 platform.  The underlying protocol is based on the Signal end-to-end
 crypto system.  The primary differences surround how provisioning is done
