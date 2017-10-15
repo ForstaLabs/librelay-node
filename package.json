@@ -1,14 +1,14 @@
 {
   "name": "librelay",
-  "version": "0.1.0",
-  "description": "Forsta relay high level protocols",
+  "version": "1.0.0",
+  "description": "Forsta Relay Library for Node.js",
   "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/forstalabs/librelay-node.git"
   },
   "license": "GPL-3.0",
-  "homepage": "https://github.com/forstalabs/librelay-node#readme",
+  "homepage": "https://github.com/forstalabs/librelay-node",
   "dependencies": {
     "backbone": "1.3.3",
     "bufferutil": "3.0.2",

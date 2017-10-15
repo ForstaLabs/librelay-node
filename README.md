@@ -106,8 +106,6 @@ const distExpression = '(<0ceeb1aa-fd9a-4df3-931d-864481574c54>+<cb6eb937-67e2-4
 
 
 async function send(msg) {
-
-
     const now = Date.now();
     const bus = await msgSender.sendMessageToAddrs([recipientId], [{
         version: 1,
