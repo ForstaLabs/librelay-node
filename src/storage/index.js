@@ -6,7 +6,7 @@ const helpers = require('../helpers');
 const libsignal = require('libsignal');
 const process = require('process');
 
-const storage = process.env.RELAY_STORAGE;
+const storageBacking = process.env.RELAY_STORAGE_BACKING;
 
 const stateNS = 'state';
 const sessionNS = 'session';
@@ -15,228 +15,234 @@ const signedPreKeyNS = 'signedprekey';
 const identityKeyNS = 'identitykey';
 
 
-class StorageInterface {
+let _backing;
+let _BackingInterface;
+let _label = 'default';
 
-    constructor(store) {
-        this.store = store;
+exports.setBacking = function(BackingInterface) {
+    _BackingInterface = BackingInterface;
+    _backing = new BackingInterface(_label);
+};
+
+exports.setLabel = function(label) {
+    _label = label;
+    _backing = new _BackingInterface(label);
+};
+
+function encode(data) {
+    const o = {};
+    if (data instanceof Buffer) {
+        o.type = 'buffer';
+        o.data = data.toString('base64');
+    } else if (data instanceof ArrayBuffer) {
+        throw TypeError("ArrayBuffer not supported");
+    } else if (data instanceof Uint8Array) {
+        o.type = 'uint8array';
+        o.data = Buffer.from(data).toString('base64');
+    } else {
+        o.data = data;
     }
+    return JSON.stringify(o);
+}
 
-    encode(data) {
-        const o = {};
-        if (data instanceof Buffer) {
-            o.type = 'buffer';
-            o.data = data.toString('base64');
-        } else if (data instanceof ArrayBuffer) {
-            throw TypeError("ArrayBuffer not supported");
-        } else if (data instanceof Uint8Array) {
-            o.type = 'uint8array';
-            o.data = Buffer.from(data).toString('base64');
+function decode(obj) {
+    const o = JSON.parse(obj);
+    if (o.type) {
+        if (o.type === 'buffer') {
+            return Buffer.from(o.data, 'base64');
+        } else if (o.type === 'uint8array') {
+            return Uint8Array.from(Buffer.from(o.data, 'base64'));
         } else {
-            o.data = data;
+            throw TypeError("Unsupported type: " + o.type);
         }
-        return JSON.stringify(o);
-    }
-
-    decode(obj) {
-        const o = JSON.parse(obj);
-        if (o.type) {
-            if (o.type === 'buffer') {
-                return Buffer.from(o.data, 'base64');
-            } else if (o.type === 'uint8array') {
-                return Uint8Array.from(Buffer.from(o.data, 'base64'));
-            } else {
-                throw TypeError("Unsupported type: " + o.type);
-            }
-        } else {
-            return o.data;
-        }
-    }
-
-    async _get(ns, key) {
-        const data = await this.store.get(ns, key);
-        if (data) {
-            return this.decode(data);
-        } else {
-            return data;
-        }
-    }
-
-    async _set(ns, key, value) {
-        return await this.store.set(ns, key, this.encode(value));
-    }
-
-    async shutdown() {
-        return await this.store.shutdown();
-    }
-
-    async getState(key, defaultValue) {
-        return await this._get(stateNS, key, defaultValue);
-    }
-
-    async setState(key, value) {
-        return await this._set(stateNS, key, value);
-    }
-
-    async removeState(key) {
-        return await this.store.remove(stateNS, key);
-    }
-
-    async getOurIdentity() {
-        return {
-            pubKey: await this.getState('ourIdentityKey.pub'),
-            privKey: await this.getState('ourIdentityKey.priv')
-        };
-    }
-
-    async saveOurIdentity(keyPair) {
-        await this.setState('ourIdentityKey.pub', keyPair.pubKey);
-        await this.setState('ourIdentityKey.priv', keyPair.privKey);
-    }
-
-    async removeOurIdentity() {
-        await this.removeState('ourIdentityKey.pub');
-        await this.removeState('ourIdentityKey.priv');
-    }
-
-    async getOurRegistrationId() {
-        return await this.getState('registrationId');
-    }
-
-    async loadPreKey(keyId) {
-        if (!await this.store.has(preKeyNS, keyId + '.pub')) {
-            return;
-        }
-        return {
-            pubKey: await this._get(preKeyNS, keyId + '.pub'),
-            privKey: await this._get(preKeyNS, keyId + '.priv')
-        };
-    }
-
-    async storePreKey(keyId, keyPair) {
-        await this._set(preKeyNS, keyId + '.priv', keyPair.privKey);
-        await this._set(preKeyNS, keyId + '.pub', keyPair.pubKey);
-    }
-
-    async removePreKey(keyId) {
-        try {
-            await this.store.remove(preKeyNS, keyId + '.pub');
-            await this.store.remove(preKeyNS, keyId + '.priv');
-        } finally {
-            // Avoid circular require..
-            const AccountManager = require('../account_manager');
-            const am = await AccountManager.factory();
-            await am.refreshPreKeys();
-        }
-    }
-
-    async loadSignedPreKey(keyId) {
-        if (!await this.store.has(signedPreKeyNS, keyId + '.pub')) {
-            return;
-        }
-        return {
-            pubKey: await this._get(signedPreKeyNS, keyId + '.pub'),
-            privKey: await this._get(signedPreKeyNS, keyId + '.priv')
-        };
-    }
-
-    async storeSignedPreKey(keyId, keyPair) {
-        await this._set(signedPreKeyNS, keyId + '.priv', keyPair.privKey);
-        await this._set(signedPreKeyNS, keyId + '.pub', keyPair.pubKey);
-    }
-
-    async removeSignedPreKey(keyId) {
-        await this.store.remove(signedPreKeyNS, keyId + '.pub');
-        await this.store.remove(signedPreKeyNS, keyId + '.priv');
-    }
-
-    async loadSession(encodedAddr) {
-        if (encodedAddr === null || encodedAddr === undefined) {
-            throw new Error("Tried to get session for undefined/null addr");
-        }
-        const data = await this._get(sessionNS, encodedAddr);
-        if (data !== undefined) {
-            return libsignal.SessionRecord.deserialize(data);
-        }
-    }
-
-    async storeSession(encodedAddr, record) {
-        if (encodedAddr === null || encodedAddr === undefined) {
-            throw new Error("Tried to set session for undefined/null addr");
-        }
-        await this._set(sessionNS, encodedAddr, record.serialize());
-    }
-
-    async removeSession(encodedAddr) {
-        await this.store.remove(sessionNS, encodedAddr);
-    }
-
-    async removeAllSessions(addr) {
-        if (addr === null || addr === undefined) {
-            throw new Error("Tried to remove sessions for undefined/null addr");
-        }
-        for (const x of await this.store.keys(sessionNS, new RegExp(addr + '\\..*'))) {
-            await this.store.remove(sessionNS, x);
-        }
-    }
-
-    async clearSessionStore() {
-        for (const x of await this.store.keys(sessionNS)) {
-            await this.store.remove(sessionNS, x);
-        }
-    }
-
-    async isTrustedIdentity(identifier, publicKey) {
-        if (identifier === null || identifier === undefined) {
-            throw new Error("Tried to get identity key for undefined/null key");
-        }
-        const identityKey = await this.loadIdentity(identifier);
-        if (!identityKey) {
-            console.warn("WARNING: Implicit trust of peer:", identifier);
-            return true;
-        }
-        return identityKey.equals(publicKey);
-    }
-
-    async loadIdentity(identifier) {
-        if (!identifier) {
-            throw new Error("Tried to get identity key for undefined/null key");
-        }
-        const addr = helpers.unencodeAddr(identifier)[0];
-        return await this._get(identityKeyNS, addr);
-    }
-
-    async saveIdentity(identifier, publicKey) {
-        if (!identifier) {
-            throw new Error("Tried to set identity key for undefined/null key");
-        }
-        if (!(publicKey instanceof Buffer)) {
-            throw new Error(`Invalid type for saveIdentity: ${publicKey.constructor.name}`);
-        }
-        const addr = helpers.unencodeAddr(identifier)[0];
-        await this._set(identityKeyNS, addr, publicKey);
-    }
-
-    async removeIdentity(identifier) {
-        const addr = helpers.unencodeAddr(identifier)[0];
-        await this.store.remove(identityKeyNS, addr);
-        await this.removeAllSessions(addr);
-    }
-
-    async getDeviceIds(addr) {
-        if (addr === null || addr === undefined) {
-            throw new Error("Tried to get device ids for undefined/null addr");
-        }
-        const idents = await this.store.keys(sessionNS, new RegExp(addr + '\\..*'));
-        return Array.from(idents).map(x => x.split('.')[1]);
+    } else {
+        return o.data;
     }
 }
 
-if (storage === 'redis') {
-    const redis = require('./redis');
-    module.exports = new StorageInterface(redis);
-} else if (!storage || storage === 'fs') {
-    const fs = require('./fs');
-    module.exports = new StorageInterface(fs);
+async function _get(ns, key) {
+    const data = await _backing.get(ns, key);
+    if (data) {
+        return decode(data);
+    } else {
+        return data;
+    }
+}
+
+async function _set(ns, key, value) {
+    return await _backing.set(ns, key, encode(value));
+}
+
+exports.shutdown = async function() {
+    return await _backing.shutdown();
+};
+
+exports.getState = async function(key, defaultValue) {
+    return await _get(stateNS, key, defaultValue);
+};
+
+exports.setState = async function(key, value) {
+    return await _set(stateNS, key, value);
+};
+
+exports.removeState = async function(key) {
+    return await _backing.remove(stateNS, key);
+};
+
+exports.getOurIdentity = async function() {
+    return {
+        pubKey: await exports.getState('ourIdentityKey.pub'),
+        privKey: await exports.getState('ourIdentityKey.priv')
+    };
+};
+
+exports.saveOurIdentity = async function(keyPair) {
+    await exports.setState('ourIdentityKey.pub', keyPair.pubKey);
+    await exports.setState('ourIdentityKey.priv', keyPair.privKey);
+};
+
+exports.removeOurIdentity = async function() {
+    await exports.removeState('ourIdentityKey.pub');
+    await exports.removeState('ourIdentityKey.priv');
+};
+
+exports.getOurRegistrationId = async function() {
+    return await exports.getState('registrationId');
+};
+
+exports.loadPreKey = async function(keyId) {
+    if (!await _backing.has(preKeyNS, keyId + '.pub')) {
+        return;
+    }
+    return {
+        pubKey: await _get(preKeyNS, keyId + '.pub'),
+        privKey: await _get(preKeyNS, keyId + '.priv')
+    };
+};
+
+exports.storePreKey = async function(keyId, keyPair) {
+    await _set(preKeyNS, keyId + '.priv', keyPair.privKey);
+    await _set(preKeyNS, keyId + '.pub', keyPair.pubKey);
+};
+
+exports.removePreKey = async function(keyId) {
+    try {
+        await _backing.remove(preKeyNS, keyId + '.pub');
+        await _backing.remove(preKeyNS, keyId + '.priv');
+    } finally {
+        // Avoid circular require..
+        const AccountManager = require('../account_manager');
+        const am = await AccountManager.factory();
+        await am.refreshPreKeys();
+    }
+};
+
+exports.loadSignedPreKey = async function(keyId) {
+    if (!await _backing.has(signedPreKeyNS, keyId + '.pub')) {
+        return;
+    }
+    return {
+        pubKey: await _get(signedPreKeyNS, keyId + '.pub'),
+        privKey: await _get(signedPreKeyNS, keyId + '.priv')
+    };
+};
+
+exports.storeSignedPreKey = async function(keyId, keyPair) {
+    await _set(signedPreKeyNS, keyId + '.priv', keyPair.privKey);
+    await _set(signedPreKeyNS, keyId + '.pub', keyPair.pubKey);
+};
+
+exports.removeSignedPreKey = async function(keyId) {
+    await _backing.remove(signedPreKeyNS, keyId + '.pub');
+    await _backing.remove(signedPreKeyNS, keyId + '.priv');
+};
+
+exports.loadSession = async function(encodedAddr) {
+    if (encodedAddr === null || encodedAddr === undefined) {
+        throw new Error("Tried to get session for undefined/null addr");
+    }
+    const data = await _get(sessionNS, encodedAddr);
+    if (data !== undefined) {
+        return libsignal.SessionRecord.deserialize(data);
+    }
+};
+
+exports.storeSession = async function(encodedAddr, record) {
+    if (encodedAddr === null || encodedAddr === undefined) {
+        throw new Error("Tried to set session for undefined/null addr");
+    }
+    await _set(sessionNS, encodedAddr, record.serialize());
+};
+
+exports.removeSession = async function(encodedAddr) {
+    await _backing.remove(sessionNS, encodedAddr);
+};
+
+exports.removeAllSessions = async function(addr) {
+    if (addr === null || addr === undefined) {
+        throw new Error("Tried to remove sessions for undefined/null addr");
+    }
+    for (const x of await _backing.keys(sessionNS, new RegExp(addr + '\\..*'))) {
+        await _backing.remove(sessionNS, x);
+    }
+};
+
+exports.clearSessionStore = async function() {
+    for (const x of await _backing.keys(sessionNS)) {
+        await _backing.remove(sessionNS, x);
+    }
+};
+
+exports.isTrustedIdentity = async function(identifier, publicKey) {
+    if (identifier === null || identifier === undefined) {
+        throw new Error("Tried to get identity key for undefined/null key");
+    }
+    const identityKey = await exports.loadIdentity(identifier);
+    if (!identityKey) {
+        console.warn("WARNING: Implicit trust of peer:", identifier);
+        return true;
+    }
+    return identityKey.equals(publicKey);
+};
+
+exports.loadIdentity = async function(identifier) {
+    if (!identifier) {
+        throw new Error("Tried to get identity key for undefined/null key");
+    }
+    const addr = helpers.unencodeAddr(identifier)[0];
+    return await _get(identityKeyNS, addr);
+};
+
+exports.saveIdentity = async function(identifier, publicKey) {
+    if (!identifier) {
+        throw new Error("Tried to set identity key for undefined/null key");
+    }
+    if (!(publicKey instanceof Buffer)) {
+        throw new Error(`Invalid type for saveIdentity: ${publicKey.constructor.name}`);
+    }
+    const addr = helpers.unencodeAddr(identifier)[0];
+    await _set(identityKeyNS, addr, publicKey);
+};
+
+exports.removeIdentity = async function(identifier) {
+    const addr = helpers.unencodeAddr(identifier)[0];
+    await _backing.remove(identityKeyNS, addr);
+    await exports.removeAllSessions(addr);
+};
+
+exports.getDeviceIds = async function(addr) {
+    if (addr === null || addr === undefined) {
+        throw new Error("Tried to get device ids for undefined/null addr");
+    }
+    const idents = await _backing.keys(sessionNS, new RegExp(addr + '\\..*'));
+    return Array.from(idents).map(x => x.split('.')[1]);
+};
+
+
+if (storageBacking === 'redis') {
+    exports.setBacking(require('./backing/redis'));
+} else if (!storageBacking || storageBacking === 'fs') {
+    exports.setBacking(require('./backing/fs'));
 } else {
-    throw new TypeError("Unhandled storage type: " + storage);
+    throw new TypeError("Unhandled storage type: " + storageBacking);
 }

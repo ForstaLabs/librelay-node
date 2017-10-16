@@ -1,5 +1,6 @@
-const redis = require('redis');
+const StorageInterface = require('./interface');
 const process = require('process');
+const redis = require('redis');
 const unifyOptions = require('redis/lib/createClient');
 
 
@@ -52,43 +53,40 @@ class AsyncRedisClient extends redis.RedisClient {
 
 const client = AsyncRedisClient.createClient(process.env.REDIS_URL);
 
-async function set(ns, key, value) {
-    if (value === undefined) {
-        throw new Error("Tried to store undefined");
+
+class RedisBacking extends StorageInterface {
+
+    async set(ns, key, value) {
+        if (value === undefined) {
+            throw new Error("Tried to store undefined");
+        }
+        await client.set(this.label + '-' + ns, key, value);
     }
-    await client.set(ns, key, value);
-}
 
-async function get(ns, key, defaultValue) {
-    if (await client.exists(ns, key)) {
-        return await client.get(ns, key);
-    } else {
-        return defaultValue;
+    async get(ns, key, defaultValue) {
+        if (await client.exists(this.label + '-' + ns, key)) {
+            return await client.get(this.label + '-' + ns, key);
+        } else {
+            return defaultValue;
+        }
+    }
+
+    async has(ns, key) {
+        return await client.exists(this.label + '-' + ns, key);
+    }
+
+    async remove(ns, key) {
+        await client.del(this.label + '-' + ns, key);
+    }
+
+    async keys(ns, regex) {
+        const keys = await client.keys(this.label + '-' + ns);
+        return regex ? keys.filter(x => x.match(regex)) : keys;
+    }
+
+    shutdown() {
+        return client.quit();
     }
 }
 
-async function has(ns, key) {
-    return await client.exists(ns, key);
-}
-
-async function remove(ns, key) {
-    await client.del(ns, key);
-}
-
-async function keys(ns, regex) {
-    const keys = await client.keys(ns);
-    return regex ? keys.filter(x => x.match(regex)) : keys;
-}
-
-function shutdown() {
-    return client.quit();
-}
-
-module.exports = {
-    set,
-    get,
-    has,
-    remove,
-    keys,
-    shutdown
-};
+module.exports = RedisBacking;

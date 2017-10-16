@@ -1,9 +1,8 @@
+const StorageInterface = require('./interface');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const version = 1;
-const root = path.join(os.homedir(), `.librelay/storage/v${version}`);
 
 async function mkdirp(dir, mode) {
     try {
@@ -35,14 +34,6 @@ async function fstat(path) {
 async function is_file(path) {
     try {
         return (await fstat(path)).isFile();
-    } catch(e) {
-        return false;
-    }
-}
-
-async function is_dir(path) {
-    try {
-        return (await fstat(path)).isDirectory();
     } catch(e) {
         return false;
     }
@@ -88,68 +79,70 @@ async function freaddir(path) {
     }));
 }
 
-async function set(ns, key, value) {
-    const dir = path.join(root, ns);
-    for (let i = 0; i < 2; i++) {
+class FSBacking extends StorageInterface {
+
+    constructor(label) {
+        super(label);
+        const version = 1;
+        this.root = path.join(os.homedir(), '.librelay/storage', label, 'v' + version);
+    }
+
+    async set(ns, key, value) {
+        const dir = path.join(this.root, ns);
+        for (let i = 0; i < 2; i++) {
+            try {
+                await fwritefile(path.join(dir, key), value);
+                return;
+            } catch(e) {
+                if (e.code === 'ENOENT') {
+                    await mkdirp(dir);
+                } else {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    async get(ns, key, defaultValue) {
         try {
-            await fwritefile(path.join(dir, key), value);
-            return;
+            return await freadfile(path.join(this.root, ns, key));
         } catch(e) {
             if (e.code === 'ENOENT') {
-                await mkdirp(dir);
+                return defaultValue;
             } else {
                 throw e;
             }
         }
     }
-}
 
-async function get(ns, key, defaultValue) {
-    try {
-        return await freadfile(path.join(root, ns, key));
-    } catch(e) {
-        if (e.code === 'ENOENT') {
-            return defaultValue;
-        } else {
-            throw e;
+    async has(ns, key) {
+        return await is_file(path.join(this.root, ns, key));
+    }
+
+    async remove(ns, key) {
+        try {
+            await funlink(path.join(this.root, ns, key));
+        } catch(e) {
+            if (e.code !== 'ENOENT') {
+                throw e;
+            }
         }
+    }
+
+    async keys(ns, regex) {
+        let keys;
+        try {
+            keys = await freaddir(path.join(this.root, ns));
+        } catch(e) {
+            if (e.code === 'ENOENT') {
+                return [];
+            }
+        }
+        return regex ? keys.filter(x => x.match(regex)) : keys;
+    }
+
+    shutdown() {
     }
 }
 
-async function has(ns, key) {
-    return await is_file(path.join(root, ns, key));
-}
-
-async function remove(ns, key) {
-    try {
-        await funlink(path.join(root, ns, key));
-    } catch(e) {
-        if (e.code !== 'ENOENT') {
-            throw e;
-        }
-    }
-}
-
-async function keys(ns, regex) {
-    let keys;
-    try {
-        keys = await freaddir(path.join(root, ns));
-    } catch(e) {
-        if (e.code === 'ENOENT') {
-            return [];
-        }
-    }
-    return regex ? keys.filter(x => x.match(regex)) : keys;
-}
-
-function shutdown() {
-}
-
-module.exports = {
-    set,
-    get,
-    has,
-    remove,
-    keys,
-    shutdown
-};
+module.exports = FSBacking;

@@ -16,9 +16,9 @@ async function input(prompt) {
 (async function main() {
     const org = await input("Organization: ");
     const user = await input("Username: ");
-    const validate = await relay.auth.requestCode(org, user);
+    const validate = await relay.auth.requestCode(org, user, 'https://ccsm-dev-api.forsta.io');
     const code = await input("SMS Verification Code: ");
     const auth = await validate(code);
-    await relay.AccountManager.register({jwt: auth.token});
+    await relay.AccountManager.register({jwt: auth.token, url: 'https://ccsm-dev-api.forsta.io'});
     process.exit(0);
 })();

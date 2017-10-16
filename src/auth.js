@@ -4,7 +4,7 @@
 
 const fetch = require('node-fetch');
 
-const DEFAULT_URL = 'https://ccsm-dev-api.forsta.io';
+const DEFAULT_URL = 'https://api.forsta.io';
 
 
 async function requestCode(org, user, url=DEFAULT_URL) {

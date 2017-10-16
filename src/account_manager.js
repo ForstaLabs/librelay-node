@@ -9,7 +9,7 @@ const libsignal = require('libsignal');
 const storage = require('./storage');
 
 const lastResortKeyId = 0xdeadbeef & ((2 ** 31) - 1); // Must fit inside signed 32bit int.
-const defaultRegisterURL = 'https://ccsm-dev-api.forsta.io';
+const defaultRegisterURL = 'https://api.forsta.io';
 
 
 class AccountManager {

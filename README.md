@@ -22,10 +22,13 @@ Installation
 
 Storage
 --------
-Librelay needs some sort of backing store for holding crypto material.  The
-default storage backing is `fs` which will store files in your local
-file-system under `~/.librelay/storage`.  Redis is also supported by setting
-`RELAY_STORAGE=redis` in your env.
+Librelay needs a backing store for holding crypto material.  The default
+storage backing is `fs` which will store files in your local file-system
+under `~/.librelay/storage`.  Redis is also supported by out of the box by
+setting `RELAY_STORAGE_BACKING=redis` in your env.  Custom backings and labels
+(to support multiple instances of librelay in a single backing store) are
+supported via the `librelay.storage.setBacking` and `librelay.storage.setLabel`
+functions respectively.
 
 
 Provisioning
