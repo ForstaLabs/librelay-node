@@ -2,10 +2,6 @@ const relay = require('..');
 const process = require('process');
 const uuid4 = require('uuid/v4');
 
-process.on('unhandledRejection', error => {
-    console.error(error);
-});
-
 (async function main() {
     const msgSender = await relay.MessageSender.factory();
     async function send(msg) {

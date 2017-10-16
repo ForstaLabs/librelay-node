@@ -2,23 +2,20 @@ const relay = require('..');
 const process = require('process');
 const readline = require('readline');
 
-process.on('unhandledRejection', error => {
-    console.error(error);
-    process.exit(1);
-});
-
-const rl = readline.createInterface(process.stdin, process.stdout);
-
 async function input(prompt) {
-    return await new Promise(resolve => rl.question(prompt, resolve));
+    const rl = readline.createInterface(process.stdin, process.stdout);
+    try {
+        return await new Promise(resolve => rl.question(prompt, resolve));
+    } finally {
+        rl.close();
+    }
 }
 
 (async function main() {
-    const org = await input("Organization: ");
-    const user = await input("Username: ");
-    const validate = await relay.auth.requestCode(org, user, 'https://ccsm-dev-api.forsta.io');
+    const [user, org] = (await input("Enter your login (e.g user:org): ")).split(':');
+    const validateCallback = await relay.auth.requestCode(org, user);
     const code = await input("SMS Verification Code: ");
-    const auth = await validate(code);
-    await relay.AccountManager.register({jwt: auth.token, url: 'https://ccsm-dev-api.forsta.io'});
-    process.exit(0);
+    const auth = await validateCallback(code);
+    await relay.AccountManager.register({jwt: auth.token});
+    await relay.storage.shutdown();
 })();
