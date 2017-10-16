@@ -5,8 +5,9 @@
 const helpers = require('../helpers');
 const libsignal = require('libsignal');
 const process = require('process');
+exports.backing = require('./backing');
 
-const storageBacking = process.env.RELAY_STORAGE_BACKING;
+const defaultBacking = process.env.RELAY_STORAGE_BACKING || 'fs';
 
 const stateNS = 'state';
 const sessionNS = 'session';
@@ -16,18 +17,9 @@ const identityKeyNS = 'identitykey';
 
 
 let _backing;
-let _BackingInterface;
+let _Backing;
 let _label = 'default';
 
-exports.setBacking = function(BackingInterface) {
-    _BackingInterface = BackingInterface;
-    _backing = new BackingInterface(_label);
-};
-
-exports.setLabel = function(label) {
-    _label = label;
-    _backing = new _BackingInterface(label);
-};
 
 function encode(data) {
     const o = {};
@@ -238,11 +230,28 @@ exports.getDeviceIds = async function(addr) {
     return Array.from(idents).map(x => x.split('.')[1]);
 };
 
-
-if (storageBacking === 'redis') {
-    exports.setBacking(require('./backing/redis'));
-} else if (!storageBacking || storageBacking === 'fs') {
-    exports.setBacking(require('./backing/fs'));
-} else {
-    throw new TypeError("Unhandled storage type: " + storageBacking);
+function getBackingClass(name) {
+    return {
+        redis: exports.backing.RedisBacking,
+        fs: exports.backing.FSBacking
+    }[name];
 }
+
+exports.setBacking = function(Backing) {
+    if (typeof Backing === 'string') {
+        Backing = getBackingClass(Backing);
+    }
+    if (!Backing) {
+        throw new TypeError("Invalid storage backing: " + Backing);
+    }
+    _Backing = Backing;
+    _backing = new Backing(_label);
+};
+
+exports.setLabel = function(label) {
+    _label = label;
+    _backing = new _Backing(label);
+};
+
+
+exports.setBacking(defaultBacking);
