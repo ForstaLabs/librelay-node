@@ -28,7 +28,7 @@ under `~/.librelay/storage`.  Redis is also supported by setting
 `RELAY_STORAGE_BACKING=redis` in your env or calling
 `librelay.storage.setBacking('redis')`.  To support multiple instances of
 librelay on a single backing store use
-`librelay.storage.setLabel('something-unique')` to shard your storage into
+`librelay.storage.setLabel('<something-unique>')` to shard your storage into
 a unique namespace.
 
 
