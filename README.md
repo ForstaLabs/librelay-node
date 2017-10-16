@@ -1,6 +1,6 @@
 librelay - Forsta Relay Node library
 ========
-Signal based node library for end-to-end crypto with Forata Messaging Platform.
+Signal based node library for end-to-end crypto with Forsta Messaging Platform.
 
 [![npm](https://img.shields.io/npm/v/librelay.svg)](https://www.npmjs.com/package/librelay)
 [![npm](https://img.shields.io/npm/l/librelay.svg)](https://github.com/ForstaLabs/librelay-node)
@@ -186,5 +186,7 @@ Administration Regulations, Section 740.13) for both object code and source code
 License
 --------
 Copyright 2014-2016 Open Whisper Systems
+
+Copyright 2017 Forsta Inc.
 
 Licensed under the GPLv3: http://www.gnu.org/licenses/gpl-3.0.html
