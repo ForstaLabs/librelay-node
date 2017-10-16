@@ -51,41 +51,44 @@ class AsyncRedisClient extends redis.RedisClient {
 }
 
 
-const client = AsyncRedisClient.createClient(process.env.REDIS_URL);
-
-
 class RedisBacking extends StorageInterface {
+
+    constructor(label) {
+        super(label);
+        this.client = AsyncRedisClient.createClient(process.env.REDIS_URL);
+    }
 
     async set(ns, key, value) {
         if (value === undefined) {
             throw new Error("Tried to store undefined");
         }
-        await client.set(this.label + '-' + ns, key, value);
+        await this.client.set(this.label + '-' + ns, key, value);
     }
 
     async get(ns, key, defaultValue) {
-        if (await client.exists(this.label + '-' + ns, key)) {
-            return await client.get(this.label + '-' + ns, key);
+        if (await this.client.exists(this.label + '-' + ns, key)) {
+            return await this.client.get(this.label + '-' + ns, key);
         } else {
             return defaultValue;
         }
     }
 
     async has(ns, key) {
-        return await client.exists(this.label + '-' + ns, key);
+        return await this.client.exists(this.label + '-' + ns, key);
     }
 
     async remove(ns, key) {
-        await client.del(this.label + '-' + ns, key);
+        await this.client.del(this.label + '-' + ns, key);
     }
 
     async keys(ns, regex) {
-        const keys = await client.keys(this.label + '-' + ns);
+        const keys = await this.client.keys(this.label + '-' + ns);
         return regex ? keys.filter(x => x.match(regex)) : keys;
     }
 
     shutdown() {
-        return client.quit();
+        this.client.quit();
+        this.client = null;
     }
 }
 
