@@ -20,6 +20,14 @@ Installation
     npm install librelay
 
 
+Storage
+--------
+Librelay needs some sort of backing store for holding crypto material.  The
+default storage backing is `fs` which will store files in your local
+file-system under `~/.librelay/storage`.  Redis is also supported by setting
+`RELAY_STORAGE=redis` in your env.
+
+
 Provisioning
 -------
 PREREQUISITE: To use librelay you must first have a valid Forsta account.  You
