@@ -16,7 +16,6 @@
   "main": "index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "backbone": "1.3.3",
     "bufferutil": "3.0.2",
     "libsignal": "1.0.3",
     "long": "3.2.0",

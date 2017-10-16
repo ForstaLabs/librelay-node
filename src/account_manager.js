@@ -100,10 +100,10 @@ class AccountManager {
         await Promise.all(state.map(k => storage.removeState(k)));
         // update our own identity key, which may have changed
         // if we're relinking after a reinstall on the master device
-        await storage.removeIdentityKey(info.addr);
+        await storage.removeIdentity(info.addr);
         await storage.saveIdentity(info.addr, info.identityKeyPair.pubKey);
         await storage.saveOurIdentity(info.identityKeyPair);
-        await Promise.all(state.map(k => storage.putState(k, info[k])));
+        await Promise.all(state.map(k => storage.setState(k, info[k])));
     }
 
     async generateKeys(count, progressCallback) {
@@ -159,12 +159,9 @@ class AccountManager {
             publicKey: sprekey.keyPair.pubKey,
             signature: sprekey.signature
         };
-
         await storage.removeSignedPreKey(signedKeyId - 2);
-        await storage.putStateDict({
-            maxPreKeyId: startId + count,
-            signedKeyId: signedKeyId + 1
-        });
+        await storage.setState('maxPreKeyId', startId + count);
+        await storage.setState('signedKeyId', signedKeyId + 1);
         return result;
     }
 }

@@ -28,109 +28,56 @@ class AsyncRedisClient extends redis.RedisClient {
         });
     }
 
-    async get(key) {
-        return await this._async(super.get, key);
+    async get(ns, key) {
+        return await this._async(super.hget, ns, key);
     }
 
-    async set(key, value) {
-        return await this._async(super.set, key, value);
+    async set(ns, key, value) {
+        return await this._async(super.hset, ns, key, value);
     }
 
-    async keys(pattern) {
-        return await this._async(super.keys, pattern);
+    async keys(ns) {
+        return await this._async(super.hkeys, ns);
     }
 
-    async del(key) {
-        return await this._async(super.del, key);
+    async del(ns, key) {
+        return await this._async(super.hdel, ns, key);
     }
 
-    async exists(key) {
-        return await this._async(super.exists, key);
+    async exists(ns, key) {
+        return await this._async(super.hexists, ns, key);
     }
 }
 
 
 const client = AsyncRedisClient.createClient(process.env.REDIS_URL);
-const cache = new Map();
 
-function encode(data) {
-    const o = {};
-    if (data instanceof Buffer) {
-        o.type = 'buffer';
-        o.data = data.toString('base64');
-    } else if (data instanceof ArrayBuffer) {
-        throw TypeError("ArrayBuffer not supported");
-    } else if (data instanceof Uint8Array) {
-        o.type = 'uint8array';
-        o.data = Buffer.from(data).toString('base64');
-    } else {
-        o.data = data;
-    }
-    return JSON.stringify(o);
-}
-
-function decode(obj) {
-    const o = JSON.parse(obj);
-    if (o.type) {
-        if (o.type === 'buffer') {
-            return Buffer.from(o.data, 'base64');
-        } else if (o.type === 'uint8array') {
-            return Uint8Array.from(Buffer.from(o.data, 'base64'));
-        } else {
-            throw TypeError("Unsupported type: " + o.type);
-        }
-    } else {
-        return o.data;
-    }
-}
-
-
-async function put(key, value) {
+async function set(ns, key, value) {
     if (value === undefined) {
         throw new Error("Tried to store undefined");
     }
-    await client.set(key, encode(value));
-    cache.set(key, value);
+    await client.set(ns, key, value);
 }
 
-async function putDict(dict) {
-    const saves = [];
-    for (const x of Object.entries(dict)) {
-        cache.set(x[0], x[1]);
-        saves.push(client.set(x[0], encode(x[1])).catch(() => cache.delete(x[0])));
-    }
-    await Promise.all(saves);
-}
-
-async function get(key, defaultValue) {
-    if (cache.has(key)) {
-        return cache.get(key);
-    }
-    if (await client.exists(key)) {
-        const value = decode(await client.get(key));
-        cache.set(key, value);
-        return value;
+async function get(ns, key, defaultValue) {
+    if (await client.exists(ns, key)) {
+        return await client.get(ns, key);
     } else {
         return defaultValue;
     }
 }
 
-async function getDict(keys) {
-    const values = await Promise.all(keys.map(k => client.get(k)));
-    const dict = {};
-    for (let i = 0; i < keys.length; i++) {
-        dict[keys[i]] = decode(values[i]);
-    }
-    return dict;
+async function has(ns, key) {
+    return await client.exists(ns, key);
 }
 
-async function remove(key) {
-    await client.del(key);
-    cache.delete(key);
+async function remove(ns, key) {
+    await client.del(ns, key);
 }
 
-async function keys(glob_pattern) {
-    return await client.keys(glob_pattern);
+async function keys(ns, regex) {
+    const keys = await client.keys(ns);
+    return regex ? keys.filter(x => x.match(regex)) : keys;
 }
 
 function shutdown() {
@@ -138,10 +85,9 @@ function shutdown() {
 }
 
 module.exports = {
-    put,
-    putDict,
+    set,
     get,
-    getDict,
+    has,
     remove,
     keys,
     shutdown
