@@ -1,6 +1,7 @@
 librelay - Forsta Relay Node.js library
 ========
-Signal based end-to-end crypto for Forsta messaging platform.
+Signal based Node.js library for end-to-end crypto with Forsta messaging platform.
+
 
 [![npm](https://img.shields.io/npm/v/librelay.svg)](https://www.npmjs.com/package/librelay)
 [![npm](https://img.shields.io/npm/l/librelay.svg)](https://github.com/ForstaLabs/librelay-node)
