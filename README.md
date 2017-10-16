@@ -1,6 +1,6 @@
-librelay - Forsta Relay Node library
+librelay - Forsta Relay Node.js library
 ========
-Signal based node library for end-to-end crypto with Forsta Messaging Platform.
+Signal based end-to-end crypto for Forsta messaging platform.
 
 [![npm](https://img.shields.io/npm/v/librelay.svg)](https://www.npmjs.com/package/librelay)
 [![npm](https://img.shields.io/npm/l/librelay.svg)](https://github.com/ForstaLabs/librelay-node)
@@ -17,7 +17,10 @@ and the data payload, which is a custom JSON specification,
 
 Installation
 --------
-    npm install librelay
+Ensure that you are using Node 8 (needs *async/await* support) or higher and
+simply install from NPM:
+
+    $ npm install librelay
 
 
 Storage

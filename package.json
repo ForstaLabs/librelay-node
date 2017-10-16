@@ -1,7 +1,7 @@
 {
   "name": "librelay",
-  "version": "1.2.2",
-  "description": "Forsta Relay Library for Node.js",
+  "version": "1.2.3",
+  "description": "Signal based end-to-end crypto for Forsta messaging platform",
   "repository": "ForstaLabs/librelay-node",
   "engines": {
     "node": ">=8"
@@ -17,7 +17,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "bufferutil": "3.0.2",
-    "libsignal": "1.0.3",
+    "libsignal": "1.0.5",
     "long": "3.2.0",
     "node-fetch": "1.7.3",
     "protobufjs": "6.8.0",
