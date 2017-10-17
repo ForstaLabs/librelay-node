@@ -64,8 +64,8 @@ async function input(prompt) {
     const [user, org] = (await input("Enter your login (e.g user:org): ")).split(':');
     const validateCallback = await relay.auth.requestCode(org, user);
     const code = await input("SMS Verification Code: ");
-    const auth = await validateCallback(code);
-    await relay.AccountManager.register({jwt: auth.token});
+    const jwt = (await validateCallback(code)).jwt;
+    await relay.AccountManager.register({jwt});
     process.exit(0);
 })();
 ```
