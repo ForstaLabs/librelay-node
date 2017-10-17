@@ -28,7 +28,6 @@ async function validateCode(org, user, code, url=DEFAULT_URL) {
     }
     const auth = await resp.json();
     return {
-        token: auth.token, // Legacy..
         jwt: auth.token,
         user: auth.user
     };
