@@ -66,11 +66,7 @@ class OutgoingMessage {
 
     async reloadDevicesAndSend(addr, recurse) {
         const deviceIds = await storage.getDeviceIds(addr);
-        if (!deviceIds.length) {
-            throw new errors.ProtocolError("No Active Devices");
-        } else {
-            return await this.doSendMessage(addr, deviceIds, recurse, {});
-        }
+        return await this.doSendMessage(addr, deviceIds, recurse, {});
     }
 
     async getKeysForAddr(addr, updateDevices, reentrant) {
@@ -216,7 +212,7 @@ class OutgoingMessage {
     async getStaleDeviceIdsForAddr(addr) {
         const deviceIds = await storage.getDeviceIds(addr);
         if (!deviceIds.length) {
-            return [1];  // Just try ID 1 first; The server will correct us as needed.
+            return [];  // The server will correct us with a 409.
         }
         const updateDevices = [];
         for (const id of deviceIds) {

@@ -26,7 +26,11 @@ async function validateCode(org, user, code, url=DEFAULT_URL) {
         console.error('Request error:', await resp.text());
         throw Error(resp.status);
     }
-    return await resp.json();
+    const auth = await resp.json();
+    return {
+        jwt: auth.token,
+        user: auth.user
+    };
 }
 
 module.exports = {
