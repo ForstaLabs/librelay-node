@@ -51,10 +51,14 @@ class MessageReceiver extends EventTarget {
     }
 
     connect() {
+        if (this._closing) {
+            throw new Error("Invalid State: Already Closed");
+        }
         this.wsr.connect();
     }
 
     close() {
+        this._closing = true;
         this.wsr.close();
     }
 
@@ -98,12 +102,12 @@ class MessageReceiver extends EventTarget {
 
     async onSocketClose(ev) {
         console.warn('Websocket closed:', ev.code, ev.reason || '');
-        if (ev.code === 3000) {
+        if (ev.code === 3000 || this._closing) {
             return;
         }
         // possible auth or network issue. Make a request to confirm
         let attempt = 0;
-        while (true) {
+        while (!this._closing) {
             try {
                 await this.tss.getDevices();
                 break;
@@ -117,7 +121,9 @@ class MessageReceiver extends EventTarget {
                 await this.sleep(backoff);
             }
         }
-        this.connect();
+        if (!this._closing) {
+            this.connect();
+        }
     }
 
     async handleRequest(request) {
