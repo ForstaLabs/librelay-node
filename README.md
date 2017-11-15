@@ -189,8 +189,7 @@ Administration Regulations, Section 740.13) for both object code and source code
 
 License
 --------
-Copyright 2014-2016 Open Whisper Systems
-
-Copyright 2017 Forsta Inc.
-
 Licensed under the GPLv3: http://www.gnu.org/licenses/gpl-3.0.html
+
+* Copyright 2014-2016 Open Whisper Systems
+* Copyright 2017 Forsta Inc.
