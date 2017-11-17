@@ -1,6 +1,4 @@
-/*
- * vim: ts=4:sw=4:expandtab
- */
+// vim: ts=4:sw=4:expandtab
 
 'use strict';
 
@@ -14,6 +12,8 @@ const libsignal = require('libsignal');
 const protobufs = require('./protobufs');
 const queueAsync = require('./queue_async');
 const storage = require('./storage');
+const util = require('./storage');
+
 
 const ENV_TYPES = protobufs.Envelope.lookup('Type').values;
 const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
@@ -95,12 +95,6 @@ class MessageReceiver extends EventTarget {
         throw error;
     }
 
-    async sleep(seconds) {
-        await new Promise(resolve => {
-            setTimeout(resolve, seconds * 1000);
-        });
-    }
-
     async onSocketClose(ev) {
         console.warn('Websocket closed:', ev.code, ev.reason || '');
         if (ev.code === 3000 || this._closing) {
@@ -119,7 +113,7 @@ class MessageReceiver extends EventTarget {
                 errorEvent.error = e;
                 await this.dispatchEvent(errorEvent);
                 console.info(`Will retry network in ${backoff} seconds (attempt ${attempt}).`);
-                await this.sleep(backoff);
+                await util.sleep(backoff);
             }
         }
         if (!this._closing) {

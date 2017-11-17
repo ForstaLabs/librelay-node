@@ -48,7 +48,7 @@ class AccountManager {
             name,
             password
         };
-        const resp = await fetch(url + '/v1/provision-proxy/', {
+        const resp = await fetch(url + '/v1/provision/account', {
             method: 'PUT',
             headers: {
                 "Authorization": authHeader,

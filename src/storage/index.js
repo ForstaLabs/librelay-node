@@ -2,7 +2,7 @@
 
 'use strict';
 
-const helpers = require('../helpers');
+const util = require('../util');
 const libsignal = require('libsignal');
 const process = require('process');
 exports.backing = require('./backing');
@@ -201,7 +201,7 @@ exports.loadIdentity = async function(identifier) {
     if (!identifier) {
         throw new Error("Tried to get identity key for undefined/null key");
     }
-    const addr = helpers.unencodeAddr(identifier)[0];
+    const addr = util.unencodeAddr(identifier)[0];
     return await _get(identityKeyNS, addr);
 };
 
@@ -212,12 +212,12 @@ exports.saveIdentity = async function(identifier, publicKey) {
     if (!(publicKey instanceof Buffer)) {
         throw new Error(`Invalid type for saveIdentity: ${publicKey.constructor.name}`);
     }
-    const addr = helpers.unencodeAddr(identifier)[0];
+    const addr = util.unencodeAddr(identifier)[0];
     await _set(identityKeyNS, addr, publicKey);
 };
 
 exports.removeIdentity = async function(identifier) {
-    const addr = helpers.unencodeAddr(identifier)[0];
+    const addr = util.unencodeAddr(identifier)[0];
     await _backing.remove(identityKeyNS, addr);
     await exports.removeAllSessions(addr);
 };
