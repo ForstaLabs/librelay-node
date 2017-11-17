@@ -2,9 +2,9 @@
 
 'use strict';
 
-const TextSecureServer = require('./textsecure_server');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
+const hub = require('./hub');
 const libsignal = require('libsignal');
 const storage = require('./storage');
 
@@ -15,14 +15,14 @@ const defaultRegisterURL = 'https://api.forsta.io';
 class AccountManager {
 
     constructor(textSecureServer, prekeyLowWater=10, prekeyHighWater=100) {
-        this.tss = textSecureServer;
+        this.signal = textSecureServer;
         this.preKeyLowWater = prekeyLowWater;  // Add more keys when we get this low.
         this.preKeyHighWater = prekeyHighWater; // Max fill level for prekeys.
     }
 
     static async factory() {
-        const tss = await TextSecureServer.factory();
-        return new this(tss);
+        const signal = await hub.SignalServer.factory();
+        return new this(signal);
     }
 
     static async register({token, jwt, url=defaultRegisterURL, name='librelay'}) {
@@ -64,23 +64,23 @@ class AccountManager {
         deviceInfo.deviceId = respData.deviceId;
         deviceInfo.serverUrl = respData.serverUrl;
         deviceInfo.username = `${deviceInfo.addr}.${deviceInfo.deviceId}`;
-        const tss = new TextSecureServer(deviceInfo.serverUrl, deviceInfo.username,
-                                         deviceInfo.password);
-        const instance = new this(tss);
+        const signal = new hub.SignalServer(deviceInfo.serverUrl, deviceInfo.username,
+                                            deviceInfo.password);
+        const instance = new this(signal);
         await instance.saveDeviceState(deviceInfo);
         const keys = await instance.generateKeys(instance.preKeyHighWater);
-        await instance.tss.registerKeys(keys);
+        await instance.signal.registerKeys(keys);
         return instance;
     }
 
     async refreshPreKeys() {
-        const preKeyCount = await this.tss.getMyKeys();
+        const preKeyCount = await this.signal.getMyKeys();
         const lastResortKey = await storage.loadPreKey(lastResortKeyId);
         if (preKeyCount <= this.preKeyLowWater || !lastResortKey) {
             // The server replaces existing keys so just go to the hilt.
             console.info("Refreshing pre-keys...");
             const keys = await this.generateKeys(this.preKeyHighWater);
-            await this.tss.registerKeys(keys);
+            await this.signal.registerKeys(keys);
         }
     }
 

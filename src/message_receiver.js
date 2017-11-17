@@ -4,10 +4,10 @@
 
 const Event = require('./event');
 const EventTarget = require('./event_target');
-const TextSecureServer = require('./textsecure_server');
 const WebSocketResource = require('./websocket-resources');
 const crypto = require('./crypto');
 const errors = require('./errors');
+const hub = require('./hub');
 const libsignal = require('libsignal');
 const protobufs = require('./protobufs');
 const queueAsync = require('./queue_async');
@@ -21,15 +21,15 @@ const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
 
 class MessageReceiver extends EventTarget {
 
-    constructor(tss, addr, deviceId, signalingKey, noWebSocket) {
+    constructor(signal, addr, deviceId, signalingKey, noWebSocket) {
         super();
-        console.assert(tss && addr && deviceId && signalingKey);
-        this.tss = tss;
+        console.assert(signal && addr && deviceId && signalingKey);
+        this.signal = signal;
         this.addr = addr;
         this.deviceId = deviceId;
         this.signalingKey = signalingKey;
         if (!noWebSocket) {
-            const url = this.tss.getMessageWebSocketURL();
+            const url = this.signal.getMessageWebSocketURL();
             this.wsr = new WebSocketResource(url, {
                 handleRequest: request => queueAsync(this, this.handleRequest.bind(this, request)),
                 keepalive: {
@@ -43,11 +43,11 @@ class MessageReceiver extends EventTarget {
     }
 
     static async factory(noWebSocket) {
-        const tss = await TextSecureServer.factory();
+        const signal = await hub.SignalServer.factory();
         const addr = await storage.getState('addr');
         const deviceId = await storage.getState('deviceId');
         const signalingKey = await storage.getState('signalingKey');
-        return new this(tss, addr, deviceId, signalingKey, noWebSocket);
+        return new this(signal, addr, deviceId, signalingKey, noWebSocket);
     }
 
     async connect() {
@@ -69,7 +69,7 @@ class MessageReceiver extends EventTarget {
         }
         let more;
         do {
-            const data = await this.tss.request({call: 'messages'});
+            const data = await this.signal.request({call: 'messages'});
             more = data.more;
             const deleting = [];
             for (const envelope of data.messages) {
@@ -80,7 +80,7 @@ class MessageReceiver extends EventTarget {
                     envelope.legacyMessage = Buffer.from(envelope.message, 'base64');
                 }
                 await this.handleEnvelope(envelope);
-                deleting.push(this.tss.request({
+                deleting.push(this.signal.request({
                     call: 'messages',
                     httpType: 'DELETE',
                     urlParameters: `/${envelope.source}/${envelope.timestamp}`
@@ -104,7 +104,7 @@ class MessageReceiver extends EventTarget {
         let attempt = 0;
         while (!this._closing) {
             try {
-                await this.tss.getDevices();
+                await this.signal.getDevices();
                 break;
             } catch(e) {
                 const backoff = Math.log1p(++attempt) * 30 * Math.random();
@@ -177,8 +177,8 @@ class MessageReceiver extends EventTarget {
                     envelope.keyChange = true;
                     return await this.handleEnvelope(envelope, /*reentrant*/ true);
                 }
-            } else if (e instanceof errors.TextSecureError) {
-                console.warn("Supressing TextSecureError:", e);
+            } else if (e instanceof errors.RelayError) {
+                console.warn("Supressing RelayError:", e);
             } else {
                 const ev = new Event('error');
                 ev.error = e;
@@ -332,7 +332,7 @@ class MessageReceiver extends EventTarget {
     }
 
     async handleAttachment(attachment) {
-        const encrypted = await this.tss.getAttachment(attachment.id.toString());
+        const encrypted = await this.signal.getAttachment(attachment.id.toString());
         attachment.data = await crypto.decryptAttachment(encrypted, attachment.key);
     }
 

@@ -3,9 +3,9 @@
 const Event = require('./event');
 const EventTarget = require('./event_target');
 const OutgoingMessage = require('./outgoing_message');
-const TextSecureServer = require('./textsecure_server');
 const crypto = require('./crypto');
 const errors = require('./errors.js');
+const hub = require('./hub');
 const libsignal = require('libsignal');
 const node_crypto = require('crypto');
 const protobufs = require('./protobufs');
@@ -66,17 +66,17 @@ class Message {
 
 class MessageSender extends EventTarget {
 
-    constructor(tss, addr) {
+    constructor(signal, addr) {
         super();
-        console.assert(tss && addr);
-        this.tss = tss;
+        console.assert(signal && addr);
+        this.signal = signal;
         this.addr = addr;
     }
 
     static async factory() {
-        const tss = await TextSecureServer.factory();
+        const signal = await hub.SignalServer.factory();
         const addr = await storage.getState('addr');
-        return new this(tss, addr);
+        return new this(signal, addr);
     }
 
     async makeAttachmentPointer(attachment) {
@@ -91,12 +91,12 @@ class MessageSender extends EventTarget {
         });
         const iv = node_crypto.randomBytes(16);
         const encryptedBin = await crypto.encryptAttachment(attachment.data, key, iv);
-        ptr.id = await this.tss.putAttachment(encryptedBin);
+        ptr.id = await this.signal.putAttachment(encryptedBin);
         return ptr;
     }
 
     retransmitMessage(addr, jsonData, timestamp) {
-        var outgoing = new OutgoingMessage(this.tss);
+        var outgoing = new OutgoingMessage(this.signal);
         return outgoing.transmitMessage(addr, jsonData, timestamp);
     }
 
@@ -133,7 +133,7 @@ class MessageSender extends EventTarget {
 
     sendMessageProto(timestamp, addrs, msgProto) {
         console.assert(addrs instanceof Array);
-        const outmsg = new OutgoingMessage(this.tss, timestamp, msgProto);
+        const outmsg = new OutgoingMessage(this.signal, timestamp, msgProto);
         outmsg.on('keychange', this.onKeyChange.bind(this));
         for (const addr of addrs) {
             queueAsync('message-send-job-' + addr, () => outmsg.sendToAddr(addr));
