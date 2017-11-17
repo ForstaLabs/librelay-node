@@ -90,7 +90,7 @@ function onMessage(ev) {
 (async function main() {
     const msgReceiver = await relay.MessageReceiver.factory();
     msgReceiver.addEventListener('message', onMessage);
-    msgReceiver.connect();
+    await msgReceiver.connect();
 })();
 ```
 Ref: <https://github.com/ForstaLabs/librelay-node/blob/master/examples/recvmessage.js>

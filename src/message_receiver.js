@@ -50,11 +50,11 @@ class MessageReceiver extends EventTarget {
         return new this(tss, addr, deviceId, signalingKey, noWebSocket);
     }
 
-    connect() {
+    async connect() {
         if (this._closing) {
             throw new Error("Invalid State: Already Closed");
         }
-        this.wsr.connect();
+        await this.wsr.connect();
     }
 
     close() {
@@ -91,7 +91,8 @@ class MessageReceiver extends EventTarget {
     }
 
     onSocketError(error) {
-        console.error('Websocket error:', error);
+        console.error('Message Receiver - WebSocket error:', error);
+        throw error;
     }
 
     async sleep(seconds) {
@@ -122,7 +123,7 @@ class MessageReceiver extends EventTarget {
             }
         }
         if (!this._closing) {
-            this.connect();
+            await this.connect();
         }
     }
 

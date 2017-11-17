@@ -43,7 +43,7 @@ class IncomingWebSocketRequest extends Request {
                 status
             }
         });
-        return this.wsr.socket.send(protobufs.WebSocketMessage.encode(pbmsg).finish());
+        return this.wsr.send(protobufs.WebSocketMessage.encode(pbmsg).finish());
     }
 }
 
@@ -58,7 +58,7 @@ class OutgoingWebSocketRequest extends Request {
                 id: this.id
             }
         });
-        return this.wsr.socket.send(protobufs.WebSocketMessage.encode(pbmsg).finish());
+        return this.wsr.send(protobufs.WebSocketMessage.encode(pbmsg).finish());
     }
 }
 
@@ -111,6 +111,7 @@ class WebSocketResource {
     constructor(url, opts) {
         this.url = url;
         this.socket = null;
+        this._sendQueue = [];
         this._outgoingRequests = new Map();
         this._listeners = [];
         opts = opts || {};
@@ -145,13 +146,21 @@ class WebSocketResource {
         this._listeners = this._listeners.filter(x => !(x[0] === event && x[1] === callback));
     }
 
-    connect() {
+    async connect() {
         this.close();
-        this.socket = new WebSocket(this.url);
+        const ws = new WebSocket(this.url);
+        await new Promise((resolve, reject) => {
+            ws.addEventListener('open', resolve);
+            ws.addEventListener('error', reject);
+        });
+        this.socket = ws;
         for (const x of this._listeners) {
             this.socket.addEventListener(x[0], x[1]);
         }
-        console.info('Websocket connecting:', this.url.split('?', 1)[0]);
+        while (this._sendQueue.length) {
+            console.warn("Dequeuing deferred websocket message");
+            this.socket.send(this._sendQueue.shift());
+        }
     }
 
     close(code, reason) {
@@ -169,6 +178,14 @@ class WebSocketResource {
         this._outgoingRequests.set(request.id.toNumber(), request);
         request.send();
         return request;
+    }
+
+    send(data) {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(data);
+        } else {
+            this._sendQueue.push(data);
+        }
     }
 
     async onMessage(encodedMsg) {
