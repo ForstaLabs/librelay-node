@@ -9,7 +9,7 @@ const Type = {
     REBUILD_MESSAGE: 4,
 };
 
-class TextSecureError extends Error {}
+class RelayError extends Error {}
 
 function ReplayableError(options) {
     options = options || {};
@@ -17,7 +17,7 @@ function ReplayableError(options) {
     this.functionCode = options.functionCode;
     this.args         = options.args;
 }
-ReplayableError.prototype = new TextSecureError();
+ReplayableError.prototype = new RelayError();
 ReplayableError.prototype.constructor = ReplayableError;
 
 function IncomingIdentityKeyError(addr, message, key) {
@@ -96,10 +96,10 @@ function UnregisteredUserError(addr, httpError) {
     this.message = httpError.message;
     this.stack = httpError.stack;
 }
-UnregisteredUserError.prototype = new TextSecureError();
+UnregisteredUserError.prototype = new RelayError();
 UnregisteredUserError.prototype.constructor = UnregisteredUserError;
 
-class ProtocolError extends TextSecureError {
+class ProtocolError extends RelayError {
     constructor(code, response) {
         super();
         this.name = 'ProtocolError';
@@ -111,7 +111,7 @@ class ProtocolError extends TextSecureError {
     }
 }
 
-class NetworkError extends TextSecureError {
+class NetworkError extends RelayError {
     constructor(a, b, c) {
         super(a, b, c);
         this.name = 'NetworkError';
@@ -128,6 +128,6 @@ module.exports = {
     ProtocolError,
     ReplayableError,
     SendMessageError,
-    TextSecureError,
+    RelayError,
     UnregisteredUserError
 };

@@ -4,8 +4,8 @@
 
 'use strict';
 
-function unencodeAddr(number) {
-    return number.split(".");
+function unencodeAddr(addr) {
+    return addr.split(".");
 }
 
 const _maxTimeout = 0x7fffffff;  // `setTimeout` max valid value.

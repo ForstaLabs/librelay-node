@@ -2,11 +2,15 @@
 
 'use strict';
 
+const ProvisioningCipher = require('./provisioning_cipher');
+const WebSocketResource = require('./websocket-resources');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 const hub = require('./hub');
 const libsignal = require('libsignal');
+const protobufs = require('./protobufs');
 const storage = require('./storage');
+
 
 const lastResortKeyId = 0xdeadbeef & ((2 ** 31) - 1); // Must fit inside signed 32bit int.
 const defaultRegisterURL = 'https://api.forsta.io';
@@ -14,8 +18,8 @@ const defaultRegisterURL = 'https://api.forsta.io';
 
 class AccountManager {
 
-    constructor(textSecureServer, prekeyLowWater=10, prekeyHighWater=100) {
-        this.signal = textSecureServer;
+    constructor(signal, prekeyLowWater=10, prekeyHighWater=100) {
+        this.signal = signal;
         this.preKeyLowWater = prekeyLowWater;  // Add more keys when we get this low.
         this.preKeyHighWater = prekeyHighWater; // Max fill level for prekeys.
     }
@@ -24,6 +28,111 @@ class AccountManager {
         const signal = await hub.SignalServer.factory();
         return new this(signal);
     }
+
+    _generateDeviceInfo(identityKeyPair, name) {
+        const passwordB64 = crypto.randomBytes(16).toString('base64');
+        const password = passwordB64.substring(0, passwordB64.length - 2);
+        return {
+            name,
+            identityKeyPair,
+            signalingKey: crypto.randomBytes(32 + 20),
+            registrationId: libsignal.KeyHelper.generateRegistrationId(),
+            password
+        };
+    }
+
+    async registerAccount(name='librelay') {
+        const identity = libsignal.KeyHelper.generateIdentityKeyPair();
+        const devInfo = this._generateDeviceInfo(identity, name);
+        const accountInfo = await this.signal.createAccount(devInfo);
+        await storage.putState('addr', accountInfo.addr);
+        await this.saveDeviceState(accountInfo.addr, accountInfo);
+        const keys = await this.generateKeys(this.preKeyHighWater);
+        await this.signal.registerKeys(keys);
+        await this.registrationDone();
+    }
+
+    async registerDevice(name='librelay', setProvisioningUrl, confirmAddress, progressCallback) {
+        const returnInterface = {waiting: true};
+        const provisioningCipher = new ProvisioningCipher();
+        const pubKey = provisioningCipher.getPublicKey();
+        let wsr;
+        const webSocketWaiter = new Promise((resolve, reject) => {
+            const url = this.signal.getProvisioningWebSocketURL();
+            wsr = new WebSocketResource(url, {
+                keepalive: {path: '/v1/keepalive/provisioning'},
+                handleRequest: request => {
+                    if (request.path === "/v1/address" && request.verb === "PUT") {
+                        const proto = protobufs.ProvisioningUuid.decode(request.body);
+                        const uriPubKey = encodeURIComponent(pubKey.toString('base64'));
+                        request.respond(200, 'OK');
+                        const r = setProvisioningUrl(`tsdevice:/?uuid=${proto.uuid}&pub_key=${uriPubKey}`);
+                        if (r instanceof Promise) {
+                            r.catch(reject);
+                        }
+                    } else if (request.path === "/v1/message" && request.verb === "PUT") {
+                        const msgEnvelope = protobufs.ProvisionEnvelope.decode(request.body, 'binary');
+                        request.respond(200, 'OK');
+                        wsr.close();
+                        resolve(msgEnvelope);
+                    } else {
+                        reject(new Error('Unknown websocket message ' + request.path));
+                    }
+                }
+            });
+        });
+        await wsr.connect();
+
+        returnInterface.done = (async function() {
+            const provisionMessage = await provisioningCipher.decrypt(await webSocketWaiter);
+            returnInterface.waiting = false;
+            await confirmAddress(provisionMessage.addr);
+            const devInfo = this._generateDeviceInfo(provisionMessage.identityKeyPair, name);
+            await this.signal.addDevice(provisionMessage.provisioningCode,
+                                        provisionMessage.addr, devInfo);
+            await this.saveDeviceState(provisionMessage.addr, devInfo);
+            const keys = await this.generateKeys(this.preKeyHighWater, progressCallback);
+            await this.signal.registerKeys(keys);
+            await this.registrationDone();
+        }).call(this);
+
+        returnInterface.cancel = async function() {
+            wsr.close();
+            try {
+                await webSocketWaiter;
+            } catch(e) {
+                console.warn("Ignoring web socket error:", e);
+            }
+        };
+        return returnInterface;
+    }
+
+    async linkDevice(uuid, pubKey, options) {
+        options = options || {};
+        const code = await this.signal.getLinkDeviceVerificationCode();
+        const ourIdent = await storage.getOurIdentity();
+        const pMessage = new protobufs.ProvisionMessage();
+        pMessage.identityKeyPrivate = ourIdent.privKey;
+        pMessage.addr = await storage.getState('addr');
+        pMessage.userAgent = options.userAgent || 'librelay-web';
+        pMessage.provisioningCode = code;
+        const provisioningCipher = new ProvisioningCipher();
+        const pEnvelope = await provisioningCipher.encrypt(pubKey, pMessage);
+        const resp = await this.signal.fetch('/v1/provisioning/' + uuid, {
+            method: 'PUT',
+            json: {
+                body: pEnvelope.toString('base64') // XXX probably have to finish()/encode() this thing.
+            }
+        });
+        if (!resp.ok) {
+            // 404 means someone else handled it already.
+            if (resp.status !== 404) {
+                throw new Error(await resp.text());
+            }
+        }
+    }
+
+    
 
     static async register({token, jwt, url=defaultRegisterURL, name='librelay'}) {
         if (!token && !jwt) {
@@ -84,11 +193,10 @@ class AccountManager {
         }
     }
 
-    async saveDeviceState(info) {
+    async saveDeviceState(addr, info) {
         await storage.clearSessionStore();
         await storage.removeOurIdentity();
-        const state = [
-            'addr',
+        const stateKeys = [
             'deviceId',
             'name',
             'password',
@@ -97,13 +205,14 @@ class AccountManager {
             'signalingKey',
             'username'
         ];
-        await Promise.all(state.map(k => storage.removeState(k)));
+        await Promise.all(stateKeys.map(key => storage.removeState(key)));
         // update our own identity key, which may have changed
         // if we're relinking after a reinstall on the master device
-        await storage.removeIdentity(info.addr);
-        await storage.saveIdentity(info.addr, info.identityKeyPair.pubKey);
+        await storage.removeIdentity(addr);
+        await storage.putState('addr', addr);
+        await storage.saveIdentity(addr, info.identityKeyPair.pubKey);
         await storage.saveOurIdentity(info.identityKeyPair);
-        await Promise.all(state.map(k => storage.setState(k, info[k])));
+        await Promise.all(stateKeys.map(key => storage.putState(key, info[key])));
     }
 
     async generateKeys(count, progressCallback) {
@@ -160,9 +269,13 @@ class AccountManager {
             signature: sprekey.signature
         };
         await storage.removeSignedPreKey(signedKeyId - 2);
-        await storage.setState('maxPreKeyId', startId + count);
-        await storage.setState('signedKeyId', signedKeyId + 1);
+        await storage.putState('maxPreKeyId', startId + count);
+        await storage.putState('signedKeyId', signedKeyId + 1);
         return result;
+    }
+
+    async deleteDevice(deviceId) {
+        await this.signal.deleteDevice(deviceId);
     }
 }
 

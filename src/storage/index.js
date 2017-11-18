@@ -73,7 +73,7 @@ exports.getState = async function(key, defaultValue) {
     return await _get(stateNS, key, defaultValue);
 };
 
-exports.setState = async function(key, value) {
+exports.putState = async function(key, value) {
     return await _set(stateNS, key, value);
 };
 
@@ -89,8 +89,8 @@ exports.getOurIdentity = async function() {
 };
 
 exports.saveOurIdentity = async function(keyPair) {
-    await exports.setState('ourIdentityKey.pub', keyPair.pubKey);
-    await exports.setState('ourIdentityKey.priv', keyPair.privKey);
+    await exports.putState('ourIdentityKey.pub', keyPair.pubKey);
+    await exports.putState('ourIdentityKey.priv', keyPair.privKey);
 };
 
 exports.removeOurIdentity = async function() {

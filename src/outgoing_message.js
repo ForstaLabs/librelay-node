@@ -7,8 +7,8 @@ const storage = require('./storage');
 
 class OutgoingMessage {
 
-    constructor(server, timestamp, messageBuffer) {
-        this.server = server;
+    constructor(signal, timestamp, messageBuffer) {
+        this.signal = signal;
         this.timestamp = timestamp;
         this.messageBuffer = messageBuffer;
         this.sent = [];
@@ -102,12 +102,12 @@ class OutgoingMessage {
         }
 
         if (updateDevices === undefined) {
-            return await (handleResult(await this.server.getKeysForAddr(addr)));
+            return await (handleResult(await this.signal.getKeysForAddr(addr)));
         } else {
             for (const device of updateDevices) {
-                /* NOTE: This must be serialized due to a server bug. */
+                /* NOTE: This must be serialized due to a signal bug. */
                 try {
-                    await handleResult(await _this.server.getKeysForAddr(addr, device));
+                    await handleResult(await _this.signal.getKeysForAddr(addr, device));
                 } catch(e) {
                     if (e instanceof errors.ProtocolError && e.code === 404 && device !== 1) {
                         await _this.removeDeviceIdsForAddr(addr, [device]);
@@ -121,7 +121,7 @@ class OutgoingMessage {
 
     async transmitMessage(addr, jsonData, timestamp) {
         try {
-            return await this.server.sendMessages(addr, jsonData, timestamp);
+            return await this.signal.sendMessages(addr, jsonData, timestamp);
         } catch(e) {
             if (e instanceof errors.ProtocolError && (e.code !== 409 && e.code !== 410)) {
                 // 409 and 410 should bubble and be handled by doSendMessage
