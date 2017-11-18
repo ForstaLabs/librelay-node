@@ -1,7 +1,4 @@
-package textsecure;
-
-option java_package = "org.whispersystems.textsecure.internal.push";
-option java_outer_classname = "TextSecureProtos";
+package relay;
 
 message Envelope {
   enum Type {
@@ -56,7 +53,7 @@ message SyncMessage {
   }
 
   message Blocked {
-    repeated string numbers = 1;
+    repeated string addrs = 1;
   }
 
   message Request {
@@ -115,7 +112,7 @@ message GroupDetails {
 }
 
 message ContactDetails {
-  optional string number = 1;
+  optional string addr   = 1;
   optional string name   = 2;
   optional Avatar avatar = 3;
   optional string color  = 4;

@@ -1,9 +1,8 @@
-package textsecure;
+package relay;
 
 message ProvisioningUuid {
  optional string uuid = 1;
 }
-
 
 message ProvisionEnvelope {
   optional bytes publicKey = 1;
