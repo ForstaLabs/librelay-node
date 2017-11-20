@@ -2,15 +2,14 @@
 
 'use strict';
 
-const errors = require('./errors');
-const fetch = require('node-fetch');
-const http = require('http');
-const https = require('https');
-const storage = require('./storage');
-const util = require('./util');
+const ProvisioningCipher = require('../provisioning_cipher');
+const errors = require('../errors');
+const fetch = require('./fetch');
+const libsignal = require('libsignal');
+const protobufs = require('../protobufs');
+const storage = require('../storage');
+const urls = require('./urls');
 
-
-let _atlasUrl = 'https://api.forsta.io';
 
 const SIGNAL_URL_CALLS = {
     accounts: "/v1/accounts",
@@ -28,20 +27,12 @@ const SIGNAL_HTTP_MESSAGES = {
     417: "Address already registered"
 };
 
+const lastResortKeyId = 0xdeadbeef & ((2 ** 31) - 1); // Must fit inside signed 32bit int.
 
-class SignalServer {
 
-    constructor(url, username, password) {
-        if (typeof url !== 'string') {
-            throw new TypeError("Invalid URL: " + url);
-        }
-        if (url.startsWith('https://')) {
-            this._httpAgent = new https.Agent({keepAlive: true});
-        } else if (url.startsWith('http://')) {
-            this._httpAgent = new http.Agent({keepAlive: true});
-        } else {
-            throw new TypeError("Invalid URL: " + url);
-        }
+class SignalClient {
+
+    constructor(username, password, url=urls.signal) {
         this.url = url;
         this.username = username;
         this.password = password;
@@ -52,8 +43,104 @@ class SignalServer {
         const url = await storage.getState('serverUrl');
         const username = await storage.getState('username');
         const password = await storage.getState('password');
-        return new this(url, username, password);
+        return new this(username, password, url);
     }
+
+    async linkDevice(uuid, pubKey, options) {
+        options = options || {};
+        const provisionResp = await this.request({
+            call: 'devices',
+            urlParameters: '/provisioning/code'
+        });
+        const ourIdent = await storage.getOurIdentity();
+        const pMessage = new protobufs.ProvisionMessage();
+        pMessage.identityKeyPrivate = ourIdent.privKey;
+        pMessage.addr = await storage.getState('addr');
+        pMessage.userAgent = options.userAgent || 'librelay-web';
+        pMessage.provisioningCode = provisionResp.verificationCode;
+        const provisioningCipher = new ProvisioningCipher();
+        const pEnvelope = await provisioningCipher.encrypt(pubKey, pMessage);
+        const resp = await this.fetch('/v1/provisioning/' + uuid, {
+            method: 'PUT',
+            json: {
+                body: pEnvelope.toString('base64') // XXX probably have to finish()/encode() this thing.
+            }
+        });
+        if (!resp.ok) {
+            // 404 means someone else handled it already.
+            if (resp.status !== 404) {
+                throw new Error(await resp.text());
+            }
+        }
+    }
+
+    async refreshPreKeys(minLevel=10, fill=100) {
+        const preKeyCount = await this.getMyKeys();
+        const lastResortKey = await storage.loadPreKey(lastResortKeyId);
+        if (preKeyCount <= minLevel || !lastResortKey) {
+            // The server replaces existing keys so just go to the hilt.
+            console.info("Refreshing pre-keys...");
+            await this.registerKeys(await this.generateKeys(fill));
+        }
+    }
+
+    async generateKeys(count=100, progressCallback) {
+        if (typeof progressCallback !== 'function') {
+            progressCallback = undefined;
+        }
+        const startId = await storage.getState('maxPreKeyId') || 1;
+        const signedKeyId = await storage.getState('signedKeyId') || 1;
+
+        if (typeof startId != 'number') {
+            throw new Error('Invalid maxPreKeyId');
+        }
+        if (typeof signedKeyId != 'number') {
+            throw new Error('Invalid signedKeyId');
+        }
+
+        let lastResortKey = await storage.loadPreKey(lastResortKeyId);
+        if (!lastResortKey) {
+            // Last resort key only used if our prekey pool is drained faster than
+            // we refresh it.  This prevents message dropping at the expense of
+            // forward secrecy impairment.
+            const pk = await libsignal.KeyHelper.generatePreKey(lastResortKeyId);
+            await storage.storePreKey(lastResortKeyId, pk.keyPair);
+            lastResortKey = pk.keyPair;
+        }
+        const ourIdent = await storage.getOurIdentity();
+        const result = {
+            preKeys: [],
+            identityKey: ourIdent.pubKey,
+            lastResortKey: {
+                keyId: lastResortKeyId,
+                publicKey: lastResortKey.pubKey
+            }
+        };
+        for (let keyId = startId; keyId < startId + count; ++keyId) {
+            const preKey = await libsignal.KeyHelper.generatePreKey(keyId);
+            await storage.storePreKey(preKey.keyId, preKey.keyPair);
+            result.preKeys.push({
+                keyId: preKey.keyId,
+                publicKey: preKey.keyPair.pubKey
+            });
+            if (progressCallback) {
+                progressCallback(keyId - startId);
+            }
+        }
+        const sprekey = await libsignal.KeyHelper.generateSignedPreKey(ourIdent, signedKeyId);
+        await storage.storeSignedPreKey(sprekey.keyId, sprekey.keyPair);
+        result.signedPreKey = {
+            keyId: sprekey.keyId,
+            publicKey: sprekey.keyPair.pubKey,
+            signature: sprekey.signature
+        };
+        await storage.removeSignedPreKey(signedKeyId - 2);
+        await storage.putState('maxPreKeyId', startId + count);
+        await storage.putState('signedKeyId', signedKeyId + 1);
+        return result;
+    }
+
+    /* BREAK api signal code.... */
 
     authHeader(username, password) {
         const token = Buffer.from(username + ':' + password).toString('base64');
@@ -124,20 +211,13 @@ class SignalServer {
     }
 
     async fetch(urn, options) {
-        /* Thin wrapper around global.fetch to augment json and auth support. */
+        /* Thin wrapper to augment json and auth support. */
         options = options || {};
         options.headers = options.headers || new fetch.Headers();
-        options.headers.set('Connection', 'keep-alive');
-        options.agent = this._httpAgent;
         if (!options.headers.has('Authorization')) {
             if (this.username && this.password) {
                 options.headers.set('Authorization', this.authHeader(this.username, this.password));
             }
-        }
-        const body = options.json && JSON.stringify(options.json);
-        if (body) {
-            options.headers.set('Content-Type', 'application/json; charset=utf-8');
-            options.body = body;
         }
         return await fetch(`${this.url}/${urn.replace(/^\//, '')}`, options);
     }
@@ -277,16 +357,8 @@ class SignalServer {
                                 '/v1/websocket/provisioning/';
     }
 
-    async getLinkDeviceVerificationCode() {
-        const data = await this.request({
-            call: 'devices',
-            urlParameters: '/provisioning/code'
-        });
-        return data && data.verificationCode;
-    }
-
     /* The GCM reg ID configures the data needed for the PushServer to wake us up
-     * if this page is not active.  I.e. from our ServiceWorker. */
+     * using google cloud messaging's Push Server (an exercise for the user) */
     async updateGcmRegistrationId(gcm_reg_id) {
         return await this.request({
             call: 'accounts',
@@ -299,217 +371,4 @@ class SignalServer {
     }
 }
 
-function atobJWT(str) {
-    /* See: https://github.com/yourkarma/JWT/issues/8 */
-    return Buffer.from(str.replace(/_/g, '/').replace(/-/g, '+'), 'base64').toString('binary');
-}
-
-
-
-async function getAtlasConfig() {
-    return await storage.getState('atlasConfig');
-}
-
-async function setAtlasConfig(data) {
-    await storage.putState('atlasConfig', data);
-}
-
-const getAtlasUrl = () => _atlasUrl;
-
-const setAtlasUrl = url => _atlasUrl = url;
-
-function decodeAtlasToken(encoded_token) {
-    let token;
-    try {
-        const parts = encoded_token.split('.').map(atobJWT);
-        token = {
-            header: JSON.parse(parts[0]),
-            payload: JSON.parse(parts[1]),
-            secret: parts[2]
-        };
-    } catch(e) {
-        throw new Error('Invalid Token');
-    }
-    if (!token.payload || !token.payload.exp) {
-        throw TypeError("Invalid Token");
-    }
-    if (token.payload.exp * 1000 <= Date.now()) {
-        throw Error("Expired Token");
-    }
-    return token;
-}
-
-async function getEncodedAtlasToken() {
-    const config = await getAtlasConfig();
-    if (!config || !config.API || !config.API.TOKEN) {
-        throw ReferenceError("No Token Found");
-    }
-    return config.API.TOKEN;
-}
-
-async function updateEncodedAtlasToken(encodedToken) {
-    const config = await getAtlasConfig();
-    if (!config || !config.API || !config.API.TOKEN) {
-        throw ReferenceError("No Token Found");
-    }
-    config.API.TOKEN = encodedToken;
-    await setAtlasConfig(config);
-}
-
-async function getAtlasToken() {
-    return decodeAtlasToken(await getEncodedAtlasToken());
-}
-
-async function fetchAtlas(urn, options) {
-    options = options || {};
-    options.headers = options.headers || new fetch.Headers();
-    try {
-        const encodedToken = await getEncodedAtlasToken();
-        options.headers.set('Authorization', `JWT ${encodedToken}`);
-    } catch(e) {
-        /* Almost certainly will blow up soon (via 400s), but lets not assume
-         * all API access requires auth regardless. */
-        console.warn("Auth token missing or invalid", e);
-    }
-    options.headers.set('Content-Type', 'application/json; charset=utf-8');
-    if (options.json) {
-        options.body = JSON.stringify(options.json);
-    }
-    const url = [getAtlasUrl(), urn.replace(/^\//, '')].join('/');
-    const resp = await fetch(url, options);
-    if (!resp.ok) {
-        const msg = urn + ` (${await resp.text()})`;
-        let error;
-        if (resp.status === 404) {
-             error = new ReferenceError(msg);
-        } else {
-            error = new Error(msg);
-        }
-        error.code = resp.status;
-        throw error;
-    }
-    return await resp.json();
-}
-
-async function maintainAtlasToken(forceRefresh, onRefresh) {
-    /* Manage auth token expiration.  This routine will reschedule itself as needed. */
-    let token = await getAtlasToken();
-    const refreshDelay = t => (t.payload.exp - (Date.now() / 1000)) / 2;
-    if (forceRefresh || refreshDelay(token) < 1) {
-        const encodedToken = await getEncodedAtlasToken();
-        const resp = await fetchAtlas('/v1/api-token-refresh/', {
-            method: 'POST',
-            json: {token: encodedToken}
-        });
-        if (!resp || !resp.token) {
-            throw new TypeError("Token Refresh Error");
-        }
-        await updateEncodedAtlasToken(resp.token);
-        console.info("Refreshed auth token");
-        token = await getAtlasToken();
-        if (onRefresh) {
-            try {
-                await onRefresh(token);
-            } catch(e) {
-                console.error('onRefresh callback error:', e);
-            }
-        }
-    }
-    const nextUpdate = refreshDelay(token);
-    console.info('Will recheck auth token in ' + nextUpdate + ' seconds');
-    util.sleep(nextUpdate).then(maintainAtlasToken);
-}
-
-async function resolveTags(expression) {
-    expression = expression && expression.trim();
-    if (!expression) {
-        console.warn("Empty expression detected");
-        // Do this while the server doesn't handle empty queries.
-        return {
-            universal: '',
-            pretty: '',
-            includedTagids: [],
-            excludedTagids: [],
-            userids: [],
-            warnings: []
-        };
-    }
-    const q = '?expression=' + encodeURIComponent(expression);
-    const results = await fetchAtlas('/v1/directory/user/' + q);
-    for (const w of results.warnings) {
-        w.context = expression.substring(w.position, w.position + w.length);
-    }
-    if (results.warnings.length) {
-        console.warn("Tag Expression Warning(s):", expression, results.warnings);
-    }
-    return results;
-}
-
-function sanitizeTags(expression) {
-    /* Clean up tags a bit. Add @ where needed.
-     * NOTE: This does not currently support universal format! */
-    const tagSplitRe = /([\s()^&+-]+)/;
-    const tags = [];
-    for (let tag of expression.trim().split(tagSplitRe)) {
-        if (!tag) {
-            continue;
-        } else if (tag.match(/^[a-zA-Z]/)) {
-            tag = '@' + tag;
-        }
-        tags.push(tag);
-    }
-    return tags.join(' ');
-}
-
-async function getUsers(userIds) {
-    const missing = [];
-    const users = [];
-    await Promise.all(userIds.map(id => (async function() {
-        try {
-            users.push(await fetchAtlas(`/v1/user/${id}/`));
-        } catch(e) {
-            if (!(e instanceof ReferenceError)) {
-                throw e;
-            }
-            missing.push(id);
-        }
-    })()));
-    if (missing.length) {
-        const query = '?id_in=' + missing.join(',');
-        const resp = await fetchAtlas('/v1/directory/user/' + query);
-        for (const user of resp.results) {
-            users.push(user);
-        }
-    }
-    return users;
-}
-
-async function getDevices() {
-    try {
-        return (await fetchAtlas('/v1/provision/account')).devices;
-    } catch(e) {
-        if (e instanceof ReferenceError) {
-            return undefined;
-        } else {
-            throw e;
-        }
-    }
-}
-
-module.exports = {
-    SignalServer,
-    getAtlasConfig,
-    setAtlasConfig,
-    getAtlasUrl,
-    setAtlasUrl,
-    decodeAtlasToken,
-    getEncodedAtlasToken,
-    updateEncodedAtlasToken,
-    getAtlasToken,
-    fetchAtlas,
-    maintainAtlasToken,
-    resolveTags,
-    sanitizeTags,
-    getUsers,
-    getDevices,
-};
+module.exports = SignalClient;

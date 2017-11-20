@@ -12,10 +12,10 @@ async function input(prompt) {
 }
 
 (async function main() {
-    const [user, org] = (await input("Enter your login (e.g user:org): ")).split(':');
-    const validateCallback = await relay.auth.requestCode(org, user);
+    const userTag await input("Enter your login (e.g user:org): ");
+    const validator = await relay.AtlasClient.authenticate(userTag);
     const code = await input("SMS Verification Code: ");
-    const jwt = (await validateCallback(code)).jwt;
+    const atlasClient = await validator(code);
     await relay.AccountManager.register({jwt});
     await relay.storage.shutdown();
 })();
