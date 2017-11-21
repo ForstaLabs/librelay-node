@@ -20,7 +20,7 @@ class ProvisioningCipher {
         const mac = message.slice(message.byteLength - 32, message.byteLength);
         const ivAndCiphertext = message.slice(0, message.byteLength - 32);
         const ciphertext = message.slice(16 + 1, message.byteLength - 32);
-        const ecRes = libsignal.Curve.calculateAgreement(masterEphemeral, this.keyPair.privKey);
+        const ecRes = libsignal.crypto.calculateAgreement(masterEphemeral, this.keyPair.privKey);
         const keys = await libsignal.HKDF.deriveSecrets(ecRes, Buffer.alloc(32),
             Buffer.from("TextSecure Provisioning Message"));
         await libsignal.crypto.verifyMAC(ivAndCiphertext, keys[1], mac, 32);
@@ -28,7 +28,7 @@ class ProvisioningCipher {
         const provisionMessage = protobufs.ProvisionMessage.decode(plaintext);
         const privKey = provisionMessage.identityKeyPrivate; // XXX  validate type is okay (prob needs to be Buffer)
         return {
-            identityKeyPair: libsignal.Curve.createKeyPair(privKey),
+            identityKeyPair: libsignal.crypto.createKeyPair(privKey),
             addr: provisionMessage.addr,
             provisioningCode: provisionMessage.provisioningCode,
             userAgent: provisionMessage.userAgent
@@ -37,9 +37,9 @@ class ProvisioningCipher {
 
     async encrypt(theirPublicKey, message) {
         assert(theirPublicKey instanceof Buffer);
-        const ourKeyPair = libsignal.Curve.generateKeyPair();
-        const sharedSecret = libsignal.Curve.calculateAgreement(theirPublicKey,
-                                                                ourKeyPair.privKey);
+        const ourKeyPair = libsignal.crypto.generateKeyPair();
+        const sharedSecret = libsignal.crypto.calculateAgreement(theirPublicKey,
+                                                                 ourKeyPair.privKey);
         const derivedSecret = await libsignal.HKDF.deriveSecrets(sharedSecret, Buffer.alloc(32),
             Buffer.from("TextSecure Provisioning Message"));
         const ivLen = 16;
@@ -63,7 +63,7 @@ class ProvisioningCipher {
 
     getPublicKey() {
         if (!this.keyPair) {
-            this.keyPair = libsignal.Curve.generateKeyPair();
+            this.keyPair = libsignal.crypto.generateKeyPair();
         }
         return this.keyPair.pubKey;
     }

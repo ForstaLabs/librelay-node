@@ -13,7 +13,7 @@
     "relay",
     "crypto"
   ],
-  "main": "index.js",
+  "main": "src",
   "license": "GPL-3.0",
   "dependencies": {
     "bufferutil": "3.0.2",

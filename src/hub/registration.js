@@ -7,12 +7,12 @@ const ProvisioningCipher = require('../provisioning_cipher');
 const SignalClient = require('./signal');
 const WebSocketResource = require('../websocket_resource');
 const crypto = require('crypto');
-const libsignal = require('libsiganl');
+const libsignal = require('libsignal');
 const protobufs = require('../protobufs');
 const storage = require('../storage');
 
+const defaultName = 'librelay';
 
-let defaultName = 'librelay';
 
 function generatePassword() {
     const passwordB64 = crypto.randomBytes(16).toString('base64');
@@ -23,10 +23,10 @@ function generateSignalingKey() {
     return crypto.randomBytes(32 + 20);
 }
 
-async function registerAccount({atlasClient, name=defaultName}) {
-    if (!atlasClient) {
-        atlasClient = await AtlasClient.factory();
-    }
+async function registerAccount(options) {
+    options = options || {};
+    const atlasClient = options.atlasClient || await AtlasClient.factory();
+    const name = options.name || defaultName;
     const registrationId = libsignal.KeyHelper.generateRegistrationId();
     const password = generatePassword();
     const signalingKey = generateSignalingKey();
@@ -62,34 +62,38 @@ async function registerAccount({atlasClient, name=defaultName}) {
 }
 
 /* TODO: Make atlas API for this so the init/auth are the same as registerAccount */
-async function registerDevice({
-    signalClient,
-    name=defaultName,
-    setProvisioningUrl,
-    confirmAddress
-}) {
-    if (!setProvisioningUrl) {
+async function registerDevice(options) {
+    options = options || {};
+    const signalClient = options.signalClient || new SignalClient();
+    const atlasClient = options.atlasClient || await AtlasClient.factory();
+    const autoProvision = options.autoProvision !== false;
+    const name = options.name || defaultName;
+    if (!options.setProvisioningUrl) {
         throw new TypeError("Missing: setProvisioningUrl callback");
-    }
-    if (!confirmAddress) {
-        throw new TypeError("Missing: confirmAddress callback");
-    }
-    if (!signalClient) {
-        signalClient = new SignalClient();
     }
     const returnInterface = {waiting: true};
     const provisioningCipher = new ProvisioningCipher();
-    const pubKey = provisioningCipher.getPublicKey();
+    const pubKey = provisioningCipher.getPublicKey().toString('base64');
     let wsr;
     const webSocketWaiter = new Promise((resolve, reject) => {
-        wsr = new WebSocketResource(signalClient.getProvisionWebSocketURL(), {
+        wsr = new WebSocketResource(signalClient.getProvisioningWebSocketURL(), {
             keepalive: {path: '/v1/keepalive/provisioning'},
             handleRequest: request => {
                 if (request.path === "/v1/address" && request.verb === "PUT") {
                     const proto = protobufs.ProvisioningUuid.decode(request.body);
-                    const uriPubKey = encodeURIComponent(pubKey.toString('base64'));
                     request.respond(200, 'OK');
-                    const r = setProvisioningUrl(`tsdevice:/?uuid=${proto.uuid}&pub_key=${uriPubKey}`);
+                    if (autoProvision) {
+                        atlasClient.fetch('/v1/provision/request', {
+                            method: 'POST',
+                            json: {
+                                uuid: proto.uuid,
+                                key: pubKey
+                            }
+                        }).catch(reject);
+                    }
+                    const uriPubKey = encodeURIComponent(pubKey);
+                    const url = `tsdevice:/?uuid=${proto.uuid}&pub_key=${uriPubKey}`;
+                    const r = options.setProvisioningUrl(url);
                     if (r instanceof Promise) {
                         r.catch(reject);
                     }
@@ -104,6 +108,7 @@ async function registerDevice({
             }
         });
     });
+    wsr.addEventListener('error', e => { debugger; });
     await wsr.connect();
 
     returnInterface.done = (async () => {
@@ -111,7 +116,9 @@ async function registerDevice({
         returnInterface.waiting = false;
         const addr = provisionMessage.addr;
         const identity = provisionMessage.identityKeyPair;
-        await confirmAddress(provisionMessage.addr);
+        if (provisionMessage.addr != await storage.getState('addr')) {
+            throw new Error('Security Violation: Foreign account sent us an identity key!');
+        }
         const registrationId = libsignal.KeyHelper.generateRegistrationId();
         const password = generatePassword();
         const signalingKey = generateSignalingKey();

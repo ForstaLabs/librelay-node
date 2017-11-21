@@ -8,5 +8,5 @@ module.exports = {
     AtlasClient: require('./atlas'),
     SignalClient: require('./signal'),
     registerAccount: registration.registerAccount,
-    registerDevice: registration.registerDevice
+    registerDevice: registration.registerDevice,
 };

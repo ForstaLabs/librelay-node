@@ -10,7 +10,6 @@ const protobufs = require('../protobufs');
 const storage = require('../storage');
 const urls = require('./urls');
 
-
 const SIGNAL_URL_CALLS = {
     accounts: "/v1/accounts",
     devices: "/v1/devices",

@@ -7,38 +7,65 @@ const storage = require('../storage');
 const urls = require('./urls');
 const util = require('../util');
 
-const credFile = 'atlasCredential';
+const credStoreKey = 'atlasCredential';
+const urlStoreKey = 'atlasUrl';
+
+function atobJWT(str) {
+    /* See: https://github.com/yourkarma/JWT/issues/8 */
+    return Buffer.from(str.replace(/_/g, '/').replace(/-/g, '+'), 'base64').toString('binary');
+}
+
+function decodeJWT(encoded_token) {
+    let token;
+    try {
+        const parts = encoded_token.split('.').map(atobJWT);
+        token = {
+            header: JSON.parse(parts[0]),
+            payload: JSON.parse(parts[1]),
+            secret: parts[2]
+        };
+    } catch(e) {
+        throw new Error('Invalid Token');
+    }
+    if (!token.payload || !token.payload.exp) {
+        throw TypeError("Invalid Token");
+    }
+    if (token.payload.exp * 1000 <= Date.now()) {
+        throw Error("Expired Token");
+    }
+    return token;
+}
 
 
 class AtlasClient {
 
-    constructor({url=urls.atlas, authHeader}) {
+    constructor({url=urls.atlas, userId, authHeader}) {
         this.url = url;
         this.authHeader = authHeader;
+        this.userId = userId;
     }
 
     static async factory() {
-        const encodedToken = await this.getEncodedToken();
-        const cred = await this.loadCredential();
-        return new this({
-            url: cred.URL,
-            authHeader: `JWT ${encodedToken}`
-        });
+        const url = await storage.getState(urlStoreKey);
+        const cred = await storage.getState(credStoreKey);
+        const authHeader = `JWT ${cred}`;
+        const userId = decodeJWT(cred).payload.user_id;
+        return new this({url, userId, authHeader});
     }
 
-    static async authenticate(userTag, url=urls.atlas) {
-        client = new this({url});
+    static async authenticate(userTag, options) {
+        const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
         await client.fetch(`/v1/login/send/${org}/${user}/`);
         return async smsCode => {
-            const auth = await this.fetch('/v1/login/authtoken/', {
+            const auth = await client.fetch('/v1/login/authtoken/', {
                 method: 'POST',
                 json: {
                     authtoken: [org, user, smsCode].join(':')
                 }
             });
-            await this.storeCredential(auth.token);
-            
+            await storage.putState(credStoreKey, auth.token);
+            await storage.putState(urlStoreKey, client.url);
         };
     }
 
@@ -48,64 +75,8 @@ class AtlasClient {
         if (index === -1) {
             return [tag, 'forsta'];
         } else {
-            return [tag.substring(0, index), tag.substring(index)];
+            return [tag.substring(0, index), tag.substring(index + 1)];
         }
-    }
-
-    atobJWT(str) {
-        /* See: https://github.com/yourkarma/JWT/issues/8 */
-        return Buffer.from(str.replace(/_/g, '/').replace(/-/g, '+'), 'base64').toString('binary');
-    }
-
-    async loadCredential() {
-        return await storage.getState(credFile);
-    }
-
-    async storeCredential(data) {
-        await storage.putState(credFile, data);
-    }
-
-    decodeToken(encoded_token) {
-        let token;
-        try {
-            const parts = encoded_token.split('.').map(this.atobJWT);
-            token = {
-                header: JSON.parse(parts[0]),
-                payload: JSON.parse(parts[1]),
-                secret: parts[2]
-            };
-        } catch(e) {
-            throw new Error('Invalid Token');
-        }
-        if (!token.payload || !token.payload.exp) {
-            throw TypeError("Invalid Token");
-        }
-        if (token.payload.exp * 1000 <= Date.now()) {
-            throw Error("Expired Token");
-        }
-        return token;
-    }
-
-    async getEncodedToken() {
-        const cred = await this.loadCredential();
-        if (!cred || !cred.API || !cred.API.TOKEN) {
-            throw ReferenceError("No Token Found");
-        }
-        return cred.API.TOKEN;
-    }
-
-    async updateEncodedToken(encodedToken) {
-        const cred = await this.loadCredential();
-        if (!cred || !cred.API || !cred.API.TOKEN) {
-            throw ReferenceError("No Token Found");
-        }
-        cred.API.TOKEN = encodedToken;
-        await this.storeCredential(cred);
-        this.authHeader = `JWT ${encodedToken}`;
-    }
-
-    async getToken() {
-        return this.decodeToken(await this.getEncodedToken());
     }
 
     async fetch(urn, options) {
@@ -132,10 +103,10 @@ class AtlasClient {
 
     async maintainToken(forceRefresh, onRefresh) {
         /* Manage auth token expiration.  This routine will reschedule itself as needed. */
-        let token = await this.getToken();
+        let token = decodeJWT(await storage.getState(credStoreKey));
         const refreshDelay = t => (t.payload.exp - (Date.now() / 1000)) / 2;
         if (forceRefresh || refreshDelay(token) < 1) {
-            const encodedToken = await this.getEncodedToken();
+            const encodedToken = await storage.getState(credStoreKey);
             const resp = await this.fetch('/v1/api-token-refresh/', {
                 method: 'POST',
                 json: {token: encodedToken}
@@ -143,9 +114,11 @@ class AtlasClient {
             if (!resp || !resp.token) {
                 throw new TypeError("Token Refresh Error");
             }
-            await this.updateEncodedToken(resp.token);
+            token = decodeJWT(resp.token);
             console.info("Refreshed auth token");
-            token = await this.getToken();
+            await storage.putState(credStoreKey, resp.token);
+            this.authHeader = `JWT ${resp.token}`;
+            this.userId = token.payload.user_id;
             if (onRefresh) {
                 try {
                     await onRefresh(token);

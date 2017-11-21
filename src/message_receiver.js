@@ -4,7 +4,7 @@
 
 const Event = require('./event');
 const EventTarget = require('./event_target');
-const WebSocketResource = require('./websocket-resources');
+const WebSocketResource = require('./websocket_resource');
 const crypto = require('./crypto');
 const errors = require('./errors');
 const hub = require('./hub');

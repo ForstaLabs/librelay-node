@@ -2,6 +2,8 @@ const relay = require('..');
 const process = require('process');
 const readline = require('readline');
 
+const url = 'https://ccsm-dev-api.forsta.io';
+
 async function input(prompt) {
     const rl = readline.createInterface(process.stdin, process.stdout);
     try {
@@ -12,10 +14,12 @@ async function input(prompt) {
 }
 
 (async function main() {
-    const userTag await input("Enter your login (e.g user:org): ");
-    const validator = await relay.AtlasClient.authenticate(userTag);
-    const code = await input("SMS Verification Code: ");
-    const atlasClient = await validator(code);
-    await relay.AccountManager.register({jwt});
-    await relay.storage.shutdown();
-})();
+    //const userTag = await input("Enter your login (e.g user:org): ") || 'test.user:mayfieldtest';
+    //const validator = await relay.AtlasClient.authenticate(userTag, {url});
+    //await validator(await input("SMS Verification Code: "));
+    //await relay.registerAccount();
+    const iface = await relay.registerDevice({
+        setProvisioningUrl: x => console.log(x),
+    });
+    await iface.done;
+})().catch(e => console.error(e));
