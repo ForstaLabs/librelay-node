@@ -43,7 +43,7 @@ class MessageReceiver extends EventTarget {
     }
 
     static async factory(noWebSocket) {
-        const signal = await hub.SignalServer.factory();
+        const signal = await hub.SignalClient.factory();
         const addr = await storage.getState('addr');
         const deviceId = await storage.getState('deviceId');
         const signalingKey = await storage.getState('signalingKey');

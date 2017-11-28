@@ -123,9 +123,9 @@ exports.removePreKey = async function(keyId) {
         await _backing.remove(preKeyNS, keyId + '.priv');
     } finally {
         // Avoid circular require..
-        const AccountManager = require('../account_manager');
-        const am = await AccountManager.factory();
-        await am.refreshPreKeys();
+        const hub = require('../hub');
+        const signal = await hub.SignalClient.factory();
+        await signal.refreshPreKeys();
     }
 };
 

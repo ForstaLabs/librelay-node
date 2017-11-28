@@ -74,7 +74,7 @@ class MessageSender extends EventTarget {
     }
 
     static async factory() {
-        const signal = await hub.SignalServer.factory();
+        const signal = await hub.SignalClient.factory();
         const addr = await storage.getState('addr');
         return new this(signal, addr);
     }

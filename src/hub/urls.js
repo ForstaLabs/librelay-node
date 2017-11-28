@@ -4,6 +4,6 @@
 
 
 module.exports = {
-    atlas: 'https://api.forsta.io',
+    atlas: 'https://atlas.forsta.io',
     signal: 'https://signal.forsta.io'
 };

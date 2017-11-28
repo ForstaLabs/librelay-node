@@ -11,9 +11,9 @@ const protobufs = require('./protobufs');
 class ProvisioningCipher {
 
     async decrypt(provisionEnvelope) {
-        const masterEphemeral = provisionEnvelope.publicKey; // XXX validate is right type.
-        const message = provisionEnvelope.body; // XXX validate type is buffer / right.
-        if (new Uint8Array(message)[0] != 1) { // I think I can just ask for [0] since we use buffer not ArrayBuffer
+        const masterEphemeral = provisionEnvelope.publicKey;
+        const message = provisionEnvelope.body;
+        if (message[0] !== 1) {
             throw new Error("Bad version number on ProvisioningMessage");
         }
         const iv = message.slice(1, 16 + 1);
@@ -21,12 +21,12 @@ class ProvisioningCipher {
         const ivAndCiphertext = message.slice(0, message.byteLength - 32);
         const ciphertext = message.slice(16 + 1, message.byteLength - 32);
         const ecRes = libsignal.crypto.calculateAgreement(masterEphemeral, this.keyPair.privKey);
-        const keys = await libsignal.HKDF.deriveSecrets(ecRes, Buffer.alloc(32),
+        const keys = await libsignal.crypto.HKDF(ecRes, Buffer.alloc(32),
             Buffer.from("TextSecure Provisioning Message"));
         await libsignal.crypto.verifyMAC(ivAndCiphertext, keys[1], mac, 32);
         const plaintext = await libsignal.crypto.decrypt(keys[0], ciphertext, iv);
         const provisionMessage = protobufs.ProvisionMessage.decode(plaintext);
-        const privKey = provisionMessage.identityKeyPrivate; // XXX  validate type is okay (prob needs to be Buffer)
+        const privKey = provisionMessage.identityKeyPrivate;
         return {
             identityKeyPair: libsignal.crypto.createKeyPair(privKey),
             addr: provisionMessage.addr,
@@ -40,7 +40,7 @@ class ProvisioningCipher {
         const ourKeyPair = libsignal.crypto.generateKeyPair();
         const sharedSecret = libsignal.crypto.calculateAgreement(theirPublicKey,
                                                                  ourKeyPair.privKey);
-        const derivedSecret = await libsignal.HKDF.deriveSecrets(sharedSecret, Buffer.alloc(32),
+        const derivedSecret = await libsignal.crypto.HKDF(sharedSecret, Buffer.alloc(32),
             Buffer.from("TextSecure Provisioning Message"));
         const ivLen = 16;
         const macLen = 32;

@@ -68,8 +68,8 @@ async function registerDevice(options) {
     const atlasClient = options.atlasClient || await AtlasClient.factory();
     const autoProvision = options.autoProvision !== false;
     const name = options.name || defaultName;
-    if (!options.setProvisioningUrl) {
-        throw new TypeError("Missing: setProvisioningUrl callback");
+    if (!options.onProvisionReady) {
+        throw new TypeError("Missing: onProvisionReady callback");
     }
     const returnInterface = {waiting: true};
     const provisioningCipher = new ProvisioningCipher();
@@ -91,14 +91,12 @@ async function registerDevice(options) {
                             }
                         }).catch(reject);
                     }
-                    const uriPubKey = encodeURIComponent(pubKey);
-                    const url = `tsdevice:/?uuid=${proto.uuid}&pub_key=${uriPubKey}`;
-                    const r = options.setProvisioningUrl(url);
+                    const r = options.onProvisionReady(proto.uuid, pubKey);
                     if (r instanceof Promise) {
                         r.catch(reject);
                     }
                 } else if (request.path === "/v1/message" && request.verb === "PUT") {
-                    const msgEnvelope = protobufs.ProvisionEnvelope.decode(request.body, 'binary');
+                    const msgEnvelope = protobufs.ProvisionEnvelope.decode(request.body);
                     request.respond(200, 'OK');
                     wsr.close();
                     resolve(msgEnvelope);
