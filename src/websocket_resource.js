@@ -130,6 +130,7 @@ class WebSocketResource {
             this.addEventListener('close', this.keepalive.clear.bind(this.keepalive));
         }
         this.addEventListener('message', this.onMessage.bind(this));
+        this.addEventListener('close', this.onClose.bind(this));
     }
 
     addEventListener(event, callback) {
@@ -151,7 +152,10 @@ class WebSocketResource {
         const ws = new WebSocket(this.url);
         await new Promise((resolve, reject) => {
             ws.addEventListener('open', resolve);
-            ws.addEventListener('error', reject);
+            ws.addEventListener('error', e => {
+                this._lastDuration = Date.now() - this._lastConnect;
+                reject(e);
+            });
         });
         this.socket = ws;
         for (const x of this._listeners) {
@@ -171,6 +175,7 @@ class WebSocketResource {
             if (!code) {
                 code = 3000;
             }
+            this._lastDuration = Date.now() - this._lastConnect;
             this.socket.close(code, reason);
         }
         this.socket = null;
@@ -227,6 +232,11 @@ class WebSocketResource {
         } else {
             throw new TypeError(`Unhandled message type: ${message.type}`);
         }
+    }
+
+    onClose(code, reason) {
+        this._lastDuration = Date.now() - this._lastConnect;
+        this.socket = null;
     }
 }
 

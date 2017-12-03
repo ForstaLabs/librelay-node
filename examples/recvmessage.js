@@ -7,5 +7,5 @@ const relay = require('..');
     }
     const msgReceiver = await relay.MessageReceiver.factory();
     msgReceiver.addEventListener('message', onMessage);
-    msgReceiver.connect();
+    await msgReceiver.connect();
 })();
