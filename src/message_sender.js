@@ -1,5 +1,7 @@
 // vim: ts=4:sw=4:expandtab
 
+
+const Attachment = require('./attachment');
 const Event = require('./event');
 const EventTarget = require('./event_target');
 const OutgoingMessage = require('./outgoing_message');
@@ -11,15 +13,12 @@ const node_crypto = require('crypto');
 const protobufs = require('./protobufs');
 const queueAsync = require('./queue_async');
 const storage = require('./storage');
-
+const uuid4 = require('uuid/v4');
 
 class Message {
 
     constructor(options) {
         Object.assign(this, options);
-        if (!(this.recipients instanceof Array)) {
-            throw new Error('Invalid recipient list');
-        }
         if (typeof this.timestamp !== 'number') {
             throw new Error('Invalid timestamp');
         }
@@ -36,10 +35,6 @@ class Message {
         if (this.flags !== undefined && typeof this.flags !== 'number') {
             throw new Error('Invalid message flags');
         }
-        if ((typeof this.timestamp !== 'number') ||
-            (this.body && typeof this.body !== 'string')) {
-            throw new Error('Invalid message body');
-        }
     }
 
     isEndSession() {
@@ -49,7 +44,7 @@ class Message {
     toProto() {
         const dataMessage = protobufs.DataMessage.create();
         if (this.body) {
-            dataMessage.body = this.body;
+            dataMessage.body = JSON.stringify(this.body);
         }
         if (this.attachmentPointers && this.attachmentPointers.length) {
             dataMessage.attachments = this.attachmentPointers;
@@ -60,29 +55,31 @@ class Message {
         if (this.expiration) {
             dataMessage.expireTimer = this.expiration;
         }
-        return protobufs.Content.encode(protobufs.Content.create({dataMessage})).finish();
+        //return protobufs.Content.encode(protobufs.Content.create({dataMessage})).finish();
+        return protobufs.Content.create({dataMessage});
     }
 }
 
+
 class MessageSender extends EventTarget {
 
-    constructor(signal, addr) {
+    constructor({addr, signal, atlas}) {
         super();
-        console.assert(signal && addr);
-        this.signal = signal;
         this.addr = addr;
+        this.signal = signal;
+        this.atlas = atlas;
     }
 
     static async factory() {
-        const signal = await hub.SignalClient.factory();
         const addr = await storage.getState('addr');
-        return new this(signal, addr);
+        const signal = await hub.SignalClient.factory();
+        const atlas = await hub.AtlasClient.factory();
+        return new this({addr, signal, atlas});
     }
 
     async makeAttachmentPointer(attachment) {
-        if (!attachment) {
-            console.warn("Attempt to make attachment pointer from nothing:", attachment);
-            return;
+        if (!(attachment instanceof Attachment)) {
+            throw TypeError("Expected `Attachment` type");
         }
         const key = node_crypto.randomBytes(64);
         const ptr = protobufs.AttachmentPointer.create({
@@ -90,21 +87,9 @@ class MessageSender extends EventTarget {
             contentType: attachment.type
         });
         const iv = node_crypto.randomBytes(16);
-        const encryptedBin = await crypto.encryptAttachment(attachment.data, key, iv);
+        const encryptedBin = await crypto.encryptAttachment(attachment.buffer, key, iv);
         ptr.id = await this.signal.putAttachment(encryptedBin);
         return ptr;
-    }
-
-    retransmitMessage(addr, jsonData, timestamp) {
-        var outgoing = new OutgoingMessage(this.signal);
-        return outgoing.transmitMessage(addr, jsonData, timestamp);
-    }
-
-    async tryMessageAgain(addr, encodedMessage, timestamp) {
-        const content = protobufs.Content.create({
-            dataMessage: protobufs.DataMessage.decode(encodedMessage)
-        });
-        return this.sendMessageProto(timestamp, [addr], content);
     }
 
     async uploadAttachments(message) {
@@ -125,20 +110,89 @@ class MessageSender extends EventTarget {
         }
     }
 
-    async sendMessage(attrs) {
-        const m = new Message(attrs);
-        await this.uploadAttachments(m);
-        return this.sendMessageProto(m.timestamp, m.recipients, m.toProto());
+    async send({
+        to=null, distribution=null,
+        text=null, html=null, body=[],
+        threadId=uuid4(),
+        threadType='conversation',
+        threadTitle=undefined,
+        messageType='content',
+        messageId=uuid4(),
+        messageRef=undefined,
+        expiration=undefined,
+        attachments=undefined,
+        flags=undefined,
+        sendTime=new Date(),
+        userAgent='librelay'
+    }) {
+        if (!distribution) {
+            if (!to) {
+                throw TypeError("`to` or `distribution` required");
+            }
+            distribution = await this.atlas.resolveTags(to);
+        }
+        if (text) {
+            body.push({
+                type: 'text/plain',
+                value: text
+            });
+        }
+        if (html) {
+            body.push({
+                type: 'text/html',
+                value: html
+            });
+        }
+        const timestamp = sendTime.getTime();
+        const msg = new Message({
+            addrs: distribution.userids,
+            threadId,
+            body: [{
+                version: 1,
+                threadId,
+                threadType,
+                messageId,
+                messageType,
+                messageRef,
+                distribution: {
+                    expression: distribution.universal
+                },
+                sender: {
+                    userId: this.addr
+                },
+                sendTime: sendTime.toISOString(),
+                userAgent,
+                data: {
+                    body,
+                    attachments: attachments && attachments.map(x => x.getMeta())
+                }
+            }],
+            timestamp,
+            attachments,
+            expiration,
+            flags
+        });
+        await this.uploadAttachments(msg);
+        const msgProto = msg.toProto();
+        await this._sendSync(msgProto, timestamp, threadId, expiration && Date.now());
+        return this._send(msgProto, timestamp, this.scrubSelf(distribution.userids));
     }
 
-    sendMessageProto(timestamp, addrs, msgProto) {
+    _send(msgProto, timestamp, addrs) {
         console.assert(addrs instanceof Array);
         const outmsg = new OutgoingMessage(this.signal, timestamp, msgProto);
         outmsg.on('keychange', this.onKeyChange.bind(this));
         for (const addr of addrs) {
-            queueAsync('message-send-job-' + addr, () => outmsg.sendToAddr(addr));
+            queueAsync('message-send-job-' + addr, () =>
+                outmsg.sendToAddr(addr).catch(this.onError.bind(this)));
         }
         return outmsg;
+    }
+
+    async onError(e) {
+        const ev = new Event('error');
+        ev.error = e;
+        await this.dispatchEvent(ev);
     }
 
     async onKeyChange(addr, key) {
@@ -148,11 +202,7 @@ class MessageSender extends EventTarget {
         await this.dispatchEvent(ev);
     }
 
-    async sendSyncMessage(contentBuffer, timestamp, threadId, expirationStartTimestamp) {
-        if (!(contentBuffer instanceof Buffer)) {
-            throw TypeError("Expected Buffer for content");
-        }
-        const content = protobufs.Content.decode(contentBuffer);
+    async _sendSync(content, timestamp, threadId, expirationStartTimestamp) {
         const sentMessage = protobufs.SyncMessage.Sent.create({
             timestamp,
             message: content.dataMessage
@@ -165,22 +215,20 @@ class MessageSender extends EventTarget {
         }
         const syncMessage = protobufs.SyncMessage.create({sent: sentMessage});
         const syncContent = protobufs.Content.create({syncMessage});
-        // Originally this sent the sync message with a unique timestamp on the envelope but this
-        // led to consistency problems with Android clients that were using that timestamp for delivery
-        // receipts.  It's hard to say what the correct behavior is given that sync messages could
-        // be cataloged separately and might want their own timestamps (which are the index for receipts).
-        return this.sendMessageProto(timestamp, [this.addr], syncContent);
-        //return this.sendMessageProto(Date.now(), [this.addr], syncContent);
+        return this._send(syncContent, timestamp, [this.addr]);
     }
 
     async syncReadMessages(reads) {
+        if (!reads.length) {
+            console.warn("No reads to sync");
+        }
         const read = reads.map(r => protobufs.SyncMessage.Read.create({
             timestamp: r.timestamp,
             sender: r.sender
         }));
         const syncMessage = protobufs.SyncMessage.create({read});
         const content = protobufs.Content.create({syncMessage});
-        return this.sendMessageProto(Date.now(), [this.addr], content);
+        return this._send(content, Date.now(), [this.addr]);
     }
 
     scrubSelf(addrs) {
@@ -189,27 +237,15 @@ class MessageSender extends EventTarget {
         return Array.from(nset);
     }
 
-    async sendMessageToAddrs(addrs, body, attachments, timestamp, expiration, flags) {
-        console.assert(body instanceof Array);
-        return await this.sendMessage({
-            recipients: this.scrubSelf(addrs),
-            body: JSON.stringify(body),
-            timestamp,
-            attachments,
-            expiration,
-            flags
-        });
-    }
-
-    async closeSession(addr, timestamp) {
+    async closeSession(addr, timestamp=Date.now()) {
         const dataMessage = protobufs.DataMessage.create({
             flags: protobufs.DataMessage.Flags.END_SESSION
         });
         const content = protobufs.Content.create({dataMessage});
-        const outmsg = this.sendMessageProto(timestamp, [addr], content);
+        const outmsg = this._send(content, timestamp, [addr]);
         const deviceIds = await storage.getDeviceIds(addr);
         await new Promise(resolve => {
-            outmsg.on('complete', resolve);
+            outmsg.on('sent', resolve);
             outmsg.on('error', resolve);
         });
         await Promise.all(deviceIds.map(deviceId => {

@@ -2,15 +2,16 @@
 
 const errors = require('./errors.js');
 const libsignal = require('libsignal');
+const protobufs = require('./protobufs');
 const storage = require('./storage');
 
 
 class OutgoingMessage {
 
-    constructor(signal, timestamp, messageBuffer) {
+    constructor(signal, timestamp, message) {
         this.signal = signal;
         this.timestamp = timestamp;
-        this.messageBuffer = messageBuffer;
+        this.message = message;
         this.sent = [];
         this.errors = [];
         this.created = Date.now();
@@ -42,8 +43,7 @@ class OutgoingMessage {
 
     async emitError(addr, reason, error) {
         if (!error || error instanceof errors.ProtocolError && error.code !== 404) {
-            error = new errors.OutgoingMessageError(addr, this.messageBuffer,
-                                                    this.timestamp, error);
+            error = new errors.OutgoingMessageError(addr, this.message, this.timestamp, error);
         }
         error.addr = addr;
         error.reason = reason;
@@ -88,7 +88,7 @@ class OutgoingMessage {
                                     await _this.getKeysForAddr(addr, updateDevices, /*reentrant*/ true);
                                 } else {
                                     throw new errors.OutgoingIdentityKeyError(addr,
-                                        _this.messageBuffer, _this.timestamp,
+                                        _this.message, _this.timestamp,
                                         device.identityKey);
                                 }
                             } else {
@@ -147,7 +147,7 @@ class OutgoingMessage {
 
     async doSendMessage(addr, deviceIds, recurse) {
         const ciphers = {};
-        let mBuf = this.messageBuffer;
+        let mBuf = protobufs.Content.encode(this.message).finish();
         const minLen = this.getPaddedMessageLength(mBuf.byteLength + 1) - 1;
         const paddedBuf = new Buffer(minLen);
         paddedBuf.set(mBuf);
