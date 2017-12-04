@@ -98,72 +98,28 @@ Ref: <https://github.com/ForstaLabs/librelay-node/blob/master/examples/recvmessa
 
 Message Sending
 -------
-Message sending is currently a more complicated prospect as it requires your
-application to send messages that are in conformance with the Forsta Message
-Exchange format, <https://goo.gl/eX7gyC>.
-
-Here is a contrived example with identifiers suited to a specific environment.
-It is an exercise for the reader to ascertain and provide your own identifiers
-where noted in the example.
-
 *This example reads text from standard input and forwards to a hard coded
 thread.*
 ```javascript
-const relay = require('librelay');
 const process = require('process');
-const uuid4 = require('uuid/v4');
+const relay = require('librelay');
 
+async function main() {
+    const argv = process.argv;
+    if (argv.length < 4) {
+        console.error(`Usage: ${argv[0]} ${argv[1]} TO MESSAGE [THREADID]`);
+        return process.exit(2);
+    }
 
-// Replace this with your thread!
-const threadId = 'ae6a43d4-f0cd-41fc-9457-0d98fd11da36';
-
-// Replace this with a valid user id!
-const recipientId = '76399cf3-0898-4000-a565-0119fd1c2284';
-
-// This is a very hard value to generate by hand.  It's recomended you use
-// The Forsta tag API to generate these.  E.g.
-//     <https://api.forsta.io/v1/directory/tag?expression=@user:org+@another.user:another.org>
-const distExpression = '(<0ceeb1aa-fd9a-4df3-931d-864481574c54>+<cb6eb937-67e2-4cca-849a-d640b88d9eae>)';
-
-
-async function send(msg) {
-    const now = Date.now();
-    const bus = await msgSender.sendMessageToAddrs([recipientId], [{
-        version: 1,
-        threadId,
-        messageId: uuid4(),
-        threadType: 'conversation',
-        messageType: 'content',
-        userAgent: 'librelay',
-        data: {
-            body: [{
-                type: 'text/plain',
-                value: msg
-            }]
-        },
-        sender: {
-            userId: await relay.storage.getState('addr')
-        },
-        distribution: {
-            expression: distExpression
-        }
-    }], [], now);
-    await new Promise((resolve, reject) => {
-        bus.on('error', ev => reject(ev));
-        bus.on('sent', ev => resolve(ev));
+    const sender = await relay.MessageSender.factory();
+    await sender.send({
+        to: argv[2],
+        text: argv[3],
+        threadId: argv[4] || '00000000-1111-2222-3333-444444444444'
     });
-    await msgSender.sendSyncMessage(bus.messageBuffer, now, threadId);
 }
 
-(async function main() {
-    const msgSender = await relay.MessageSender.factory();
-    const sendJobs = [];
-    process.stdin.setEncoding('utf8');
-    process.stdin.on('data', chunk => {
-        sendJobs.push(send(chunk));
-    });
-    process.stdin.on('close', () => Promise.all(sendJobs).then(() => process.exit(0)));
-})();
+main();
 ```
 Ref: <https://github.com/ForstaLabs/librelay-node/blob/master/examples/sendmessage.js>
 
