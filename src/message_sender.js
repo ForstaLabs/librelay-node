@@ -98,9 +98,9 @@ class MessageSender extends EventTarget {
             message.attachmentPointers = [];
             return;
         }
-        const upload_jobs = attachments.map(x => this.makeAttachmentPointer(x));
+        const uploads = attachments.map(x => this.makeAttachmentPointer(x));
         try {
-            message.attachmentPointers = await Promise.all(upload_jobs);
+            message.attachmentPointers = await Promise.all(uploads);
         } catch(e) {
             if (e instanceof errors.ProtocolError) {
                 throw new errors.MessageError(message, e);

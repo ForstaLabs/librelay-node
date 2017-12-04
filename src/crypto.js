@@ -54,18 +54,11 @@ module.exports = {
         if (iv.byteLength != 16) {
             throw new Error("Got invalid length attachment iv");
         }
-        var aes_key = keys.slice(0, 32);
-        var mac_key = keys.slice(32, 64);
-
+        const aes_key = keys.slice(0, 32);
+        const mac_key = keys.slice(32, 64);
         const ciphertext = libsignal.crypto.encrypt(aes_key, plaintext, iv);
-        var ivAndCiphertext = new Uint8Array(16 + ciphertext.byteLength);
-        ivAndCiphertext.set(new Uint8Array(iv));
-        ivAndCiphertext.set(new Uint8Array(ciphertext), 16);
-
-        const mac = libsignal.crypto.calculateMAC(mac_key, ivAndCiphertext.buffer);
-        var encryptedBin = new Uint8Array(16 + ciphertext.byteLength + 32);
-        encryptedBin.set(ivAndCiphertext);
-        encryptedBin.set(new Uint8Array(mac), 16 + ciphertext.byteLength);
-        return encryptedBin.buffer;
+        const ivAndCiphertext = Buffer.concat([iv, ciphertext]);
+        const mac = libsignal.crypto.sign(mac_key, ivAndCiphertext);
+        return Buffer.concat([ivAndCiphertext, mac]);
     }
 };

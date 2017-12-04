@@ -321,7 +321,6 @@ class SignalClient {
         const ptrResp = await this.request({call: 'attachment'});
         // Extract the id as a string from the location url
         // (workaround for ids too large for Javascript numbers)
-        //  XXX find way around having to know the S3 url.
         const match = ptrResp.location.match(this.attachment_id_regex);
         if (!match) {
             console.error('Invalid attachment url for outgoing message',
@@ -330,6 +329,7 @@ class SignalClient {
         }
         const headers = new fetch.Headers({
             'Content-Type': 'application/octet-stream',
+            'Content-Length': body.byteLength  // See: https://github.com/bitinn/node-fetch/issues/47
         });
         const dataResp = await fetch(ptrResp.location, {
             method: "PUT",
