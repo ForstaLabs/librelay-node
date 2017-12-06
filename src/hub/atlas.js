@@ -47,9 +47,6 @@ class AtlasClient {
         } else if (token && userId) {
             this.userId = userId;
             this.authHeader = `Token ${token}`;
-        } else {
-            console.error('Missing auth params: jwt || (token && userId)');
-            throw new TypeError("Missing auth params");
         }
     }
 
