@@ -58,15 +58,21 @@ class AtlasClient {
         const [user, org] = client.parseTag(userTag);
         await client.fetch(`/v1/login/send/${org}/${user}/`);
         return async smsCode => {
-            const auth = await client.fetch('/v1/login/authtoken/', {
-                method: 'POST',
-                json: {
-                    authtoken: [org, user, smsCode].join(':')
-                }
-            });
+            const auth = await this.authValidate(userTag, smsCode, options);
             await storage.putState(credStoreKey, auth.token);
             await storage.putState(urlStoreKey, client.url);
         };
+    }
+
+    static async authValidate(userTag, code, options) {
+        const client = new this(options || {});
+        const [user, org] = client.parseTag(userTag);
+        return await client.fetch('/v1/login/authtoken/', {
+            method: 'POST',
+            json: {
+                authtoken: [org, user, code].join(':')
+            }
+        });
     }
 
     parseTag(tag) {
