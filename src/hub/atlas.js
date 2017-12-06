@@ -39,18 +39,24 @@ function decodeJWT(encoded_token) {
 
 class AtlasClient {
 
-    constructor({url=urls.atlas, userId, authHeader}) {
+    constructor({url=urls.atlas, jwt=null, token=null, userId=null}) {
         this.url = url;
-        this.authHeader = authHeader;
-        this.userId = userId;
+        if (jwt) {
+            this.userId = decodeJWT(jwt).payload.user_id;
+            this.authHeader = `JWT ${jwt}`;
+        } else if (token && userId) {
+            this.userId = userId;
+            this.authHeader = `Token ${token}`;
+        } else {
+            console.error('Missing auth params: jwt || (token && userId)');
+            throw new TypeError("Missing auth params");
+        }
     }
 
     static async factory() {
         const url = await storage.getState(urlStoreKey);
-        const cred = await storage.getState(credStoreKey);
-        const authHeader = `JWT ${cred}`;
-        const userId = decodeJWT(cred).payload.user_id;
-        return new this({url, userId, authHeader});
+        const jwt = await storage.getState(credStoreKey);
+        return new this({url, jwt});
     }
 
     static async authenticate(userTag, options) {
