@@ -52,29 +52,21 @@ function decode(obj) {
     }
 }
 
-async function _get(ns, key) {
+exports.get = async (ns, key) => {
     const data = await _backing.get(ns, key);
-    if (data) {
-        return decode(data);
-    } else {
-        return data;
-    }
-}
-
-async function _set(ns, key, value) {
-    return await _backing.set(ns, key, encode(value));
-}
-
-exports.shutdown = async function() {
-    return await _backing.shutdown();
+    return data && decode(data);
 };
+exports.set = (ns, key, value) => _backing.set(ns, key, encode(value));
+exports.remove = (ns, key) => _backing.remove(ns, key);
+exports.keys = (ns, re) => _backing.keys(ns, re);
+exports.shutdown = () => _backing.shutdown();
 
 exports.getState = async function(key, defaultValue) {
-    return await _get(stateNS, key, defaultValue);
+    return await exports.get(stateNS, key, defaultValue);
 };
 
 exports.putState = async function(key, value) {
-    return await _set(stateNS, key, value);
+    return await exports.set(stateNS, key, value);
 };
 
 exports.removeState = async function(key) {
@@ -107,14 +99,14 @@ exports.loadPreKey = async function(keyId) {
         return;
     }
     return {
-        pubKey: await _get(preKeyNS, keyId + '.pub'),
-        privKey: await _get(preKeyNS, keyId + '.priv')
+        pubKey: await exports.get(preKeyNS, keyId + '.pub'),
+        privKey: await exports.get(preKeyNS, keyId + '.priv')
     };
 };
 
 exports.storePreKey = async function(keyId, keyPair) {
-    await _set(preKeyNS, keyId + '.priv', keyPair.privKey);
-    await _set(preKeyNS, keyId + '.pub', keyPair.pubKey);
+    await exports.set(preKeyNS, keyId + '.priv', keyPair.privKey);
+    await exports.set(preKeyNS, keyId + '.pub', keyPair.pubKey);
 };
 
 exports.removePreKey = async function(keyId) {
@@ -134,14 +126,14 @@ exports.loadSignedPreKey = async function(keyId) {
         return;
     }
     return {
-        pubKey: await _get(signedPreKeyNS, keyId + '.pub'),
-        privKey: await _get(signedPreKeyNS, keyId + '.priv')
+        pubKey: await exports.get(signedPreKeyNS, keyId + '.pub'),
+        privKey: await exports.get(signedPreKeyNS, keyId + '.priv')
     };
 };
 
 exports.storeSignedPreKey = async function(keyId, keyPair) {
-    await _set(signedPreKeyNS, keyId + '.priv', keyPair.privKey);
-    await _set(signedPreKeyNS, keyId + '.pub', keyPair.pubKey);
+    await exports.set(signedPreKeyNS, keyId + '.priv', keyPair.privKey);
+    await exports.set(signedPreKeyNS, keyId + '.pub', keyPair.pubKey);
 };
 
 exports.removeSignedPreKey = async function(keyId) {
@@ -153,7 +145,7 @@ exports.loadSession = async function(encodedAddr) {
     if (encodedAddr === null || encodedAddr === undefined) {
         throw new Error("Tried to get session for undefined/null addr");
     }
-    const data = await _get(sessionNS, encodedAddr);
+    const data = await exports.get(sessionNS, encodedAddr);
     if (data !== undefined) {
         return libsignal.SessionRecord.deserialize(data);
     }
@@ -163,14 +155,14 @@ exports.storeSession = async function(encodedAddr, record) {
     if (encodedAddr === null || encodedAddr === undefined) {
         throw new Error("Tried to set session for undefined/null addr");
     }
-    await _set(sessionNS, encodedAddr, record.serialize());
+    await exports.set(sessionNS, encodedAddr, record.serialize());
 };
 
 exports.removeSession = async function(encodedAddr) {
     await _backing.remove(sessionNS, encodedAddr);
 };
 
-exports.removeAllSessions = async function(addr) {
+exports.removeAllSessions = async function _removeAllSessions(addr) {
     if (addr === null || addr === undefined) {
         throw new Error("Tried to remove sessions for undefined/null addr");
     }
@@ -202,7 +194,7 @@ exports.loadIdentity = async function(identifier) {
         throw new Error("Tried to get identity key for undefined/null key");
     }
     const addr = util.unencodeAddr(identifier)[0];
-    return await _get(identityKeyNS, addr);
+    return await exports.get(identityKeyNS, addr);
 };
 
 exports.saveIdentity = async function(identifier, publicKey) {
@@ -213,7 +205,7 @@ exports.saveIdentity = async function(identifier, publicKey) {
         throw new Error(`Invalid type for saveIdentity: ${publicKey.constructor.name}`);
     }
     const addr = util.unencodeAddr(identifier)[0];
-    await _set(identityKeyNS, addr, publicKey);
+    await exports.set(identityKeyNS, addr, publicKey);
 };
 
 exports.removeIdentity = async function(identifier) {
