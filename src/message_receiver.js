@@ -12,7 +12,7 @@ const libsignal = require('libsignal');
 const protobufs = require('./protobufs');
 const queueAsync = require('./queue_async');
 const storage = require('./storage');
-const util = require('./storage');
+const util = require('./util');
 
 
 const ENV_TYPES = protobufs.Envelope.lookup('Type').values;
