@@ -187,23 +187,19 @@ class AtlasClient {
         return tags.join(' ');
     }
 
-    async getUsers(userIds) {
-        const missing = [];
+    async getUsers(userIds, onlyDir) {
+        const missing = new Set(userIds);
         const users = [];
-        // XXX Pending atlas support for id_in on this endpoint, make this one call!
-        await Promise.all(userIds.map(async id => {
-            try {
-                users.push(await this.fetch(`/v1/user/${id}/`));
-            } catch(e) {
-                if (!(e instanceof ReferenceError)) {
-                    throw e;
-                }
-                missing.push(id);
+        if (!onlyDir) {
+            const resp = await this.fetch('/v1/user/?id_in=' + userIds.join());
+            for (const user of resp.results) {
+                users.push(user);
+                missing.delete(user);
             }
-        }));
-        if (missing.length) {
-            const query = '?id_in=' + missing.join(',');
-            const resp = await this.fetch('/v1/directory/user/' + query);
+        }
+        if (missing.size) {
+            const resp = await this.fetch('/v1/directory/user/?id_in=' +
+                                          Array.from(missing).join());
             for (const user of resp.results) {
                 users.push(user);
             }
