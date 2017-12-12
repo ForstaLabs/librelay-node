@@ -39,14 +39,19 @@ function decodeJWT(encoded_token) {
 
 class AtlasClient {
 
-    constructor({url=urls.atlas, jwt=null, token=null, userId=null}) {
+    constructor({url=urls.atlas, jwt=null, token=null, userId=null, orgId=null}) {
         this.url = url;
         if (jwt) {
-            this.userId = decodeJWT(jwt).payload.user_id;
+            const jwtDict = decodeJWT(jwt);
+            this.userId = jwtDict.payload.user_id;
+            this.orgId = jwtDict.payload.org_id;
             this.authHeader = `JWT ${jwt}`;
-        } else if (token && userId) {
+        } else {
             this.userId = userId;
-            this.authHeader = `Token ${token}`;
+            this.orgId = orgId;
+            if (token) {
+                this.authHeader = `Token ${token}`;
+            }
         }
     }
 
@@ -184,9 +189,11 @@ class AtlasClient {
 
     async getUsers(userIds) {
         const missing = [];
-        const users = await Promise.all(userIds.map(async id => {
+        const users = [];
+        // XXX Pending atlas support for id_in on this endpoint, make this one call!
+        await Promise.all(userIds.map(async id => {
             try {
-                return await this.fetch(`/v1/user/${id}/`);
+                users.push(await this.fetch(`/v1/user/${id}/`));
             } catch(e) {
                 if (!(e instanceof ReferenceError)) {
                     throw e;
