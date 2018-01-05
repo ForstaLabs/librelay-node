@@ -2,11 +2,10 @@
 
 'use strict';
 
-const Event = require('./event');
-const EventTarget = require('./event_target');
 const WebSocketResource = require('./websocket_resource');
 const crypto = require('./crypto');
 const errors = require('./errors');
+const eventing = require('./eventing');
 const hub = require('./hub');
 const libsignal = require('libsignal');
 const protobufs = require('./protobufs');
@@ -19,7 +18,9 @@ const ENV_TYPES = protobufs.Envelope.lookup('Type').values;
 const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
 
 
-class MessageReceiver extends EventTarget {
+
+
+class MessageReceiver extends eventing.EventTarget {
 
     constructor(signal, addr, deviceId, signalingKey, noWebSocket) {
         super();
@@ -109,7 +110,7 @@ class MessageReceiver extends EventTarget {
             } catch(e) {
                 const backoff = Math.log1p(++attempt) * 30 * Math.random();
                 console.error("Invalid network state:", e);
-                const errorEvent = new Event('error');
+                const errorEvent = new eventing.Event('error');
                 errorEvent.error = e;
                 await this.dispatchEvent(errorEvent);
                 console.info(`Will retry network in ${backoff} seconds (attempt ${attempt}).`);
@@ -136,7 +137,7 @@ class MessageReceiver extends EventTarget {
         } catch(e) {
             request.respond(500, 'Bad encrypted websocket message');
             console.error("Error handling incoming message:", e);
-            const ev = new Event('error');
+            const ev = new eventing.Event('error');
             ev.error = e;
             await this.dispatchEvent(ev);
             throw e;
@@ -169,18 +170,15 @@ class MessageReceiver extends EventTarget {
                 console.warn("Ignoring MessageCounterError for:", envelope);
                 return;
             } else if (e instanceof errors.IncomingIdentityKeyError && !reentrant) {
-                const ev = new Event('keychange');
-                ev.addr = e.addr;
-                ev.identityKey = e.identityKey;
-                await this.dispatchEvent(ev);
-                if (ev.accepted) {
+                await this.dispatchEvent(new eventing.KeyChangeEvent(e));
+                if (e.accepted) {
                     envelope.keyChange = true;
                     return await this.handleEnvelope(envelope, /*reentrant*/ true);
                 }
             } else if (e instanceof errors.RelayError) {
                 console.warn("Supressing RelayError:", e);
             } else {
-                const ev = new Event('error');
+                const ev = new eventing.Event('error');
                 ev.error = e;
                 ev.proto = envelope;
                 await this.dispatchEvent(ev);
@@ -190,7 +188,7 @@ class MessageReceiver extends EventTarget {
     }
 
     async handleDeliveryReceipt(envelope) {
-        const ev = new Event('receipt');
+        const ev = new eventing.Event('receipt');
         ev.proto = envelope;
         await this.dispatchEvent(ev);
     }
@@ -235,7 +233,7 @@ class MessageReceiver extends EventTarget {
             await this.handleEndSession(sent.destination);
         }
         await this.processDecrypted(sent.message, this.addr);
-        const ev = new Event('sent');
+        const ev = new eventing.Event('sent');
         ev.data = {
             source: envelope.source,
             sourceDevice: envelope.sourceDevice,
@@ -254,7 +252,7 @@ class MessageReceiver extends EventTarget {
             await this.handleEndSession(envelope.source);
         }
         await this.processDecrypted(message, envelope.source);
-        const ev = new Event('message');
+        const ev = new eventing.Event('message');
         ev.data = {
             timestamp: envelope.timestamp,
             source: envelope.source,
@@ -315,7 +313,7 @@ class MessageReceiver extends EventTarget {
 
     async handleRead(read, envelope) {
         for (const x of read) {
-            const ev = new Event('read');
+            const ev = new eventing.Event('read');
             ev.timestamp = envelope.timestamp;
             ev.read = {
                 timestamp: x.timestamp.toNumber(),

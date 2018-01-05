@@ -1,10 +1,28 @@
 // vim: ts=4:sw=4:expandtab
-/*
- * Implements EventTarget (with async support)
- * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
- */
 
-const Event = require('./event');
+const storage = require('./storage');
+
+
+class Event {
+    constructor(type) {
+        this.type = type;
+    }
+}
+
+
+class KeyChangeEvent extends Event {
+
+    constructor(keyError) {
+        super('keychange');
+        this.keyError = keyError;
+    }
+
+    async accept() {
+        await storage.removeIdentity(this.keyError.addr);
+        await storage.saveIdentity(this.keyError.addr, this.keyError.identityKey);
+        this.keyError.accepted = true;
+    }
+}
 
 
 class EventTarget {
@@ -56,4 +74,8 @@ class EventTarget {
     }
 }
 
-module.exports = EventTarget;
+module.exports = {
+    Event,
+    KeyChangeEvent,
+    EventTarget
+};

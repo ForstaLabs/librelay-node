@@ -83,13 +83,19 @@ class OutgoingMessage {
                             await builder.processPreKey(device);
                         } catch(e) {
                             if (e.message === "Identity key changed") {
+                                const keyError = new errors.OutgoingIdentityKeyError(addr,
+                                    _this.message, _this.timestamp, device.identityKey);
+                                keyError.stack = e.stack;
+                                keyError.message = e.message;
                                 if (!reentrant) {
-                                    await _this.emit('keychange', addr, device.identityKey);
-                                    await _this.getKeysForAddr(addr, updateDevices, /*reentrant*/ true);
+                                    await _this.emit('keychange', keyError);
+                                    if (!keyError.accepted) {
+                                        throw keyError;
+                                    }
+                                    await _this.getKeysForAddr(addr, updateDevices,
+                                                               /*reentrant*/ true);
                                 } else {
-                                    throw new errors.OutgoingIdentityKeyError(addr,
-                                        _this.message, _this.timestamp,
-                                        device.identityKey);
+                                    throw keyError;
                                 }
                             } else {
                                 throw e;

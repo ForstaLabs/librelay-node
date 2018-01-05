@@ -106,7 +106,6 @@ async function registerDevice(options) {
             }
         });
     });
-    wsr.addEventListener('error', e => { debugger; });
     await wsr.connect();
 
     returnInterface.done = (async () => {

@@ -2,11 +2,10 @@
 
 
 const Attachment = require('./attachment');
-const Event = require('./event');
-const EventTarget = require('./event_target');
 const OutgoingMessage = require('./outgoing_message');
 const crypto = require('./crypto');
-const errors = require('./errors.js');
+const errors = require('./errors');
+const eventing = require('./eventing');
 const hub = require('./hub');
 const libsignal = require('libsignal');
 const node_crypto = require('crypto');
@@ -61,7 +60,7 @@ class Message {
 }
 
 
-class MessageSender extends EventTarget {
+class MessageSender extends eventing.EventTarget {
 
     constructor({addr, signal, atlas}) {
         super();
@@ -190,16 +189,13 @@ class MessageSender extends EventTarget {
     }
 
     async onError(e) {
-        const ev = new Event('error');
+        const ev = new eventing.Event('error');
         ev.error = e;
         await this.dispatchEvent(ev);
     }
 
-    async onKeyChange(addr, key) {
-        const ev = new Event('keychange');
-        ev.addr = addr;
-        ev.identityKey = key;
-        await this.dispatchEvent(ev);
+    async onKeyChange(e) {
+        await this.dispatchEvent(new eventing.KeyChangeEvent(e));
     }
 
     async _sendSync(content, timestamp, threadId, expirationStartTimestamp) {
