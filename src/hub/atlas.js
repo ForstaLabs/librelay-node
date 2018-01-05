@@ -212,7 +212,7 @@ class AtlasClient {
             return (await this.fetch('/v1/provision/account')).devices;
         } catch(e) {
             if (e instanceof ReferenceError) {
-                return undefined;
+                return [];
             } else {
                 throw e;
             }
