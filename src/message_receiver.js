@@ -123,33 +123,31 @@ class MessageReceiver extends eventing.EventTarget {
     }
 
     async handleRequest(request) {
-        if (request.path !== '/api/v1/message' || request.verb !== 'PUT') {
+        if (request.path === '/api/v1/queue/empty') {
+            console.debug("WebSocket queue empty");
+            request.respond(200, 'OK');
+            return;
+        } else if (request.path !== '/api/v1/message' || request.verb !== 'PUT') {
             console.error("Expected PUT /message instead of:", request);
+            request.respond(400, 'Invalid Resource');
             throw new Error('Invalid WebSocket resource received');
         }
-        let envelope;
         try {
             const data = crypto.decryptWebsocketMessage(Buffer.from(request.body),
                                                         this.signalingKey);
             const envelopeProto = protobufs.Envelope.decode(data);
-            envelope = protobufs.Envelope.toObject(envelopeProto);
+            const envelope = protobufs.Envelope.toObject(envelopeProto);
             envelope.timestamp = envelope.timestamp.toNumber();
+            await this.handleEnvelope(envelope);
         } catch(e) {
-            request.respond(500, 'Bad encrypted websocket message');
             console.error("Error handling incoming message:", e);
+            request.respond(500, 'Bad encrypted websocket message');
             const ev = new eventing.Event('error');
             ev.error = e;
             await this.dispatchEvent(ev);
             throw e;
         }
-        /* After this point, decoding errors are not the server's
-         * fault and we should ACK them to prevent bad messages from
-         * wedging us. */
-        try {
-            await this.handleEnvelope(envelope);
-        } finally {
-            request.respond(200, 'OK');
-        }
+        request.respond(200, 'OK');
     }
 
     async handleEnvelope(envelope, reentrant) {
