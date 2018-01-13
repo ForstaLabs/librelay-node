@@ -198,6 +198,7 @@ exports.loadIdentity = async function(identifier) {
 };
 
 exports.saveIdentity = async function(identifier, publicKey) {
+    /* Returns true if the key was updated */
     if (!identifier) {
         throw new Error("Tried to set identity key for undefined/null key");
     }
@@ -205,7 +206,9 @@ exports.saveIdentity = async function(identifier, publicKey) {
         throw new Error(`Invalid type for saveIdentity: ${publicKey.constructor.name}`);
     }
     const addr = util.unencodeAddr(identifier)[0];
+    const existing = await exports.get(identityKeyNS, addr);
     await exports.set(identityKeyNS, addr, publicKey);
+    return !!(existing && !existing.equals(publicKey));
 };
 
 exports.removeIdentity = async function(identifier) {
