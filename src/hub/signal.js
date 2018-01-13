@@ -275,16 +275,21 @@ class SignalClient {
             throw new TypeError("Invalid response");
         }
         res.identityKey = Buffer.from(res.identityKey, 'base64');
-        res.devices.forEach(device => {
-            if (!this.validateResponse(device, {signedPreKey: 'object', preKey: 'object'}) ||
-                !this.validateResponse(device.signedPreKey, {publicKey: 'string', signature: 'string'}) ||
-                !this.validateResponse(device.preKey, {publicKey: 'string'})) {
-                throw new TypeError("Invalid response");
+        for (const device of res.devices) {
+            if (!this.validateResponse(device, {signedPreKey: 'object'}) ||
+                !this.validateResponse(device.signedPreKey, {publicKey: 'string', signature: 'string'})) {
+                throw new TypeError("Invalid signedPreKey");
+            }
+            if (device.preKey) {
+                if (!this.validateResponse(device, {preKey: 'object'}) ||
+                    !this.validateResponse(device.preKey, {publicKey: 'string'})) {
+                    throw new TypeError("Invalid preKey");
+                }
+                device.preKey.publicKey = Buffer.from(device.preKey.publicKey, 'base64');
             }
             device.signedPreKey.publicKey = Buffer.from(device.signedPreKey.publicKey, 'base64');
             device.signedPreKey.signature = Buffer.from(device.signedPreKey.signature, 'base64');
-            device.preKey.publicKey = Buffer.from(device.preKey.publicKey, 'base64');
-        });
+        }
         return res;
     }
 
