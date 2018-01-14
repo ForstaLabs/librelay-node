@@ -112,6 +112,7 @@ class MessageSender extends eventing.EventTarget {
     async send({
         to=null, distribution=null,
         text=null, html=null, body=[],
+        data={},
         threadId=uuid4(),
         threadType='conversation',
         threadTitle=undefined,
@@ -142,6 +143,12 @@ class MessageSender extends eventing.EventTarget {
                 value: html
             });
         }
+        if (body.length) {
+            data.body = body;
+        }
+        if (attachments && attachments.length) {
+            data.attachments = attachments.map(x => x.getMeta());
+        }
         const timestamp = sendTime.getTime();
         const msg = new Message({
             addrs: distribution.userids,
@@ -161,10 +168,7 @@ class MessageSender extends eventing.EventTarget {
                 },
                 sendTime: sendTime.toISOString(),
                 userAgent,
-                data: {
-                    body,
-                    attachments: attachments && attachments.map(x => x.getMeta())
-                }
+                data
             }],
             timestamp,
             attachments,
