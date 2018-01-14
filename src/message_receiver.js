@@ -132,13 +132,12 @@ class MessageReceiver extends eventing.EventTarget {
             request.respond(400, 'Invalid Resource');
             throw new Error('Invalid WebSocket resource received');
         }
+        let envelope;
         try {
             const data = crypto.decryptWebsocketMessage(Buffer.from(request.body),
                                                         this.signalingKey);
-            const envelopeProto = protobufs.Envelope.decode(data);
-            const envelope = protobufs.Envelope.toObject(envelopeProto);
+            envelope = protobufs.Envelope.toObject(protobufs.Envelope.decode(data));
             envelope.timestamp = envelope.timestamp.toNumber();
-            await this.handleEnvelope(envelope);
         } catch(e) {
             console.error("Error handling incoming message:", e);
             request.respond(500, 'Bad encrypted websocket message');
@@ -147,7 +146,11 @@ class MessageReceiver extends eventing.EventTarget {
             await this.dispatchEvent(ev);
             throw e;
         }
-        request.respond(200, 'OK');
+        try {
+            await this.handleEnvelope(envelope);
+        } finally {
+            request.respond(200, 'OK');
+        }
     }
 
     async handleEnvelope(envelope, reentrant) {
