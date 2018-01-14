@@ -18,8 +18,6 @@ const ENV_TYPES = protobufs.Envelope.lookup('Type').values;
 const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
 
 
-
-
 class MessageReceiver extends eventing.EventTarget {
 
     constructor(signal, addr, deviceId, signalingKey, noWebSocket) {
