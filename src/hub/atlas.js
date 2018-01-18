@@ -39,19 +39,13 @@ function decodeJWT(encoded_token) {
 
 class AtlasClient {
 
-    constructor({url=urls.atlas, jwt=null, token=null, userId=null, orgId=null}) {
+    constructor({url=urls.atlas, jwt=null}) {
         this.url = url;
         if (jwt) {
             const jwtDict = decodeJWT(jwt);
             this.userId = jwtDict.payload.user_id;
             this.orgId = jwtDict.payload.org_id;
             this.authHeader = `JWT ${jwt}`;
-        } else {
-            this.userId = userId;
-            this.orgId = orgId;
-            if (token) {
-                this.authHeader = `Token ${token}`;
-            }
         }
     }
 
@@ -59,6 +53,23 @@ class AtlasClient {
         const url = await storage.getState(urlStoreKey);
         const jwt = await storage.getState(credStoreKey);
         return new this({url, jwt});
+    }
+
+    static async authenticateViaToken(userAuthToken, options) {
+        const client = new this(options || {});
+        const auth = await client.fetch('/v1/login/authtoken/', {
+            method: 'POST',
+            json: {
+                userauthtoken: userAuthToken
+            }
+        });
+        await storage.putState(credStoreKey, auth.token);
+        await storage.putState(urlStoreKey, client.url);
+
+        return { 
+            url: client.url,
+            jwt: auth.token
+        };
     }
 
     static async authenticate(userTag, options) {
@@ -115,7 +126,7 @@ class AtlasClient {
         return await resp.json();
     }
 
-    async maintainToken(forceRefresh, onRefresh) {
+    async maintainJWT(forceRefresh, onRefresh, authenticator) {
         /* Manage auth token expiration.  This routine will reschedule itself as needed. */
         let token = decodeJWT(await storage.getState(credStoreKey));
         const refreshDelay = t => (t.payload.exp - (Date.now() / 1000)) / 2;
@@ -125,13 +136,22 @@ class AtlasClient {
                 method: 'POST',
                 json: {token: encodedToken}
             });
+            let jwt
             if (!resp || !resp.token) {
-                throw new TypeError("Token Refresh Error");
+                if (authenticator) {
+                    const result = await authenticator()  
+                    console.info("Reauthenticated user in maintainJWT");
+                    jwt = result.jwt
+                } else {
+                    throw new TypeError("Token Refresh Error");
+                }
+            } else {
+                jwt = resp.token
             }
-            token = decodeJWT(resp.token);
-            console.info("Refreshed auth token");
-            await storage.putState(credStoreKey, resp.token);
-            this.authHeader = `JWT ${resp.token}`;
+            token = decodeJWT(jwt);
+            console.info("Refreshed JWT in maintainJWT");
+            await storage.putState(credStoreKey, jwt);
+            this.authHeader = `JWT ${jwt}`;
             this.userId = token.payload.user_id;
             if (onRefresh) {
                 try {
@@ -143,7 +163,7 @@ class AtlasClient {
         }
         const nextUpdate = refreshDelay(token);
         console.info('Will recheck auth token in ' + nextUpdate + ' seconds');
-        util.sleep(nextUpdate).then(this.maintainToken.bind(this, undefined, onRefresh));
+        util.sleep(nextUpdate).then(this.maintainJWT.bind(this, undefined, onRefresh, authenticator));
     }
 
     async resolveTags(expression) {
