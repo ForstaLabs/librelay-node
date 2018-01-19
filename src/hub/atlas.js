@@ -72,7 +72,7 @@ class AtlasClient {
         };
     }
 
-    static async authenticate(userTag, options) {
+    static async requestAuthenticationCode(userTag, options) {
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
         await client.fetch(`/v1/login/send/${org}/${user}/`);
@@ -83,7 +83,7 @@ class AtlasClient {
         };
     }
 
-    static async authValidate(userTag, code, options) {
+    static async authenticateViaCode(userTag, code, options) {
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
         return await client.fetch('/v1/login/authtoken/', {
