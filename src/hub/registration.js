@@ -61,14 +61,19 @@ async function registerAccount(options) {
     await sc.registerKeys(await sc.generateKeys());
 }
 
-/* TODO: Make atlas API for this so the init/auth are the same as registerAccount */
+
 async function registerDevice(options) {
     options = options || {};
-    const signalClient = options.signalClient || new SignalClient();
     const atlasClient = options.atlasClient || await AtlasClient.factory();
+    const accountInfo = await atlasClient.fetch('/v1/provision/account');
+    if (!accountInfo.devices.length) {
+        console.error("Must use `registerAccount` for first device");
+        throw new TypeError("No Account");
+    }
+    const signalClient = new SignalClient(null, null, accountInfo.serverUrl);
     const autoProvision = options.autoProvision !== false;
     const name = options.name || defaultName;
-    if (!options.onProvisionReady) {
+    if (!options.onProvisionReady && !autoProvision) {
         throw new TypeError("Missing: onProvisionReady callback");
     }
     const returnInterface = {waiting: true};
@@ -91,9 +96,11 @@ async function registerDevice(options) {
                             }
                         }).catch(reject);
                     }
-                    const r = options.onProvisionReady(proto.uuid, pubKey);
-                    if (r instanceof Promise) {
-                        r.catch(reject);
+                    if (options.onProvisionReady) {
+                        const r = options.onProvisionReady(proto.uuid, pubKey);
+                        if (r instanceof Promise) {
+                            r.catch(reject);
+                        }
                     }
                 } else if (request.path === "/v1/message" && request.verb === "PUT") {
                     const msgEnvelope = protobufs.ProvisionEnvelope.decode(request.body);
@@ -113,7 +120,7 @@ async function registerDevice(options) {
         returnInterface.waiting = false;
         const addr = provisionMessage.addr;
         const identity = provisionMessage.identityKeyPair;
-        if (provisionMessage.addr != await storage.getState('addr')) {
+        if (provisionMessage.addr != accountInfo.userId) {
             throw new Error('Security Violation: Foreign account sent us an identity key!');
         }
         const registrationId = libsignal.KeyHelper.generateRegistrationId();

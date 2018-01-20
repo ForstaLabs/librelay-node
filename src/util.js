@@ -1,12 +1,11 @@
-/*
- * vim: ts=4:sw=4:expandtab
- */
+// vim: ts=4:sw=4:expandtab
 
-'use strict';
+const readline = require('readline');
 
 function unencodeAddr(addr) {
     return addr.split(".");
 }
+
 
 const _maxTimeout = 0x7fffffff;  // `setTimeout` max valid value.
 async function sleep(seconds) {
@@ -19,14 +18,26 @@ async function sleep(seconds) {
     return await new Promise(resolve => setTimeout(resolve, ms, seconds));
 }
 
+
 async function never() {
     return await new Promise(() => null);
 }
 
 
+async function consoleInput(prompt) {
+    /* This simplifies authentication for a lot of use cases. */
+    const rl = readline.createInterface(process.stdin, process.stdout);
+    try { 
+         return await new Promise(resolve => rl.question(prompt, resolve));
+    } finally {
+        rl.close();
+    }   
+}   
+
 module.exports = {
     unencodeAddr,
     sleep,
-    never
+    never,
+    consoleInput
 };
 

@@ -9,5 +9,6 @@ module.exports = {
     SignalClient: hub.SignalClient,
     registerAccount: hub.registerAccount,
     registerDevice: hub.registerDevice,
-    storage: require('./storage')
+    storage: require('./storage'),
+    util: require('./util')
 };

@@ -39,35 +39,32 @@ a unique namespace.
 Provisioning
 -------
 PREREQUISITE: To use librelay you must first have a valid Forsta account.  You
-can sign-up for free at <https://www.forsta.io/sign-up>.  Once you have a valid
+can sign-up for free at <https://app.forsta.io/join>.  Once you have a valid
 Forsta account you need to provision your librelay based application. 
 
 With your Forsta account (e.g. `myusername:myorgname`) you can get started
-with the `librelay.AccountManager` class to register with the secure messaging
-servers.
+with the `registerAccount` function or the `registerDevice` function if adding
+supplemental devices.
 
 ```javascript
 const relay = require('librelay');
-const process = require('process');
-const readline = require('readline');
 
-async function input(prompt) {
-    const rl = readline.createInterface(process.stdin, process.stdout);
-    try {
-        return await new Promise(resolve => rl.question(prompt, resolve));
-    } finally {
-        rl.close();
+async function main(secondary) {
+    const userTag = await relay.util.consoleInput("Enter your login (e.g user:org): ");
+    const validator = await relay.AtlasClient.requestAuthenticationCode(userTag);
+    await validator(await relay.util.consoleInput("SMS Verification Code: "));
+    if (secondary) {
+        const registration = await relay.registerDevice();
+        console.info("Awaiting auto-registration response...");
+        await registration.done;
+        console.info("Successfully registered new device");
+    } else {
+        await relay.registerAccount();
+        console.info("Successfully registered account");
     }
 }
 
-(async function main() {
-    const [user, org] = (await input("Enter your login (e.g user:org): ")).split(':');
-    const validateCallback = await relay.auth.requestCode(org, user);
-    const code = await input("SMS Verification Code: ");
-    const jwt = (await validateCallback(code)).jwt;
-    await relay.AccountManager.register({jwt});
-    process.exit(0);
-})();
+main();
 ```
 Ref: <https://github.com/ForstaLabs/librelay-node/blob/master/examples/register.js>
 
@@ -87,11 +84,13 @@ function onMessage(ev) {
     console.info("Got message", message);
 }
 
-(async function main() {
+async function main() {
     const msgReceiver = await relay.MessageReceiver.factory();
     msgReceiver.addEventListener('message', onMessage);
     await msgReceiver.connect();
-})();
+}
+
+main();
 ```
 Ref: <https://github.com/ForstaLabs/librelay-node/blob/master/examples/recvmessage.js>
 
@@ -148,4 +147,4 @@ License
 Licensed under the GPLv3: http://www.gnu.org/licenses/gpl-3.0.html
 
 * Copyright 2014-2016 Open Whisper Systems
-* Copyright 2017 Forsta Inc.
+* Copyright 2017-2018 Forsta Inc.

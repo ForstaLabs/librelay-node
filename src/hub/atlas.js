@@ -77,7 +77,7 @@ class AtlasClient {
         const [user, org] = client.parseTag(userTag);
         await client.fetch(`/v1/login/send/${org}/${user}/`);
         return async smsCode => {
-            const auth = await this.authValidate(userTag, smsCode, options);
+            const auth = await this.authenticateViaCode(userTag, smsCode, options);
             await storage.putState(credStoreKey, auth.token);
             await storage.putState(urlStoreKey, client.url);
         };
@@ -136,17 +136,17 @@ class AtlasClient {
                 method: 'POST',
                 json: {token: encodedToken}
             });
-            let jwt
+            let jwt;
             if (!resp || !resp.token) {
                 if (authenticator) {
-                    const result = await authenticator()  
+                    const result = await authenticator();
                     console.info("Reauthenticated user in maintainJWT");
-                    jwt = result.jwt
+                    jwt = result.jwt;
                 } else {
                     throw new TypeError("Unable to reauthenticate in maintainJWT");
                 }
             } else {
-                jwt = resp.token
+                jwt = resp.token;
             }
             token = decodeJWT(jwt);
             console.info("Refreshed JWT in maintainJWT");

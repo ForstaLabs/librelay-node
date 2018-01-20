@@ -1,19 +1,18 @@
 const relay = require('..');
-const process = require('process');
-const readline = require('readline');
 
-async function input(prompt) {
-    const rl = readline.createInterface(process.stdin, process.stdout);
-    try {
-        return await new Promise(resolve => rl.question(prompt, resolve));
-    } finally {
-        rl.close();
+async function main(secondary) {
+    const userTag = await relay.util.consoleInput("Enter your login (e.g user:org): ");
+    const validator = await relay.AtlasClient.requestAuthenticationCode(userTag);
+    await validator(await relay.util.consoleInput("SMS Verification Code: "));
+    if (secondary) {
+        const registration = await relay.registerDevice();
+        console.info("Awaiting auto-registration response...");
+        await registration.done;
+        console.info("Successfully registered new device");
+    } else {
+        await relay.registerAccount();
+        console.info("Successfully registered account");
     }
 }
 
-(async function main() {
-    const userTag = await input("Enter your login (e.g user:org): ");
-    const validator = await relay.AtlasClient.authenticate(userTag);
-    await validator(await input("SMS Verification Code: "));
-    await relay.registerAccount();
-})().catch(e => console.error(e));
+main(true).catch(e => console.error(e));
