@@ -116,7 +116,7 @@ class AtlasClient {
             const msg = urn + ` (${await resp.text()})`;
             let error;
             if (resp.status === 404) {
-                 error = new ReferenceError(msg);
+                error = new ReferenceError(msg);
             } else {
                 error = new Error(msg);
             }
