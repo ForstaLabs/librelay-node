@@ -2,13 +2,15 @@
 
 'use strict';
 
+const DEFAULT_ATLAS_URL = 'https://atlas-dev.forsta.io';
+
 const fetch = require('./fetch');
 const storage = require('../storage');
-const urls = require('./urls');
 const util = require('../util');
 
 const credStoreKey = 'atlasCredential';
 const urlStoreKey = 'atlasUrl';
+
 
 function atobJWT(str) {
     /* See: https://github.com/yourkarma/JWT/issues/8 */
@@ -39,7 +41,7 @@ function decodeJWT(encoded_token) {
 
 class AtlasClient {
 
-    constructor({url=urls.atlas, jwt=null}) {
+    constructor({url=DEFAULT_ATLAS_URL, jwt=null}) {
         this.url = url;
         if (jwt) {
             const jwtDict = decodeJWT(jwt);
@@ -112,18 +114,16 @@ class AtlasClient {
         }
         const url = [this.url, urn.replace(/^\//, '')].join('/');
         const resp = await fetch(url, options);
+        if ((resp.headers.get('content-type') || '').startsWith('application/json')) {
+            resp.theJson = await resp.json();
+        } else {
+            resp.theText = await resp.text();
+        }
         if (!resp.ok) {
             const msg = urn + ` (${await resp.text()})`;
-            let error;
-            if (resp.status === 404) {
-                 error = new ReferenceError(msg);
-            } else {
-                error = new Error(msg);
-            }
-            error.code = resp.status;
-            throw error;
+            throw new RequestError(msg, resp.status, resp);
         }
-        return await resp.json();
+        return resp;
     }
 
     async maintainJWT(forceRefresh, authenticator, onRefresh) {
@@ -231,7 +231,7 @@ class AtlasClient {
         try {
             return (await this.fetch('/v1/provision/account')).devices;
         } catch(e) {
-            if (e instanceof ReferenceError) {
+            if (e instanceof util.RequestError && e.code === 404) {
                 return [];
             } else {
                 throw e;
