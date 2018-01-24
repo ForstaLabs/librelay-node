@@ -2,7 +2,7 @@
 
 'use strict';
 
-const DEFAULT_ATLAS_URL = 'https://atlas-dev.forsta.io';
+const DEFAULT_ATLAS_URL = 'https://atlas.forsta.io';
 
 const fetch = require('./fetch');
 const storage = require('../storage');
