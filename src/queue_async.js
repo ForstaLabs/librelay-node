@@ -6,7 +6,7 @@ const _queueAsyncBuckets = new Map();
 
 async function _asyncQueueExecutor(queue, cleanup) {
     let offt = 0;
-    const gcLimit = 100;
+    const gcLimit = 10000;
     while (true) {
         let limit = Math.min(queue.length, gcLimit); // Break up thundering hurds for GC duty.
         for (let i = offt; i < limit; i++) {

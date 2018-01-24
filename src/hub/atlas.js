@@ -88,12 +88,15 @@ class AtlasClient {
     static async authenticateViaCode(userTag, code, options) {
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
-        return await client.fetch('/v1/login/authtoken/', {
+
+        const result = await client.fetch('/v1/login/authtoken/', {
             method: 'POST',
             json: {
                 authtoken: [org, user, code].join(':')
             }
         });
+
+        return result;
     }
 
     parseTag(tag) {
@@ -114,16 +117,18 @@ class AtlasClient {
         }
         const url = [this.url, urn.replace(/^\//, '')].join('/');
         const resp = await fetch(url, options);
+        const text = await resp.text();
         if ((resp.headers.get('content-type') || '').startsWith('application/json')) {
-            resp.theJson = await resp.json();
+            resp.theJson = JSON.parse(text.trim() || '{}')
         } else {
-            resp.theText = await resp.text();
+            resp.theText = text;
         }
         if (!resp.ok) {
-            const msg = urn + ` (${await resp.text()})`;
-            throw new RequestError(msg, resp.status, resp);
+            const msg = `${urn} (${resp.theText || JSON.stringify(resp.theJson)})`;
+            throw new util.RequestError(msg, resp.status, resp);
         }
-        return resp;
+
+        return resp.theJson;
     }
 
     async maintainJWT(forceRefresh, authenticator, onRefresh) {
