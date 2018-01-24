@@ -2,13 +2,15 @@
 
 'use strict';
 
+const DEFAULT_ATLAS_URL = 'https://atlas-dev.forsta.io';
+
 const fetch = require('./fetch');
 const storage = require('../storage');
-const urls = require('./urls');
 const util = require('../util');
 
 const credStoreKey = 'atlasCredential';
 const urlStoreKey = 'atlasUrl';
+
 
 function atobJWT(str) {
     /* See: https://github.com/yourkarma/JWT/issues/8 */
@@ -39,7 +41,7 @@ function decodeJWT(encoded_token) {
 
 class AtlasClient {
 
-    constructor({url=urls.atlas, jwt=null}) {
+    constructor({url=DEFAULT_ATLAS_URL, jwt=null}) {
         this.url = url;
         if (jwt) {
             const jwtDict = decodeJWT(jwt);
@@ -86,6 +88,7 @@ class AtlasClient {
     static async authenticateViaCode(userTag, code, options) {
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
+
         return await client.fetch('/v1/login/authtoken/', {
             method: 'POST',
             json: {
@@ -112,18 +115,17 @@ class AtlasClient {
         }
         const url = [this.url, urn.replace(/^\//, '')].join('/');
         const resp = await fetch(url, options);
+        const text = await resp.text();
+        let json = undefined;
+        if ((resp.headers.get('content-type') || '').startsWith('application/json')) {
+            json = JSON.parse(text.trim() || '{}')
+        } 
         if (!resp.ok) {
-            const msg = urn + ` (${await resp.text()})`;
-            let error;
-            if (resp.status === 404) {
-                error = new ReferenceError(msg);
-            } else {
-                error = new Error(msg);
-            }
-            error.code = resp.status;
-            throw error;
+            const msg = `${urn} (${text})`;
+            throw new util.RequestError(msg, resp, resp.status, text, json);
         }
-        return await resp.json();
+
+        return json === undefined ? text : json;
     }
 
     async maintainJWT(forceRefresh, authenticator, onRefresh) {
@@ -231,7 +233,7 @@ class AtlasClient {
         try {
             return (await this.fetch('/v1/provision/account')).devices;
         } catch(e) {
-            if (e instanceof ReferenceError) {
+            if (e instanceof util.RequestError && e.code === 404) {
                 return [];
             } else {
                 throw e;

@@ -8,7 +8,6 @@ const fetch = require('./fetch');
 const libsignal = require('libsignal');
 const protobufs = require('../protobufs');
 const storage = require('../storage');
-const urls = require('./urls');
 
 const SIGNAL_URL_CALLS = {
     accounts: "/v1/accounts",
@@ -31,7 +30,7 @@ const lastResortKeyId = 0xdeadbeef & ((2 ** 31) - 1); // Must fit inside signed 
 
 class SignalClient {
 
-    constructor(username, password, url=urls.signal) {
+    constructor(username, password, url) {
         this.url = url;
         this.username = username;
         this.password = password;

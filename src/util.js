@@ -34,10 +34,24 @@ async function consoleInput(prompt) {
     }   
 }   
 
+
+class RequestError extends Error {
+    constructor(message, response, code, text, json) {
+        super(message);
+        this.name = 'RequestError';
+        this.response = response;
+        this.code = code;
+        this.text = text;
+        this.json = json;
+    }
+}
+
+
 module.exports = {
     unencodeAddr,
     sleep,
     never,
-    consoleInput
+    consoleInput,
+    RequestError
 };
 
