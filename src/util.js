@@ -36,11 +36,13 @@ async function consoleInput(prompt) {
 
 
 class RequestError extends Error {
-    constructor(message, code, resp) {
+    constructor(message, response, code, text, json) {
         super(message);
         this.name = 'RequestError';
+        this.response = response;
         this.code = code;
-        this.response = resp;
+        this.text = text;
+        this.json = json;
     }
 }
 

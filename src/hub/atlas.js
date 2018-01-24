@@ -118,17 +118,16 @@ class AtlasClient {
         const url = [this.url, urn.replace(/^\//, '')].join('/');
         const resp = await fetch(url, options);
         const text = await resp.text();
+        let json;
         if ((resp.headers.get('content-type') || '').startsWith('application/json')) {
-            resp.theJson = JSON.parse(text.trim() || '{}')
-        } else {
-            resp.theText = text;
-        }
+            json = JSON.parse(text.trim() || '{}')
+        } 
         if (!resp.ok) {
-            const msg = `${urn} (${resp.theText || JSON.stringify(resp.theJson)})`;
-            throw new util.RequestError(msg, resp.status, resp);
+            const msg = `${urn} (${text})`;
+            throw new util.RequestError(msg, resp, resp.status, text, json);
         }
 
-        return resp.theJson;
+        return json || text;
     }
 
     async maintainJWT(forceRefresh, authenticator, onRefresh) {
