@@ -89,7 +89,7 @@ class AtlasClient {
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
 
-        return await client.fetch('/v1/login/authtoken/', {
+        return client.fetch('/v1/login/authtoken/', {
             method: 'POST',
             json: {
                 authtoken: [org, user, code].join(':')
