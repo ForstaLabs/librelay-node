@@ -57,44 +57,40 @@ class AtlasClient {
         return new this({url, jwt});
     }
 
-    static async authenticateViaToken(userAuthToken, options) {
-        const client = new this(options || {});
-        const auth = await client.fetch('/v1/login/authtoken/', {
-            method: 'POST',
-            json: {
-                userauthtoken: userAuthToken
-            }
-        });
-        await storage.putState(credStoreKey, auth.token);
-        await storage.putState(urlStoreKey, client.url);
-
-        return { 
-            url: client.url,
-            jwt: auth.token
-        };
-    }
-
     static async requestAuthenticationCode(userTag, options) {
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
         await client.fetch(`/v1/login/send/${org}/${user}/`);
-        return async smsCode => {
-            const auth = await this.authenticateViaCode(userTag, smsCode, options);
-            await storage.putState(credStoreKey, auth.token);
-            await storage.putState(urlStoreKey, client.url);
-        };
+        return smsCode => this.authenticateViaCode(userTag, smsCode, options);
     }
 
     static async authenticateViaCode(userTag, code, options) {
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
-
-        return client.fetch('/v1/login/authtoken/', {
+        const auth = await client.fetch('/v1/login/authtoken/', {
             method: 'POST',
-            json: {
-                authtoken: [org, user, code].join(':')
-            }
+            json: {authtoken: [org, user, code].join(':')}
         });
+        await storage.putState(credStoreKey, auth.token);
+        await storage.putState(urlStoreKey, client.url);
+        return new this(Object.assign({
+            url: client.url,
+            jwt: auth.token
+        }, options || {}));
+    }
+
+    static async authenticateViaToken(userAuthToken, options) {
+        const client = new this(options || {});
+        const auth = await client.fetch('/v1/login/authtoken/', {
+            method: 'POST',
+            json: {userauthtoken: userAuthToken}
+        });
+        await storage.putState(credStoreKey, auth.token);
+        await storage.putState(urlStoreKey, client.url);
+        return new this(Object.assign({
+            url: client.url,
+            jwt: auth.token
+        }, options || {}));
     }
 
     parseTag(tag) {
