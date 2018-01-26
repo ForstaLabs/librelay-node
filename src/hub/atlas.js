@@ -117,14 +117,13 @@ class AtlasClient {
         const resp = await fetch(url, options);
         const text = await resp.text();
         let json = undefined;
-        if ((resp.headers.get('content-type') || '').startsWith('application/json')) {
-            json = JSON.parse(text.trim() || '{}')
+        if ((resp.headers.get('content-type') || '').startsWith('application/json') && text.trim()) {
+            json = JSON.parse(text);
         } 
         if (!resp.ok) {
             const msg = `${urn} (${text})`;
             throw new util.RequestError(msg, resp, resp.status, text, json);
         }
-
         return json === undefined ? text : json;
     }
 
@@ -169,28 +168,26 @@ class AtlasClient {
     }
 
     async resolveTags(expression) {
-        expression = expression && expression.trim();
-        if (!expression) {
-            console.warn("Empty expression detected");
-            // Do this while the server doesn't handle empty queries.
-            return {
-                universal: '',
-                pretty: '',
-                includedTagids: [],
-                excludedTagids: [],
-                userids: [],
-                warnings: []
-            };
+        return (await this.resolveTagsBatch([expression]))[0];
+    }
+
+    async resolveTagsBatch(expressions) {
+        if (!expressions.length) {
+            return [];
         }
-        const q = '?expression=' + encodeURIComponent(expression);
-        const results = await this.fetch('/v1/directory/user/' + q);
-        for (const w of results.warnings) {
-            w.context = expression.substring(w.position, w.position + w.length);
+        const resp = await this.fetch('/v1/tagmath/', {
+            method: 'POST',
+            json: {expressions}
+        });
+        /* Enhance the warnings a bit. */
+        for (let i = 0; i < resp.results.length; i++) {
+            const res = resp.results[i];
+            const expr = expressions[i];
+            for (const w of res.warnings) {
+                w.context = expr.substr(w.position, w.length);
+            }
         }
-        if (results.warnings.length) {
-            console.warn("Tag Expression Warning(s):", expression, results.warnings);
-        }
-        return results;
+        return resp.results;
     }
 
     sanitizeTags(expression) {
