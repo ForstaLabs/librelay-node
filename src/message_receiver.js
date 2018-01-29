@@ -11,7 +11,6 @@ const libsignal = require('libsignal');
 const protobufs = require('./protobufs');
 const queueAsync = require('./queue_async');
 const storage = require('./storage');
-const util = require('./util');
 
 
 const ENV_TYPES = protobufs.Envelope.lookup('Type').values;
@@ -53,7 +52,26 @@ class MessageReceiver extends eventing.EventTarget {
         if (this._closing) {
             throw new Error("Invalid State: Already Closed");
         }
-        await this.wsr.connect();
+        if (this._connecting) {
+            console.warn("Duplicate connect detected");
+        } else {
+            this._connecting = (async () => {
+                let attempts = 0;
+                while (!this._closing) {
+                    try {
+                        await this.wsr.connect();
+                        if (attempts) {
+                            console.info("Reconnected websocket");
+                        }
+                        return;
+                    } catch(e) {
+                        console.warn(`Connect problem (${attempts++} attempts):`, e);
+                    }
+                }
+            })();
+        }
+        await this._connecting;
+        this._connecting = null;
     }
 
     close() {
@@ -89,35 +107,26 @@ class MessageReceiver extends eventing.EventTarget {
         } while(more);
     }
 
-    onSocketError(error) {
-        console.error('Message Receiver - WebSocket error:', error);
-        throw error;
+    onSocketError(ev) {
+        console.warn('Message Receiver WebSocket error:', ev);
     }
 
     async onSocketClose(ev) {
-        console.warn('Websocket closed:', ev.code, ev.reason || '');
-        if (ev.code === 3000 || this._closing) {
+        if (this._closing) {
             return;
         }
-        // possible auth or network issue. Make a request to confirm
-        let attempt = 0;
-        while (!this._closing) {
-            try {
-                await this.signal.getDevices();
-                break;
-            } catch(e) {
-                const backoff = Math.log1p(++attempt) * 30 * Math.random();
-                console.error("Invalid network state:", e);
-                const errorEvent = new eventing.Event('error');
-                errorEvent.error = e;
-                await this.dispatchEvent(errorEvent);
-                console.info(`Will retry network in ${backoff} seconds (attempt ${attempt}).`);
-                await util.sleep(backoff);
-            }
+        console.warn('Websocket closed:', ev.code, ev.reason || '');
+        try {
+            // possible auth or network issue. Make a request to confirm
+            await this.signal.getDevices();
+        } catch(e) {
+            // TODO: Catch auth error and unregister here?
+            console.error("Invalid network state:", e);
+            const errorEvent = new eventing.Event('error');
+            errorEvent.error = e;
+            await this.dispatchEvent(errorEvent);
         }
-        if (!this._closing) {
-            await this.connect();
-        }
+        await this.connect();
     }
 
     async handleRequest(request) {
