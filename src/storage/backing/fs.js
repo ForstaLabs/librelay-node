@@ -103,12 +103,12 @@ class FSBacking extends StorageInterface {
         }
     }
 
-    async get(ns, key, defaultValue) {
+    async get(ns, key) {
         try {
             return await freadfile(path.join(this.root, ns, key));
         } catch(e) {
             if (e.code === 'ENOENT') {
-                return defaultValue;
+                throw new ReferenceError(key);
             } else {
                 throw e;
             }

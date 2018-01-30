@@ -65,11 +65,11 @@ class RedisBacking extends StorageInterface {
         await this.client.set(this.label + '-' + ns, key, value);
     }
 
-    async get(ns, key, defaultValue) {
+    async get(ns, key) {
         if (await this.client.exists(this.label + '-' + ns, key)) {
             return await this.client.get(this.label + '-' + ns, key);
         } else {
-            return defaultValue;
+            throw new ReferenceError(key);
         }
     }
 

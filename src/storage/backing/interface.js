@@ -9,7 +9,8 @@ class StorageInterface {
         throw new Error("Not Implemented");
     }
 
-    async get(ns, key, defaultValue) {
+    async get(ns, key) {
+        /* If key not found should throw ReferenceError */
         throw new Error("Not Implemented");
     }
 

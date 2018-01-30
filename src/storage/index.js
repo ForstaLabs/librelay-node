@@ -52,8 +52,17 @@ function decode(obj) {
     }
 }
 
-exports.get = async (ns, key) => {
-    const data = await _backing.get(ns, key);
+exports.get = async (ns, key, defaultValue) => {
+    let data;
+    try {
+        data = await _backing.get(ns, key);
+    } catch(e) {
+        if (e instanceof ReferenceError) {
+            return defaultValue;
+        } else {
+            throw e;
+        }
+    }
     return data && decode(data);
 };
 exports.set = (ns, key, value) => _backing.set(ns, key, encode(value));
