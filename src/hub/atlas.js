@@ -209,7 +209,7 @@ class AtlasClient {
             const resp = await this.fetch('/v1/user/?id_in=' + userIds.join());
             for (const user of resp.results) {
                 users.push(user);
-                missing.delete(user);
+                missing.delete(user.id);
             }
         }
         if (missing.size) {
