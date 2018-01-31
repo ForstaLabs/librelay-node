@@ -87,6 +87,9 @@ class FSBacking extends StorageInterface {
         this.root = path.join(os.homedir(), '.librelay/storage', label, 'v' + version);
     }
 
+    async initialize() {
+    }
+
     async set(ns, key, value) {
         const dir = path.join(this.root, ns);
         for (let i = 0; i < 2; i++) {
@@ -141,7 +144,7 @@ class FSBacking extends StorageInterface {
         return regex ? keys.filter(x => x.match(regex)) : keys;
     }
 
-    shutdown() {
+    async shutdown() {
     }
 }
 

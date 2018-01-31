@@ -65,7 +65,9 @@ exports.get = async (ns, key, defaultValue) => {
     }
     return data && decode(data);
 };
+exports.initialize = () => _backing.initialize();
 exports.set = (ns, key, value) => _backing.set(ns, key, encode(value));
+exports.has = (ns, key, value) => _backing.has(ns, key);
 exports.remove = (ns, key) => _backing.remove(ns, key);
 exports.keys = (ns, re) => _backing.keys(ns, re);
 exports.shutdown = () => _backing.shutdown();
@@ -237,6 +239,7 @@ exports.getDeviceIds = async function(addr) {
 function getBackingClass(name) {
     return {
         redis: exports.backing.RedisBacking,
+        postgres: exports.backing.PostgresBacking,
         fs: exports.backing.FSBacking
     }[name];
 }

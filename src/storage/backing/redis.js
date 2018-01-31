@@ -58,6 +58,9 @@ class RedisBacking extends StorageInterface {
         this.client = AsyncRedisClient.createClient(process.env.REDIS_URL);
     }
 
+    async initialize() {
+    }
+
     async set(ns, key, value) {
         if (value === undefined) {
             throw new Error("Tried to store undefined");
@@ -86,7 +89,7 @@ class RedisBacking extends StorageInterface {
         return regex ? keys.filter(x => x.match(regex)) : keys;
     }
 
-    shutdown() {
+    async shutdown() {
         this.client.quit();
         this.client = null;
     }

@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.5.0]
+### Changed
+- Added Postgres as a possible backing store (required adding an async initialize to the storage interface and making the shutdown routine async). 
+- Note: **THIS IS A BREAKING CHANGE** because `storage.initialize()` needs to be called to ensure your backing store is up and running (if your code needs to be portable across all backing stores).
+
+
 ## [3.4.0]
 ### Changed
 - AtlasClient.authenticate[...] classmethods now return an instance.
