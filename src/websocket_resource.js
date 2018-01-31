@@ -159,9 +159,9 @@ class WebSocketResource {
         this._lastConnect = Date.now();
         await new Promise((resolve, reject) => {
             ws.addEventListener('open', resolve);
-            ws.addEventListener('error', e => {
+            ws.addEventListener('error', ev => {
                 this._lastDuration = Date.now() - this._lastConnect;
-                reject(e);
+                reject(new Error('WebSocket Connect Error'));
             });
         });
         this.socket = ws;

@@ -48,6 +48,18 @@ class MessageReceiver extends eventing.EventTarget {
         return new this(signal, addr, deviceId, signalingKey, noWebSocket);
     }
 
+    async checkRegistration() {
+        try {
+            // possible auth or network issue. Make a request to confirm
+            await this.signal.getDevices();
+        } catch(e) {
+            console.error("Invalid network state:", e);
+            const ev = new eventing.Event('error');
+            ev.error = e;
+            await this.dispatchEvent(ev);
+        }
+    }
+
     async connect() {
         if (this._closing) {
             throw new Error("Invalid State: Already Closed");
@@ -65,7 +77,8 @@ class MessageReceiver extends eventing.EventTarget {
                         }
                         return;
                     } catch(e) {
-                        console.warn(`Connect problem (${attempts++} attempts):`, e);
+                        await this.checkRegistration();
+                        console.warn(`Connect problem (${attempts++} attempts)`);
                     }
                 }
             })();
@@ -116,17 +129,10 @@ class MessageReceiver extends eventing.EventTarget {
             return;
         }
         console.warn('Websocket closed:', ev.code, ev.reason || '');
-        try {
-            // possible auth or network issue. Make a request to confirm
-            await this.signal.getDevices();
-        } catch(e) {
-            // TODO: Catch auth error and unregister here?
-            console.error("Invalid network state:", e);
-            const errorEvent = new eventing.Event('error');
-            errorEvent.error = e;
-            await this.dispatchEvent(errorEvent);
+        await this.checkRegistration();
+        if (!this._closing) {
+            await this.connect();
         }
-        await this.connect();
     }
 
     async handleRequest(request) {
