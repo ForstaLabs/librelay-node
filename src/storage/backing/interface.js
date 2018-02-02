@@ -5,6 +5,9 @@ class StorageInterface {
         this.label = label;
     }
 
+    async initialize() {
+    }
+
     async set(ns, key, value) {
         throw new Error("Not Implemented");
     }

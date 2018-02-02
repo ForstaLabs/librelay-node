@@ -86,7 +86,7 @@ class RedisBacking extends StorageInterface {
         return regex ? keys.filter(x => x.match(regex)) : keys;
     }
 
-    shutdown() {
+    async shutdown() {
         this.client.quit();
         this.client = null;
     }

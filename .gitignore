@@ -7,3 +7,4 @@ dist
 *.swp
 .cscope_db
 npm-debug.log
+.vscode

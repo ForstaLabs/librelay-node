@@ -140,9 +140,6 @@ class FSBacking extends StorageInterface {
         }
         return regex ? keys.filter(x => x.match(regex)) : keys;
     }
-
-    shutdown() {
-    }
 }
 
 module.exports = FSBacking;
