@@ -65,7 +65,6 @@ class PostgresBacking extends StorageInterface {
     }
 
     async shutdown() {
-        console.log('postgres shutting down');
         await this.client.end();
         this.client = null;
     }

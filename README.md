@@ -36,8 +36,9 @@ librelay on a single backing store use
 `librelay.storage.setLabel('<something-unique>')` to shard your storage into
 a unique namespace.
 
-You'll need to ensure your backing store is running properly with a call to (async) `librelay.storage.initialize()`,
-and if possible you should tear it down before quitting, with (async) `librelay.storage.shutdown()`.
+You'll need to ensure your backing store is running properly with a call 
+to (async) `librelay.storage.initialize()`, and if possible you should 
+tear it down before quitting, with (async) `librelay.storage.shutdown()`.
 
 
 Provisioning
