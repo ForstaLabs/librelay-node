@@ -25,8 +25,6 @@ const SIGNAL_HTTP_MESSAGES = {
     417: "Address already registered"
 };
 
-const lastResortKeyId = 0xdeadbeef & ((2 ** 31) - 1); // Must fit inside signed 32bit int.
-
 
 class SignalClient {
 
@@ -61,7 +59,7 @@ class SignalClient {
         const resp = await this.fetch('/v1/provisioning/' + uuid, {
             method: 'PUT',
             json: {
-                body: pEnvelope.toString('base64') // XXX probably have to finish()/encode() this thing.
+                body: pEnvelope.toString('base64')
             }
         });
         if (!resp.ok) {
@@ -74,8 +72,7 @@ class SignalClient {
 
     async refreshPreKeys(minLevel=10, fill=100) {
         const preKeyCount = await this.getMyKeys();
-        const lastResortKey = await storage.loadPreKey(lastResortKeyId);
-        if (preKeyCount <= minLevel || !lastResortKey) {
+        if (preKeyCount <= minLevel) {
             // The server replaces existing keys so just go to the hilt.
             console.info("Refreshing pre-keys...");
             await this.registerKeys(await this.generateKeys(fill));
@@ -96,23 +93,10 @@ class SignalClient {
             throw new Error('Invalid signedKeyId');
         }
 
-        let lastResortKey = await storage.loadPreKey(lastResortKeyId);
-        if (!lastResortKey) {
-            // Last resort key only used if our prekey pool is drained faster than
-            // we refresh it.  This prevents message dropping at the expense of
-            // forward secrecy impairment.
-            const pk = await libsignal.KeyHelper.generatePreKey(lastResortKeyId);
-            await storage.storePreKey(lastResortKeyId, pk.keyPair);
-            lastResortKey = pk.keyPair;
-        }
         const ourIdent = await storage.getOurIdentity();
         const result = {
             preKeys: [],
-            identityKey: ourIdent.pubKey,
-            lastResortKey: {
-                keyId: lastResortKeyId,
-                publicKey: lastResortKey.pubKey
-            }
+            identityKey: ourIdent.pubKey
         };
         for (let keyId = startId; keyId < startId + count; ++keyId) {
             const preKey = await libsignal.KeyHelper.generatePreKey(keyId);
@@ -241,11 +225,6 @@ class SignalClient {
                 publicKey: genKeys.preKeys[i].publicKey.toString('base64')
             };
         }
-        // Newer generation servers don't expect this BTW.
-        jsonData.lastResortKey = {
-            keyId: genKeys.lastResortKey.keyId,
-            publicKey: genKeys.lastResortKey.publicKey.toString('base64')
-        };
         return await this.request({
             call: 'keys',
             httpType: 'PUT',
