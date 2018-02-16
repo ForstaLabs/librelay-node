@@ -1,6 +1,6 @@
 {
   "name": "librelay",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Signal based end-to-end crypto for Forsta messaging platform",
   "repository": "ForstaLabs/librelay-node",
   "engines": {
