@@ -157,6 +157,7 @@ class MessageSender extends eventing.EventTarget {
                 version: 1,
                 threadId,
                 threadType,
+                threadTitle,
                 messageId,
                 messageType,
                 messageRef,
