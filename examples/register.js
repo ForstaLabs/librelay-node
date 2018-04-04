@@ -15,4 +15,4 @@ async function main(secondary) {
     }
 }
 
-main(true).catch(e => console.error(e));
+main(false).catch(e => console.error(e));
