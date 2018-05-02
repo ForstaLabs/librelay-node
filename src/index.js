@@ -1,4 +1,8 @@
 
+if (!console.debug) {
+    console.debug = function nodebug() {};
+}
+
 const hub = require('./hub');
 
 module.exports = {
