@@ -233,7 +233,7 @@ exports.getDeviceIds = async function(addr) {
         throw new Error("Tried to get device ids for undefined/null addr");
     }
     const idents = await _backing.keys(sessionNS, new RegExp(addr + '\\..*'));
-    return Array.from(idents).map(x => x.split('.')[1]);
+    return Array.from(idents).map(x => Number(x.split('.')[1]));
 };
 
 function getBackingClass(name) {
