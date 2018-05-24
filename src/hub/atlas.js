@@ -44,11 +44,15 @@ class AtlasClient {
     constructor({url=DEFAULT_ATLAS_URL, jwt=null}) {
         this.url = url;
         if (jwt) {
-            const jwtDict = decodeJWT(jwt);
-            this.userId = jwtDict.payload.user_id;
-            this.orgId = jwtDict.payload.org_id;
-            this.authHeader = `JWT ${jwt}`;
+            this.setJWT(jwt);
         }
+    }
+
+    setJWT(jwt) {
+        const jwtDict = decodeJWT(jwt);
+        this.userId = jwtDict.payload.user_id;
+        this.orgId = jwtDict.payload.org_id;
+        this.authHeader = `JWT ${jwt}`;
     }
 
     static async factory() {
@@ -67,30 +71,44 @@ class AtlasClient {
     static async authenticateViaCode(userTag, code, options) {
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
-        const auth = await client.fetch('/v1/login/authtoken/', {
-            method: 'POST',
-            json: {authtoken: [org, user, code].join(':')}
-        });
-        await storage.putState(credStoreKey, auth.token);
-        await storage.putState(urlStoreKey, client.url);
-        return new this(Object.assign({
-            url: client.url,
-            jwt: auth.token
-        }, options || {}));
+        const authtoken = `${org}:${user}:${code}`;
+        await client.authenticate({authtoken});
+        return client;
     }
 
-    static async authenticateViaToken(userAuthToken, options) {
+    static async authenticateViaToken(userauthtoken, options) {
         const client = new this(options || {});
-        const auth = await client.fetch('/v1/login/authtoken/', {
+        await client.authenticate({userauthtoken});
+        return client;
+    }
+
+    static async authenticateViaPassword(tag_slug, password, options) {
+        const client = new this(options || {});
+        await client.authenticate({tag_slug, password});
+        return client;
+    }
+
+    async authenticate(creds) {
+        /* Creds should be an object of these supported forms..
+         * 1. Password auth:
+         *    {
+         *      tag_slug: "@foo:bar",
+         *      password: "secret"
+         *    }
+         * 2. SMS auth: {
+         *      authtoken: "123456",
+         *    }
+         * 3. Token auth: {
+         *      userauthtoken: "APITOKEN",
+         *    }
+         */
+        const auth = await this.fetch('/v1/login/', {
             method: 'POST',
-            json: {userauthtoken: userAuthToken}
+            json: creds
         });
+        this.setJWT(auth.token);
         await storage.putState(credStoreKey, auth.token);
-        await storage.putState(urlStoreKey, client.url);
-        return new this(Object.assign({
-            url: client.url,
-            jwt: auth.token
-        }, options || {}));
+        await storage.putState(urlStoreKey, this.url);
     }
 
     parseTag(tag) {
@@ -115,7 +133,7 @@ class AtlasClient {
         let json = undefined;
         if ((resp.headers.get('content-type') || '').startsWith('application/json') && text.trim()) {
             json = JSON.parse(text);
-        } 
+        }
         if (!resp.ok) {
             const msg = `${urn} (${text})`;
             throw new util.RequestError(msg, resp, resp.status, text, json);
