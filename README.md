@@ -56,8 +56,9 @@ const relay = require('librelay');
 
 async function main(secondary) {
     const userTag = await relay.util.consoleInput("Enter your login (e.g user:org): ");
-    const validator = await relay.AtlasClient.requestAuthenticationCode(userTag);
-    await validator(await relay.util.consoleInput("SMS Verification Code: "));
+    const challange = await relay.AtlasClient.requestAuthentication(userTag);
+    const prompt = challange.type === 'sms' ? 'SMS Code: ' : 'Password: ';
+    await challange.validate(await relay.util.consoleInput(prompt));
     if (secondary) {
         const registration = await relay.registerDevice();
         console.info("Awaiting auto-registration response...");

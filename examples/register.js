@@ -2,8 +2,10 @@ const relay = require('..');
 
 async function main(secondary) {
     const userTag = await relay.util.consoleInput("Enter your login (e.g user:org): ");
-    const validator = await relay.AtlasClient.requestAuthenticationCode(userTag);
-    await validator(await relay.util.consoleInput("SMS Verification Code: "));
+    const resp = await relay.AtlasClient.requestAuthentication(userTag);
+    const prompt = resp.type === 'sms' ? 'SMS Code: ' : 'Password: ';
+    const secret = await relay.util.consoleInput(prompt);
+    await resp.validate(secret);
     if (secondary) {
         const registration = await relay.registerDevice();
         console.info("Awaiting auto-registration response...");

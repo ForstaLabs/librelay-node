@@ -61,7 +61,27 @@ class AtlasClient {
         return new this({url, jwt});
     }
 
+    static async requestAuthentication(userTag, options) {
+        const client = new this(options || {});
+        const [user, org] = client.parseTag(userTag);
+        try {
+            await client.fetch(`/v1/login/send/${org}/${user}/`);
+        } catch(e) {
+            if (e.code === 409) {
+                return {
+                    type: "password",
+                    authenticate: pw => this.authenticateViaPasword(userTag, pw, options)
+                };
+            }
+        }
+        return {
+            type: "sms",
+            authenticate: code => this.authenticateViaCode(userTag, code, options)
+        };
+    }
+
     static async requestAuthenticationCode(userTag, options) {
+        // DEPRECATED: Use `requestAuthentication` instead.
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
         await client.fetch(`/v1/login/send/${org}/${user}/`);
