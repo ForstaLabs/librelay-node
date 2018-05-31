@@ -73,6 +73,7 @@ class AtlasClient {
                     authenticate: pw => this.authenticateViaPasword(userTag, pw, options)
                 };
             }
+            throw e;
         }
         return {
             type: "sms",
