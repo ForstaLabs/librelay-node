@@ -5,7 +5,7 @@ async function main(secondary) {
     const resp = await relay.AtlasClient.requestAuthentication(userTag);
     const prompt = resp.type === 'sms' ? 'SMS Code: ' : 'Password: ';
     const secret = await relay.util.consoleInput(prompt);
-    await resp.validate(secret);
+    await resp.authenticate(secret);
     if (secondary) {
         const registration = await relay.registerDevice();
         console.info("Awaiting auto-registration response...");
