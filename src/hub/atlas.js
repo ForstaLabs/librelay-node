@@ -103,9 +103,9 @@ class AtlasClient {
         return client;
     }
 
-    static async authenticateViaPassword(tag_slug, password, options) {
+    static async authenticateViaPassword(fq_tag, password, options) {
         const client = new this(options || {});
-        await client.authenticate({tag_slug, password});
+        await client.authenticate({fq_tag, password});
         return client;
     }
 
@@ -113,7 +113,7 @@ class AtlasClient {
         /* Creds should be an object of these supported forms..
          * 1. Password auth:
          *    {
-         *      tag_slug: "@foo:bar",
+         *      fq_tag: "@foo:bar",
          *      password: "secret"
          *    }
          * 2. SMS auth: {
