@@ -68,10 +68,17 @@ class AtlasClient {
             await client.fetch(`/v1/login/send/${org}/${user}/`);
         } catch(e) {
             if (e.code === 409) {
-                return {
-                    type: "password",
-                    authenticate: pw => this.authenticateViaPasword(userTag, pw, options)
-                };
+                if ((await e.json).non_field_errors.includes('totp auth required')) {
+                    return {
+                        type: "totp",
+                        authenticate: (pw, otp) => this.authenticateViaPaswordOtp(userTag, pw, otp, options)
+                    };
+                } else {
+                    return {
+                        type: "password",
+                        authenticate: pw => this.authenticateViaPasword(userTag, pw, options)
+                    };
+                }
             }
             throw e;
         }
@@ -109,12 +116,25 @@ class AtlasClient {
         return client;
     }
 
+    static async authenticateViaPasswordOtp(fq_tag, password, otp, options) {
+        const client = new this(options || {});
+        await client.authenticate({fq_tag, password, otp});
+        return client;
+    }
+
+
     async authenticate(creds) {
         /* Creds should be an object of these supported forms..
          * 1. Password auth:
          *    {
          *      fq_tag: "@foo:bar",
          *      password: "secret"
+         *    }
+         * 1.5 Password+TOTP auth:
+         *    {
+         *      fq_tag: "@foo:bar",
+         *      password: "secret"
+         *      otp: "code"
          *    }
          * 2. SMS auth: {
          *      authtoken: "123456",
