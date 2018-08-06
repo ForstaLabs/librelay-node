@@ -84,22 +84,20 @@ class SignalClient {
             progressCallback = undefined;
         }
         const startId = await storage.getState('maxPreKeyId') || 1;
-        const signedKeyId = await storage.getState('signedKeyId') || 1;
-
-        if (typeof startId != 'number') {
+        if (typeof startId !== 'number') {
             throw new Error('Invalid maxPreKeyId');
         }
-        if (typeof signedKeyId != 'number') {
+        const signedKeyId = await storage.getState('signedKeyId') || 1;
+        if (typeof signedKeyId !== 'number') {
             throw new Error('Invalid signedKeyId');
         }
-
         const ourIdent = await storage.getOurIdentity();
         const result = {
             preKeys: [],
             identityKey: ourIdent.pubKey
         };
         for (let keyId = startId; keyId < startId + count; ++keyId) {
-            const preKey = await libsignal.KeyHelper.generatePreKey(keyId);
+            const preKey = libsignal.keyhelper.generatePreKey(keyId);
             await storage.storePreKey(preKey.keyId, preKey.keyPair);
             result.preKeys.push({
                 keyId: preKey.keyId,
@@ -109,7 +107,7 @@ class SignalClient {
                 progressCallback(keyId - startId);
             }
         }
-        const sprekey = await libsignal.KeyHelper.generateSignedPreKey(ourIdent, signedKeyId);
+        const sprekey = await libsignal.keyhelper.generateSignedPreKey(ourIdent, signedKeyId);
         await storage.storeSignedPreKey(sprekey.keyId, sprekey.keyPair);
         result.signedPreKey = {
             keyId: sprekey.keyId,
@@ -161,7 +159,7 @@ class SignalClient {
         try {
             resp = await this.fetch(path, {
                 method: param.httpType || 'GET',
-                json: param.jsonData,
+                json: param.json,
                 headers
             });
         } catch(e) {
@@ -210,17 +208,17 @@ class SignalClient {
     }
 
     async registerKeys(genKeys) {
-        var jsonData = {};
-        jsonData.identityKey = genKeys.identityKey.toString('base64');
-        jsonData.signedPreKey = {
+        const json = {};
+        json.identityKey = genKeys.identityKey.toString('base64');
+        json.signedPreKey = {
             keyId: genKeys.signedPreKey.keyId,
             publicKey: genKeys.signedPreKey.publicKey.toString('base64'),
             signature: genKeys.signedPreKey.signature.toString('base64')
         };
-        jsonData.preKeys = [];
+        json.preKeys = [];
         var j = 0;
         for (var i in genKeys.preKeys) {
-            jsonData.preKeys[j++] = {
+            json.preKeys[j++] = {
                 keyId: genKeys.preKeys[i].keyId,
                 publicKey: genKeys.preKeys[i].publicKey.toString('base64')
             };
@@ -228,7 +226,7 @@ class SignalClient {
         return await this.request({
             call: 'keys',
             httpType: 'PUT',
-            jsonData
+            json
         });
     }
 
@@ -276,7 +274,19 @@ class SignalClient {
             call: 'messages',
             httpType: 'PUT',
             urlParameters: '/' + destination,
-            jsonData: {messages, timestamp}
+            json: {
+                messages,
+                timestamp
+            }
+        });
+    }
+
+    async sendMessage(addr, deviceId, message) {
+        return await this.request({
+            call: 'messages',
+            httpType: 'PUT',
+            urlParameters: `/${addr}/${deviceId}`,
+            json: message
         });
     }
 
@@ -346,7 +356,7 @@ class SignalClient {
             call: 'accounts',
             httpType: 'PUT',
             urlParameters: '/gcm',
-            jsonData: {
+            json: {
                 gcmRegistrationId: gcm_reg_id
             }
         });

@@ -189,15 +189,18 @@ exports.clearSessionStore = async function() {
 };
 
 exports.isTrustedIdentity = async function(identifier, publicKey) {
-    if (identifier === null || identifier === undefined) {
-        throw new Error("Tried to get identity key for undefined/null key");
+    if (!identifier) {
+        throw new TypeError("`identifier` required");
     }
-    const identityKey = await exports.loadIdentity(identifier);
-    if (!identityKey) {
+    if (!(publicKey instanceof Buffer)) {
+        throw new TypeError("publicKey must be Buffer");
+    }
+    const trustedIdentityKey = await exports.loadIdentity(identifier);
+    if (!trustedIdentityKey) {
         console.warn("WARNING: Implicit trust of peer:", identifier);
-        return true;
+        await exports.saveIdentity(identifier, publicKey);
     }
-    return identityKey.equals(publicKey);
+    return !trustedIdentityKey || trustedIdentityKey.equals(publicKey);
 };
 
 exports.loadIdentity = async function(identifier) {
@@ -209,17 +212,19 @@ exports.loadIdentity = async function(identifier) {
 };
 
 exports.saveIdentity = async function(identifier, publicKey) {
-    /* Returns true if the key was updated */
     if (!identifier) {
-        throw new Error("Tried to set identity key for undefined/null key");
+        throw new TypeError("`identifier` required");
     }
     if (!(publicKey instanceof Buffer)) {
-        throw new Error(`Invalid type for saveIdentity: ${publicKey.constructor.name}`);
+        throw new TypeError("publicKey must be Buffer");
     }
     const addr = util.unencodeAddr(identifier)[0];
-    const existing = await exports.get(identityKeyNS, addr);
+    const oldPublicKey = await this.loadIdentity(addr);
+    if (oldPublicKey && !oldPublicKey.equals(publicKey)) {
+        console.warn("Changing trusted identity key for:", addr);
+        await exports.removeAllSessions(addr);
+    }
     await exports.set(identityKeyNS, addr, publicKey);
-    return !!(existing && !existing.equals(publicKey));
 };
 
 exports.removeIdentity = async function(identifier) {

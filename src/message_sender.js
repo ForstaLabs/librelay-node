@@ -1,6 +1,5 @@
 // vim: ts=4:sw=4:expandtab
 
-
 const Attachment = require('./attachment');
 const OutgoingMessage = require('./outgoing_message');
 const crypto = require('./crypto');
@@ -12,15 +11,14 @@ const node_crypto = require('crypto');
 const protobufs = require('./protobufs');
 const queueAsync = require('./queue_async');
 const storage = require('./storage');
+const util = require('./util');
 const uuid4 = require('uuid/v4');
+
 
 class Message {
 
     constructor(options) {
         Object.assign(this, options);
-        if (typeof this.timestamp !== 'number') {
-            throw new Error('Invalid timestamp');
-        }
         if (this.expiration !== undefined && this.expiration !== null) {
             if (typeof this.expiration !== 'number' || !(this.expiration >= 0)) {
                 throw new Error('Invalid expiration');
@@ -54,7 +52,6 @@ class Message {
         if (this.expiration) {
             dataMessage.expireTimer = this.expiration;
         }
-        //return protobufs.Content.encode(protobufs.Content.create({dataMessage})).finish();
         return protobufs.Content.create({dataMessage});
     }
 }
@@ -238,22 +235,41 @@ class MessageSender extends eventing.EventTarget {
         return Array.from(nset);
     }
 
-    async closeSession(addr, timestamp=Date.now()) {
-        const dataMessage = protobufs.DataMessage.create({
-            flags: protobufs.DataMessage.Flags.END_SESSION
+    async closeSession(encodedAddr, options) {
+        const msg = new Message({
+            flags: protobufs.DataMessage.Flags.END_SESSION,
+            body: [{
+                version: 1,
+                messageType: 'control',
+                messageId: 'deadbeef-1111-2222-3333-000000000000', // Avoid breaking clients while prototyping
+                threadId: 'deadbeef-1111-2222-3333-000000000000', // Avoid breaking clients while prototyping
+                data: {
+                    control: 'closeSession',
+                    retransmit: options.retransmit
+                }
+            }]
         });
-        const content = protobufs.Content.create({dataMessage});
-        const outmsg = this._send(content, timestamp, [addr]);
-        const deviceIds = await storage.getDeviceIds(addr);
-        await new Promise(resolve => {
-            outmsg.on('sent', resolve);
-            outmsg.on('error', resolve);
-        });
-        await Promise.all(deviceIds.map(deviceId => {
-            const address = new libsignal.SignalProtocolAddress(addr, deviceId);
-            const sessionCipher = new libsignal.SessionCipher(storage, address);
-            return sessionCipher.closeOpenSessionForDevice();
-        }));
+        const [addr, deviceId] = util.unencodeAddr(encodedAddr);
+        const deviceIds = deviceId ? [deviceId] :  await storage.getDeviceIds(addr);
+
+        async function _closeOpenSessions() {
+            await Promise.all(deviceIds.map(deviceId => {
+                const address = new libsignal.ProtocolAddress(addr, deviceId);
+                const sessionCipher = new libsignal.SessionCipher(storage, address);
+                return sessionCipher.closeOpenSession();
+            }));
+        }
+
+        await _closeOpenSessions();  // Clear before so endsession is a prekey bundle
+        const outmsg = this._send(msg.toProto(), Date.now(), [encodedAddr]);
+        try {
+            await new Promise((resolve, reject) => {
+                outmsg.on('sent', resolve);
+                outmsg.on('error', reject);
+            });
+        } finally {
+            await _closeOpenSessions();  // Clear after so don't use the reopened session from the end msg
+        }
     }
 }
 

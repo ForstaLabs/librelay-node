@@ -2,12 +2,12 @@
 
 'use strict';
 
-const DEFAULT_ATLAS_URL = 'https://atlas.forsta.io';
-
+const errors = require('../errors');
 const fetch = require('./fetch');
 const storage = require('../storage');
 const util = require('../util');
 
+const defaultUrl = 'https://atlas.forsta.io';
 const credStoreKey = 'atlasCredential';
 const urlStoreKey = 'atlasUrl';
 
@@ -41,7 +41,7 @@ function decodeJWT(encoded_token) {
 
 class AtlasClient {
 
-    constructor({url=DEFAULT_ATLAS_URL, jwt=null}) {
+    constructor({url=defaultUrl, jwt=null}) {
         this.url = url;
         if (jwt) {
             this.setJWT(jwt);
@@ -68,15 +68,15 @@ class AtlasClient {
             await client.fetch(`/v1/login/send/${org}/${user}/`);
         } catch(e) {
             if (e.code === 409) {
-                if ((await e.json).non_field_errors.includes('totp auth required')) {
+                if (e.response.non_field_errors.includes('totp auth required')) {
                     return {
                         type: "totp",
-                        authenticate: (pw, otp) => this.authenticateViaPaswordOtp(userTag, pw, otp, options)
+                        authenticate: (pw, otp) => this.authenticateViaPasswordOtp(userTag, pw, otp, options)
                     };
                 } else {
                     return {
                         type: "password",
-                        authenticate: pw => this.authenticateViaPasword(userTag, pw, options)
+                        authenticate: pw => this.authenticateViaPassword(userTag, pw, options)
                     };
                 }
             }
@@ -171,15 +171,18 @@ class AtlasClient {
         const url = [this.url, urn.replace(/^\//, '')].join('/');
         const resp = await fetch(url, options);
         const text = await resp.text();
-        let json = undefined;
+        let respContent;
         if ((resp.headers.get('content-type') || '').startsWith('application/json') && text.trim()) {
-            json = JSON.parse(text);
+            respContent = JSON.parse(text);
+        } else {
+            respContent = text;
         }
         if (!resp.ok) {
-            const msg = `${urn} (${text})`;
-            throw new util.RequestError(msg, resp, resp.status, text, json);
+            const e = new errors.ProtocolError(resp.status, respContent);
+            e.message = `${urn} (${text})`;
+            throw e;
         }
-        return json === undefined ? text : json;
+        return respContent;
     }
 
     async maintainJWT(forceRefresh, authenticator, onRefresh) {
@@ -285,7 +288,7 @@ class AtlasClient {
         try {
             return (await this.fetch('/v1/provision/account')).devices;
         } catch(e) {
-            if (e instanceof util.RequestError && e.code === 404) {
+            if (e instanceof errors.ProtocolError && e.code === 404) {
                 return [];
             } else {
                 throw e;

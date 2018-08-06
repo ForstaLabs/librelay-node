@@ -58,7 +58,7 @@ module.exports = {
         const mac_key = keys.slice(32, 64);
         const ciphertext = libsignal.crypto.encrypt(aes_key, plaintext, iv);
         const ivAndCiphertext = Buffer.concat([iv, ciphertext]);
-        const mac = libsignal.crypto.sign(mac_key, ivAndCiphertext);
+        const mac = libsignal.crypto.calculateMAC(mac_key, ivAndCiphertext);
         return Buffer.concat([ivAndCiphertext, mac]);
     }
 };

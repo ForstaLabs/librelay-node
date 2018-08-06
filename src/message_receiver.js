@@ -4,7 +4,6 @@
 
 const WebSocketResource = require('./websocket_resource');
 const crypto = require('./crypto');
-const errors = require('./errors');
 const eventing = require('./eventing');
 const hub = require('./hub');
 const libsignal = require('libsignal');
@@ -166,7 +165,7 @@ class MessageReceiver extends eventing.EventTarget {
         }
     }
 
-    async handleEnvelope(envelope, reentrant) {
+    async handleEnvelope(envelope, reentrant, forceAcceptKeyChange) {
         let handler;
         if (envelope.type === ENV_TYPES.RECEIPT) {
             handler = this.handleDeliveryReceipt;
@@ -180,24 +179,36 @@ class MessageReceiver extends eventing.EventTarget {
         try {
             await handler.call(this, envelope);
         } catch(e) {
-            if (e.name === 'MessageCounterError') {
-                console.warn("Ignoring MessageCounterError for:", envelope);
+            if (e instanceof libsignal.MessageCounterError) {
+                console.warn("Ignoring duplicate message:", envelope);
                 return;
-            } else if (e instanceof errors.IncomingIdentityKeyError && !reentrant) {
-                await this.dispatchEvent(new eventing.KeyChangeEvent(e));
+            } else if (e instanceof libsignal.UntrustedIdentityKeyError && !reentrant) {
+                const keyChangeEvent = new eventing.KeyChangeEvent(e, envelope);
+                if (forceAcceptKeyChange) {
+                    await keyChangeEvent.accept();
+                } else {
+                    await this.dispatchEvent(keyChangeEvent);
+                }
                 if (e.accepted) {
                     envelope.keyChange = true;
-                    return await this.handleEnvelope(envelope, /*reentrant*/ true);
+                    await this.handleEnvelope(envelope, /*reentrant*/ true);
                 }
-            } else if (e instanceof errors.RelayError) {
-                console.warn("Supressing RelayError:", e);
-            } else {
-                const ev = new eventing.Event('error');
-                ev.error = e;
-                ev.proto = envelope;
-                await this.dispatchEvent(ev);
-                throw e;
+                return;
+            } else if (e instanceof libsignal.SessionError) {
+                const fqAddr = `${envelope.source}.${envelope.sourceDevice}`;
+                console.error(`Session error for ${fqAddr}:`, e);
+                if (e instanceof libsignal.PreKeyError) {
+                    console.warn("Refreshing prekeys...");
+                    const keys = await this.signal.generateKeys();
+                    await this.signal.registerKeys(keys);
+                }
+                console.warn("Attempting session reset/retransmit for:", envelope.timestamp);
+                await this._sender.closeSession(fqAddr, {retransmit: envelope.timestamp});
             }
+            const ev = new eventing.Event('error');
+            ev.error = e;
+            ev.proto = envelope;
+            await this.dispatchEvent(ev);
         }
     }
 
@@ -215,36 +226,27 @@ class MessageReceiver extends eventing.EventTarget {
                 throw new Error('Invalid padding');
             }
         }
-        return buf; // empty
+        throw new Error("Invalid buffer");
     }
 
     async decrypt(envelope, ciphertext) {
-        const addr = new libsignal.SignalProtocolAddress(envelope.source,
-                                                         envelope.sourceDevice);
+        const addr = new libsignal.ProtocolAddress(envelope.source, envelope.sourceDevice);
         const sessionCipher = new libsignal.SessionCipher(storage, addr);
+        let plainBuf;
         if (envelope.type === ENV_TYPES.CIPHERTEXT) {
-            return this.unpad(await sessionCipher.decryptWhisperMessage(ciphertext));
+            plainBuf = await sessionCipher.decryptWhisperMessage(ciphertext);
         } else if (envelope.type === ENV_TYPES.PREKEY_BUNDLE) {
-            return await this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, addr);
+            plainBuf = await sessionCipher.decryptPreKeyWhisperMessage(ciphertext);
+        } else {
+            throw new TypeError("Unknown message type");
         }
-        throw new Error("Unknown message type");
-    }
-
-    async decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address) {
-        try {
-            return this.unpad(await sessionCipher.decryptPreKeyWhisperMessage(ciphertext));
-        } catch(e) {
-            if (e.message === 'Unknown identity key') {
-                throw new errors.IncomingIdentityKeyError(address.toString(), ciphertext,
-                                                          e.identityKey);
-            }
-            throw e;
-        }
+        return this.unpad(plainBuf);
     }
 
     async handleSentMessage(sent, envelope) {
         if (sent.message.flags & DATA_FLAGS.END_SESSION) {
-            await this.handleEndSession(sent.destination);
+            console.error("Unsupported syncMessage end-session sent by device:", envelope.sourceDevice);
+            return;
         }
         await this.processDecrypted(sent.message, this.addr);
         const ev = new eventing.Event('sent');
@@ -321,7 +323,6 @@ class MessageReceiver extends eventing.EventTarget {
             throw new TypeError('Deprecated group request sync message');
         } else {
             console.error("Empty sync message:", message, envelope, content);
-            throw new TypeError('Empty SyncMessage');
         }
     }
 
@@ -343,36 +344,18 @@ class MessageReceiver extends eventing.EventTarget {
         throw new Error("UNSUPPORTRED");
     }
 
-    async handleAttachment(attachment) {
-        const encrypted = await this.signal.getAttachment(attachment.id.toString());
-        attachment.data = await crypto.decryptAttachment(encrypted, attachment.key);
+    async fetchAttachment(attachment) {
+        const encData = await this.signal.getAttachment(attachment.id.toString());
+        return await crypto.decryptAttachment(encData, attachment.key);
     }
 
-    tryMessageAgain(from, ciphertext) {
-        const address = libsignal.SignalProtocolAddress.fromString(from);
-        const sessionCipher = new libsignal.SessionCipher(storage, address);
-        console.warn('retrying prekey whisper message');
-        return this.decryptPreKeyWhisperMessage(ciphertext, sessionCipher, address).then(function(plaintext) {
-            const finalMessageProto = protobufs.DataMessage.decode(plaintext);
-            const finalMessage = protobufs.DataMessage.toObject(finalMessageProto);
-            let p = Promise.resolve();
-            if ((finalMessage.flags & DATA_FLAGS.END_SESSION) == DATA_FLAGS.END_SESSION &&
-                finalMessage.sync !== null) {
-                    p = this.handleEndSession(address.getName());
-            }
-            return p.then(function() {
-                return this.processDecrypted(finalMessage);
-            }.bind(this));
-        }.bind(this));
-    }
-
-    async handleEndSession(addr) {
-        const deviceIds = await storage.getDeviceIds(addr);
+    async handleEndSession(addr, deviceId) {
+        const deviceIds = deviceId == null ? (await storage.getDeviceIds(addr)) : [deviceId];
+        console.warn(`Handle end-session for: ${addr}.${deviceId || "*"}`);
         await Promise.all(deviceIds.map(deviceId => {
-            const address = new libsignal.SignalProtocolAddress(addr, deviceId);
+            const address = new libsignal.ProtocolAddress(addr, deviceId);
             const sessionCipher = new libsignal.SessionCipher(storage, address);
-            console.warn('Closing session for', addr, deviceId);
-            return sessionCipher.closeOpenSessionForDevice();
+            return sessionCipher.closeOpenSession();
         }));
     }
 
@@ -386,19 +369,11 @@ class MessageReceiver extends eventing.EventTarget {
         if (msg.expireTimer === null) {
             msg.expireTimer = 0;
         }
-        if (msg.flags & DATA_FLAGS.END_SESSION) {
-            return msg;
-        }
         if (msg.group) {
-            // We should blow up here very soon. XXX
-            console.error("Legacy group message detected", msg);
-        }
-        if (msg.attachments) {
-            await Promise.all(msg.attachments.map(this.handleAttachment.bind(this)));
+            throw new Error("Legacy group message");
         }
         return msg;
     }
 }
-
 
 module.exports = MessageReceiver;

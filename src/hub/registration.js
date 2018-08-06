@@ -8,11 +8,11 @@ const SignalClient = require('./signal');
 const WebSocketResource = require('../websocket_resource');
 const crypto = require('crypto');
 const libsignal = require('libsignal');
+const os = require('os');
 const protobufs = require('../protobufs');
 const storage = require('../storage');
 
-const defaultName = 'librelay';
-
+const defaultName = `librelay-node (${os.userInfo().username}@${os.hostname()} [${os.platform()}]`;
 
 function generatePassword() {
     const passwordB64 = crypto.randomBytes(16).toString('base64');
@@ -27,7 +27,7 @@ async function registerAccount(options) {
     options = options || {};
     const atlasClient = options.atlasClient || await AtlasClient.factory();
     const name = options.name || defaultName;
-    const registrationId = libsignal.KeyHelper.generateRegistrationId();
+    const registrationId = libsignal.keyhelper.generateRegistrationId();
     const password = generatePassword();
     const signalingKey = generateSignalingKey();
     const response = await atlasClient.fetch('/v1/provision/account', {
@@ -43,7 +43,7 @@ async function registerAccount(options) {
     });
     const addr = response.userId;
     const username = `${addr}.${response.deviceId}`;
-    const identity = libsignal.KeyHelper.generateIdentityKeyPair();
+    const identity = libsignal.keyhelper.generateIdentityKeyPair();
     await storage.clearSessionStore();
     await storage.removeOurIdentity();
     await storage.removeIdentity(addr);
@@ -123,14 +123,14 @@ async function registerDevice(options) {
         if (provisionMessage.addr != accountInfo.userId) {
             throw new Error('Security Violation: Foreign account sent us an identity key!');
         }
-        const registrationId = libsignal.KeyHelper.generateRegistrationId();
+        const registrationId = libsignal.keyhelper.generateRegistrationId();
         const password = generatePassword();
         const signalingKey = generateSignalingKey();
         const response = await signalClient.request({
             httpType: 'PUT',
             call: 'devices',
             urlParameters: '/' + provisionMessage.provisioningCode,
-            jsonData: {
+            json: {
                 signalingKey: signalingKey.toString('base64'),
                 supportsSms: false,
                 fetchesMessages: true,

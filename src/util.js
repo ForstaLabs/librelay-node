@@ -3,7 +3,14 @@
 const readline = require('readline');
 
 function unencodeAddr(addr) {
-    return addr.split(".");
+    const tuple = addr.split(".");
+    if (tuple.length > 2) {
+        throw new TypeError("Invalid address format");
+    }
+    if (tuple[1]) {
+        tuple[1] = parseInt(tuple[1]);
+    }
+    return tuple;
 }
 
 
@@ -35,23 +42,9 @@ async function consoleInput(prompt) {
 }   
 
 
-class RequestError extends Error {
-    constructor(message, response, code, text, json) {
-        super(message);
-        this.name = 'RequestError';
-        this.response = response;
-        this.code = code;
-        this.text = text;
-        this.json = json;
-    }
-}
-
-
 module.exports = {
     unencodeAddr,
     sleep,
     never,
-    consoleInput,
-    RequestError
+    consoleInput
 };
-
