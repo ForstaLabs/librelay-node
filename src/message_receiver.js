@@ -3,6 +3,7 @@
 'use strict';
 
 const WebSocketResource = require('./websocket_resource');
+const MessageSender = require('./message_sender');
 const crypto = require('./crypto');
 const eventing = require('./eventing');
 const hub = require('./hub');
@@ -21,6 +22,7 @@ class MessageReceiver extends eventing.EventTarget {
     constructor(signal, addr, deviceId, signalingKey, noWebSocket) {
         super();
         console.assert(signal && addr && deviceId && signalingKey);
+        this._sender = new MessageSender(signal, addr);
         this.signal = signal;
         this.addr = addr;
         this.deviceId = deviceId;
@@ -148,7 +150,7 @@ class MessageReceiver extends eventing.EventTarget {
         try {
             const data = crypto.decryptWebsocketMessage(Buffer.from(request.body),
                                                         this.signalingKey);
-            envelope = protobufs.Envelope.toObject(protobufs.Envelope.decode(data));
+            envelope = protobufs.Envelope.decode(data);
             envelope.timestamp = envelope.timestamp.toNumber();
         } catch(e) {
             console.error("Error handling incoming message:", e);
@@ -166,6 +168,10 @@ class MessageReceiver extends eventing.EventTarget {
     }
 
     async handleEnvelope(envelope, reentrant, forceAcceptKeyChange) {
+        if (await storage.isBlocked(envelope.source)) {
+            console.warn("Dropping message from blocked address:", envelope.source);
+            return;
+        }
         let handler;
         if (envelope.type === ENV_TYPES.RECEIPT) {
             handler = this.handleDeliveryReceipt;
@@ -281,15 +287,12 @@ class MessageReceiver extends eventing.EventTarget {
 
     async handleLegacyMessage(envelope) {
         const data = await this.decrypt(envelope, envelope.legacyMessage);
-        const messageProto = protobufs.DataMessage.decode(data);
-        const message = protobufs.DataMessage.toObject(messageProto);
-        await this.handleDataMessage(message, envelope);
+        await this.handleDataMessage(protobufs.DataMessage.decode(data), envelope);
     }
 
     async handleContentMessage(envelope) {
         const data = await this.decrypt(envelope, envelope.content);
-        const contentProto = protobufs.Content.decode(data);
-        const content = protobufs.Content.toObject(contentProto);
+        const content = protobufs.Content.decode(data);
         if (content.syncMessage) {
             await this.handleSyncMessage(content.syncMessage, envelope, content);
         } else if (content.dataMessage) {

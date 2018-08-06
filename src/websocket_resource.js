@@ -206,8 +206,7 @@ class WebSocketResource {
         if (this.keepalive) {
             this.keepalive.reset();
         }
-        const messageProto = protobufs.WebSocketMessage.decode(encodedMsg.data);
-        const message = protobufs.WebSocketMessage.toObject(messageProto);
+        const message = protobufs.WebSocketMessage.decode(encodedMsg.data);
         if (message.type === MSG_TYPES.REQUEST) {
             await this.handleRequest(new IncomingWebSocketRequest(this, {
                 verb: message.request.verb,

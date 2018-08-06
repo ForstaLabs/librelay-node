@@ -14,6 +14,7 @@ const sessionNS = 'session';
 const preKeyNS = 'prekey';
 const signedPreKeyNS = 'signedprekey';
 const identityKeyNS = 'identitykey';
+const blockedNS = 'blocked';
 
 
 let _backing;
@@ -240,6 +241,10 @@ exports.getDeviceIds = async function(addr) {
     const idents = await _backing.keys(sessionNS, new RegExp(addr + '\\..*'));
     return Array.from(idents).map(x => Number(x.split('.')[1]));
 };
+
+exports.isBlocked = async function(addr) {
+    return await _backing.has(blockedNS, addr);
+}
 
 function getBackingClass(name) {
     return {
