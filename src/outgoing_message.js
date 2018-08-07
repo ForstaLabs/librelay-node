@@ -76,11 +76,6 @@ class OutgoingMessage {
         await this.emit('sent', entry);
     }
 
-    async _sendToAddr(addr, recurse) {
-        const deviceIds = await storage.getDeviceIds(addr);
-        return await this.doSendMessage(addr, deviceIds, recurse, {});
-    }
-
     async _handleIdentityKeyError(e, options) {
         options = options || {};
         if (!(e instanceof libsignal.UntrustedIdentityKeyError)) {
@@ -174,7 +169,7 @@ class OutgoingMessage {
         return padded;
     }
 
-    async _sentToAddr(addr, recurse) {
+    async _sendToAddr(addr, recurse) {
         const deviceIds = await storage.getDeviceIds(addr);
         const paddedMessage = this.getPaddedMessageBuffer();
         let messages;
@@ -283,7 +278,7 @@ class OutgoingMessage {
             return;
         }
         const stale = (await Promise.all(deviceIds.map(async id => {
-            const address = new libsignal.SignalProtocolAddress(addr, id);
+            const address = new libsignal.ProtocolAddress(addr, id);
             const sessionCipher = new libsignal.SessionCipher(storage, address);
             return !(await sessionCipher.hasOpenSession()) ? id : null;
         }))).filter(x => x !== null);

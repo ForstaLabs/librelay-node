@@ -20,10 +20,10 @@ const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
 
 class MessageReceiver extends eventing.EventTarget {
 
-    constructor(signal, addr, deviceId, signalingKey, noWebSocket) {
+    constructor({signal, atlas, addr, deviceId, signalingKey, noWebSocket}) {
         super();
-        console.assert(signal && addr && deviceId && signalingKey);
-        this._sender = new MessageSender(signal, addr);
+        console.assert(signal && atlas && addr && deviceId && signalingKey);
+        this._sender = new MessageSender({addr, signal, atlas});
         this.signal = signal;
         this.addr = addr;
         this.deviceId = deviceId;
@@ -44,10 +44,11 @@ class MessageReceiver extends eventing.EventTarget {
 
     static async factory(noWebSocket) {
         const signal = await hub.SignalClient.factory();
+        const atlas = await hub.AtlasClient.factory();
         const addr = await storage.getState('addr');
         const deviceId = await storage.getState('deviceId');
         const signalingKey = await storage.getState('signalingKey');
-        return new this(signal, addr, deviceId, signalingKey, noWebSocket);
+        return new this({signal, atlas, addr, deviceId, signalingKey, noWebSocket});
     }
 
     async checkRegistration() {
@@ -263,7 +264,10 @@ class MessageReceiver extends eventing.EventTarget {
             timestamp: sent.timestamp.toNumber(),
             destination: sent.destination,
             message: sent.message,
-            exchange: exchange.decode(JSON.parse(sent.message.body)),
+            exchange: exchange.decode(JSON.parse(sent.message.body), {
+                messageSender: this._sender,
+                messageReceiver: this
+            })
         };
         if (sent.expirationStartTimestamp) {
           ev.data.expirationStartTimestamp = sent.expirationStartTimestamp.toNumber();
@@ -282,7 +286,10 @@ class MessageReceiver extends eventing.EventTarget {
             source: envelope.source,
             sourceDevice: envelope.sourceDevice,
             message,
-            exchange: exchange.decode(JSON.parse(message.body)),
+            exchange: exchange.decode(JSON.parse(message.body), {
+                messageSender: this._sender,
+                messageReceiver: this
+            }),
             keyChange: envelope.keyChange,
         };
         await this.dispatchEvent(ev);

@@ -3,7 +3,6 @@
 const Attachment = require('./attachment');
 const OutgoingMessage = require('./outgoing_message');
 const crypto = require('./crypto');
-const errors = require('./errors');
 const eventing = require('./eventing');
 const exchange = require('./exchange');
 const hub = require('./hub');
@@ -14,48 +13,6 @@ const queueAsync = require('./queue_async');
 const storage = require('./storage');
 const util = require('./util');
 const uuid4 = require('uuid/v4');
-
-
-class Message {
-
-    constructor(options) {
-        Object.assign(this, options);
-        if (this.expiration !== undefined && this.expiration !== null) {
-            if (typeof this.expiration !== 'number' || !(this.expiration >= 0)) {
-                throw new Error('Invalid expiration');
-            }
-        }
-        if (this.attachments) {
-            if (!(this.attachments instanceof Array)) {
-                throw new Error('Invalid message attachments');
-            }
-        }
-        if (this.flags !== undefined && typeof this.flags !== 'number') {
-            throw new Error('Invalid message flags');
-        }
-    }
-
-    isEndSession() {
-        return (this.flags & protobufs.DataMessage.Flags.END_SESSION);
-    }
-
-    toProto() {
-        const dataMessage = protobufs.DataMessage.create();
-        if (this.body) {
-            dataMessage.body = JSON.stringify(this.body);
-        }
-        if (this.attachmentPointers && this.attachmentPointers.length) {
-            dataMessage.attachments = this.attachmentPointers;
-        }
-        if (this.flags) {
-            dataMessage.flags = this.flags;
-        }
-        if (this.expiration) {
-            dataMessage.expireTimer = this.expiration;
-        }
-        return protobufs.Content.create({dataMessage});
-    }
-}
 
 
 class MessageSender extends eventing.EventTarget {
@@ -89,27 +46,17 @@ class MessageSender extends eventing.EventTarget {
         return ptr;
     }
 
-    async uploadAttachments(message) {
-        const attachments = message.attachments;
+    async uploadAttachments(attachments) {
         if (!attachments || !attachments.length) {
-            message.attachmentPointers = [];
             return;
         }
-        const uploads = attachments.map(x => this.makeAttachmentPointer(x));
-        try {
-            message.attachmentPointers = await Promise.all(uploads);
-        } catch(e) {
-            if (e instanceof errors.ProtocolError) {
-                throw new errors.MessageError(message, e);
-            } else {
-                throw e;
-            }
-        }
+        return await Promise.all(attachments.map(x => this.makeAttachmentPointer(x)));
     }
 
     async send({
         to=null, distribution=null,
-        text=null, html=null, body=[],
+        addrs=null,
+        text=null, html=null,
         data={},
         threadId=uuid4(),
         threadType='conversation',
@@ -120,68 +67,57 @@ class MessageSender extends eventing.EventTarget {
         expiration=undefined,
         attachments=undefined,
         flags=undefined,
-        sendTime=new Date(),
-        userAgent='librelay'
+        userAgent='librelay',
+        noSync=false
     }) {
+        const ex = exchange.create();
         if (!distribution) {
             if (!to) {
                 throw TypeError("`to` or `distribution` required");
             }
             distribution = await this.atlas.resolveTags(to);
         }
+        ex.setThreadExpression(distribution.universal);
         if (text) {
-            body.push({
-                type: 'text/plain',
-                value: text
-            });
+            ex.setBody(text);
         }
         if (html) {
-            body.push({
-                type: 'text/html',
-                value: html
-            });
+            ex.setBody(html, {html: true});
         }
-        if (body.length) {
-            data.body = body;
+        ex.setThreadId(threadId);
+        ex.setThreadType(threadType);
+        ex.setThreadTitle(threadTitle);
+        ex.setMessageType(messageType);
+        ex.setMessageId(messageId);
+        ex.setMessageRef(messageRef);
+        ex.setUserAgent(userAgent);
+        ex.setSender(this.addr);
+        for (const [k, v] of Object.entries(data)) {
+            ex.setDataAttr(k, v);
         }
         if (attachments && attachments.length) {
-            data.attachments = attachments.map(x => x.getMeta());
+            ex.setAttachments(attachments.map(x => x.getMeta()));
         }
-        const timestamp = sendTime.getTime();
-        const msg = new Message({
-            addrs: distribution.userids,
-            threadId,
-            body: exchange.encode(exchange.create({
-                threadId,
-                threadType,
-                threadTitle,
-                messageId,
-                messageType,
-                messageRef,
-                distribution: {
-                    expression: distribution.universal
-                },
-                sender: {
-                    userId: this.addr
-                },
-                sendTime: sendTime.toISOString(),
-                userAgent,
-                data
-            })),
-            timestamp,
-            attachments,
-            expiration,
-            flags
+        const dataMessage = protobufs.DataMessage.create({
+            expireTime: expiration,
+            flags,
+            body: JSON.stringify([ex.encode()])
         });
-        await this.uploadAttachments(msg);
-        const msgProto = msg.toProto();
-        await this._sendSync(msgProto, timestamp, threadId, expiration && Date.now());
-        return this._send(msgProto, timestamp, this.scrubSelf(distribution.userids));
+        if (attachments) {
+            dataMessage.attachments = await Promise.all(attachments.map(x =>
+                this.makeAttachmentPointer(x)));
+        }
+        const content = protobufs.Content.create({dataMessage});
+        const ts = Date.now();
+        if (!noSync) {
+            await this._sendSync(content, ts, threadId, expiration && Date.now());
+        }
+        return this._send(content, ts, this.scrubSelf(addrs || distribution.userids));
     }
 
-    _send(msgProto, timestamp, addrs) {
+    _send(content, timestamp, addrs) {
         console.assert(addrs instanceof Array);
-        const outmsg = new OutgoingMessage(this.signal, timestamp, msgProto);
+        const outmsg = new OutgoingMessage(this.signal, timestamp, content);
         outmsg.on('keychange', this.onKeyChange.bind(this));
         for (const addr of addrs) {
             queueAsync('message-send-job-' + addr, () =>
@@ -236,19 +172,6 @@ class MessageSender extends eventing.EventTarget {
     }
 
     async closeSession(encodedAddr, options) {
-        const msg = new Message({
-            flags: protobufs.DataMessage.Flags.END_SESSION,
-            body: [{
-                version: 1,
-                messageType: 'control',
-                messageId: 'deadbeef-1111-2222-3333-000000000000', // Avoid breaking clients while prototyping
-                threadId: 'deadbeef-1111-2222-3333-000000000000', // Avoid breaking clients while prototyping
-                data: {
-                    control: 'closeSession',
-                    retransmit: options.retransmit
-                }
-            }]
-        });
         const [addr, deviceId] = util.unencodeAddr(encodedAddr);
         const deviceIds = deviceId ? [deviceId] :  await storage.getDeviceIds(addr);
 
@@ -261,7 +184,16 @@ class MessageSender extends eventing.EventTarget {
         }
 
         await _closeOpenSessions();  // Clear before so endsession is a prekey bundle
-        const outmsg = this._send(msg.toProto(), Date.now(), [encodedAddr]);
+        const outmsg = await this.send({
+            addrs: [encodedAddr],
+            noSync: true,
+            flags: protobufs.DataMessage.Flags.END_SESSION,
+            messageType: 'control',
+            data: {
+                control: 'closeSession',
+                retransmit: options.retransmit
+            }
+        });
         try {
             await new Promise((resolve, reject) => {
                 outmsg.on('sent', resolve);
