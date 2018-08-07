@@ -31,14 +31,17 @@ Librelay needs a backing store for holding crypto material.  The default
 storage backing is `fs` which will store files in your local file-system
 under `~/.librelay/storage`.  Redis is also supported by setting
 `RELAY_STORAGE_BACKING=redis` in your env or calling
-`librelay.storage.setBacking('redis')`.  To support multiple instances of
-librelay on a single backing store use
-`librelay.storage.setLabel('<something-unique>')` to shard your storage into
-a unique namespace.
+`librelay.storage.setBacking('redis')`.
+
+To support multiple instances of librelay on a single backing store you can
+specify a custom label.  This essentially operates as a namespace for all
+storage data.  The storage label can be set via the env, a la.
+`RELAY_STORAGE_LABEL="special"` or by calling `librelay.storage.setLabel('special')`
+from inside your application.
 
 You'll need to ensure your backing store is running properly with a call 
-to (async) `librelay.storage.initialize()`, and if possible you should 
-tear it down before quitting, with (async) `librelay.storage.shutdown()`.
+to `await librelay.storage.initialize()`, and if possible you should
+tear it down before quitting, with `await librelay.storage.shutdown()`.
 
 
 Provisioning

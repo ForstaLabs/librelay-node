@@ -8,6 +8,7 @@ const process = require('process');
 exports.backing = require('./backing');
 
 const defaultBacking = process.env.RELAY_STORAGE_BACKING || 'fs';
+const defaultLabel = process.env.RELAY_STORAGE_LABEL || 'default';
 
 const stateNS = 'state';
 const sessionNS = 'session';
@@ -19,7 +20,7 @@ const blockedNS = 'blocked';
 
 let _backing;
 let _Backing;
-let _label = 'default';
+let _label = defaultLabel;
 
 
 function encode(data) {
