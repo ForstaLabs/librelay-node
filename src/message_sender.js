@@ -5,6 +5,7 @@ const OutgoingMessage = require('./outgoing_message');
 const crypto = require('./crypto');
 const errors = require('./errors');
 const eventing = require('./eventing');
+const exchange = require('./exchange');
 const hub = require('./hub');
 const libsignal = require('libsignal');
 const node_crypto = require('crypto');
@@ -150,8 +151,7 @@ class MessageSender extends eventing.EventTarget {
         const msg = new Message({
             addrs: distribution.userids,
             threadId,
-            body: [{
-                version: 1,
+            body: exchange.encode(exchange.create({
                 threadId,
                 threadType,
                 threadTitle,
@@ -167,7 +167,7 @@ class MessageSender extends eventing.EventTarget {
                 sendTime: sendTime.toISOString(),
                 userAgent,
                 data
-            }],
+            })),
             timestamp,
             attachments,
             expiration,

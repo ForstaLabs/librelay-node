@@ -244,7 +244,7 @@ exports.getDeviceIds = async function(addr) {
 
 exports.isBlocked = async function(addr) {
     return await _backing.has(blockedNS, addr);
-}
+};
 
 function getBackingClass(name) {
     return {

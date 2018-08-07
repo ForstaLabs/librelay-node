@@ -2,10 +2,11 @@
 
 'use strict';
 
-const WebSocketResource = require('./websocket_resource');
 const MessageSender = require('./message_sender');
+const WebSocketResource = require('./websocket_resource');
 const crypto = require('./crypto');
 const eventing = require('./eventing');
+const exchange = require('./exchange');
 const hub = require('./hub');
 const libsignal = require('libsignal');
 const protobufs = require('./protobufs');
@@ -261,7 +262,8 @@ class MessageReceiver extends eventing.EventTarget {
             sourceDevice: envelope.sourceDevice,
             timestamp: sent.timestamp.toNumber(),
             destination: sent.destination,
-            message: sent.message
+            message: sent.message,
+            exchange: exchange.decode(JSON.parse(sent.message.body)),
         };
         if (sent.expirationStartTimestamp) {
           ev.data.expirationStartTimestamp = sent.expirationStartTimestamp.toNumber();
@@ -280,7 +282,8 @@ class MessageReceiver extends eventing.EventTarget {
             source: envelope.source,
             sourceDevice: envelope.sourceDevice,
             message,
-            keyChange: envelope.keyChange
+            exchange: exchange.decode(JSON.parse(message.body)),
+            keyChange: envelope.keyChange,
         };
         await this.dispatchEvent(ev);
     }
