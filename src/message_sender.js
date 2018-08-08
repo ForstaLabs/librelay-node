@@ -91,19 +91,20 @@ class MessageSender extends eventing.EventTarget {
         ex.setMessageId(messageId);
         ex.setMessageRef(messageRef);
         ex.setUserAgent(userAgent);
-        ex.setSender(this.addr);
+        ex.setSource(this.addr.id);
+        ex.setSourceDevice(this.addr.deviceId);
+        ex.setExpiration(expiration);
+        ex.setFlags(flags);
         for (const [k, v] of Object.entries(data)) {
             ex.setDataAttr(k, v);
         }
         if (attachments && attachments.length) {
+            // TODO Port to exchange interfaces (TBD)
             ex.setAttachments(attachments.map(x => x.getMeta()));
         }
-        const dataMessage = protobufs.DataMessage.create({
-            expireTime: expiration,
-            flags,
-            body: JSON.stringify([ex.encode()])
-        });
+        const dataMessage = ex.encode();
         if (attachments) {
+            // TODO Port to exchange interfaces (TBD)
             dataMessage.attachments = await Promise.all(attachments.map(x =>
                 this.makeAttachmentPointer(x)));
         }

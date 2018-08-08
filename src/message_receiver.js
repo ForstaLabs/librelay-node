@@ -25,6 +25,7 @@ class MessageReceiver extends eventing.EventTarget {
         console.assert(signal && atlas && addr && deviceId && signalingKey);
         this._sender = new MessageSender({addr, signal, atlas});
         this.signal = signal;
+        this.atlas = atlas;
         this.addr = addr;
         this.deviceId = deviceId;
         this.signalingKey = signalingKey;
@@ -256,18 +257,24 @@ class MessageReceiver extends eventing.EventTarget {
             console.error("Unsupported syncMessage end-session sent by device:", envelope.sourceDevice);
             return;
         }
-        await this.processDecrypted(sent.message, this.addr);
+        const timestamp = sent.timestamp.toNumber();
+        const ex = exchange.decode(sent.message, {
+            messageSender: this._sender,
+            messageReceiver: this,
+            atlas: this.atlas,
+            signal: this.signal
+        });
+        ex.setSource(envelope.source);
+        ex.setSourceDevice(envelope.sourceDevice);
+        ex.setTimestamp(timestamp);
         const ev = new eventing.Event('sent');
         ev.data = {
             source: envelope.source,
             sourceDevice: envelope.sourceDevice,
-            timestamp: sent.timestamp.toNumber(),
+            timestamp,
             destination: sent.destination,
             message: sent.message,
-            exchange: exchange.decode(JSON.parse(sent.message.body), {
-                messageSender: this._sender,
-                messageReceiver: this
-            })
+            exchange: ex
         };
         if (sent.expirationStartTimestamp) {
           ev.data.expirationStartTimestamp = sent.expirationStartTimestamp.toNumber();
@@ -279,17 +286,22 @@ class MessageReceiver extends eventing.EventTarget {
         if (message.flags & DATA_FLAGS.END_SESSION) {
             await this.handleEndSession(envelope.source);
         }
-        await this.processDecrypted(message, envelope.source);
+        const ex = exchange.decode(message, {
+            messageSender: this._sender,
+            messageReceiver: this,
+            atlas: this.atlas,
+            signal: this.signal
+        });
+        ex.setSource(envelope.source);
+        ex.setSourceDevice(envelope.sourceDevice);
+        ex.setTimestamp(envelope.timestamp);
         const ev = new eventing.Event('message');
         ev.data = {
             timestamp: envelope.timestamp,
             source: envelope.source,
             sourceDevice: envelope.sourceDevice,
             message,
-            exchange: exchange.decode(JSON.parse(message.body), {
-                messageSender: this._sender,
-                messageReceiver: this
-            }),
+            exchange: ex,
             keyChange: envelope.keyChange,
         };
         await this.dispatchEvent(ev);
@@ -370,22 +382,6 @@ class MessageReceiver extends eventing.EventTarget {
             const sessionCipher = new libsignal.SessionCipher(storage, address);
             return sessionCipher.closeOpenSession();
         }));
-    }
-
-    async processDecrypted(msg, source) {
-        // Now that its decrypted, validate the message and clean it up for consumer processing
-        // Note that messages may (generally) only perform one action and we ignore remaining fields
-        // after the first action.
-        if (msg.flags === null) {
-            msg.flags = 0;
-        }
-        if (msg.expireTimer === null) {
-            msg.expireTimer = 0;
-        }
-        if (msg.group) {
-            throw new Error("Legacy group message");
-        }
-        return msg;
     }
 }
 

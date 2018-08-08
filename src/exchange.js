@@ -3,19 +3,25 @@
  * https://docs.google.com/document/d/16vKdrArCmr9QTXCaTNfo69Jp119OB3ipEXJJ0DfskkE
  */
 
-const MessageSender = require('./message_sender');
 const MessageReceiver = require('./message_receiver');
+const MessageSender = require('./message_sender');
+const hub = require('./hub');
+const protobufs = require('./protobufs');
 
 const currentVersion = 1;
 const ExchangeClasses = {};
 
 
-exports.decode = function(data, options) {
-    const ordered = Array.from(data).sort((a, b) => a.version < b.version ? 1 : -1);
+exports.decode = function(dataMessage, options) {
+    if (!(dataMessage instanceof protobufs.DataMessage.ctor)) {
+        throw new TypeError("DataMessage argument required");
+    }
+    const payload = JSON.parse(dataMessage.body);
+    const ordered = Array.from(payload).sort((a, b) => a.version < b.version ? 1 : -1);
     for (const x of ordered) {
         if (ExchangeClasses.hasOwnProperty(x.version)) {
             const instance = new ExchangeClasses[x.version](options);
-            instance.decode(x);
+            instance.decode(dataMessage, x);
             return instance;
         }
     }
@@ -32,19 +38,31 @@ exports.Exchange = class Exchange {
 
     constructor(options) {
         options = options || {};
-        if (options.messageSender) {
-            this._msgSender = options.messageSender;
-        }
-        if (options.messageReceiver) {
-            this._msgReceiver = options.messageReceiver;
-        }
+        this._msgSender = options.messageSender;
+        this._msgReceiver = options.messageReceiver;
+        this._atlas = options.atlas;
+        this._signal = options.signal;
     }
 
-    decode() {
-        throw new Error("Subclasss impl required");
+    decode(dataMessage, payload) {
+        this.setExpiration(dataMessage.expireTimer);
+        this.setFlags(dataMessage.flags);
+        this.decodePayload(payload);
     }
 
     encode() {
+        return protobufs.DataMessage.create({
+            flags: this.getFlags(),
+            expireTimer: this.getExpiration(),
+            body: JSON.stringify([this.encodePayload()])
+        });
+    }
+
+    decodePayload(payload) {
+        throw new Error("Subclasss impl required");
+    }
+
+    encodePayload() {
         throw new Error("Subclasss impl required");
     }
 
@@ -63,7 +81,17 @@ exports.Exchange = class Exchange {
     }
 
     async _getAtlasClient() {
-        return (await this._getMessageSender()).atlas;
+        if (!this._atlas) {
+            this._atlas = await hub.AtlasClient.factory();
+        }
+        return this._atlas;
+    }
+
+    async _getSignalClient() {
+        if (!this._signal) {
+            this._signal = await hub.SignalClient.factory();
+        }
+        return this._signal;
     }
 
     async reply(options) {
@@ -77,6 +105,46 @@ exports.Exchange = class Exchange {
             threadType: this.getThreadType(),
             threadTitle: this.getThreadTitle(),
         }, options));
+    }
+
+    getExpiration() {
+        return this._expiration;
+    }
+
+    setExpiration(value) {
+        this._expiration = value;
+    }
+
+    getSource() {
+        return this._source;
+    }
+
+    setSource(value) {
+        this._source = value;
+    }
+
+    getSourceDevice() {
+        return this._sourceDevice;
+    }
+
+    setSourceDevice(value) {
+        this._sourceDevice = value;
+    }
+
+    getFlags() {
+        return this._flags;
+    }
+
+    setFlags(value) {
+        this._flags = value;
+    }
+
+    getTimestamp() {
+        return this._timestamp;
+    }
+
+    setTimestamp(value) {
+        this._timestamp = value;
     }
 
     getBody(options) {
@@ -181,23 +249,26 @@ exports.ExchangeV1 = class ExchangeV1 extends exports.Exchange {
 
     constructor(options) {
         super(options);
-        this._attrs = {};
+        this._payload = {};
     }
 
-    decode(attrs) {
-        Object.assign(this._attrs, attrs);
+    decodePayload(payload) {
+        Object.assign(this._payload, payload);
     }
 
-    encode() {
+    encodePayload() {
         return Object.assign({
             version: 1,
-        }, this._attrs);
+            sender: {
+                userId: this.getSource()  // DEPRECATED but needed for a while.
+            }
+        }, this._payload);
     }
 
     getBody(options) {
         options = options || {};
-        if (this._attrs && this._attrs.data && this._attrs.data.body) {
-            const body = this._attrs.data.body;
+        if (this._payload && this._payload.data && this._payload.data.body) {
+            const body = this._payload.data.body;
             if (!body.length) {
                 return;
             }
@@ -230,97 +301,97 @@ exports.ExchangeV1 = class ExchangeV1 extends exports.Exchange {
     }
 
     getSender() {
-        return this._attrs.sender && this._attrs.sender.userId;
+        return this._payload.sender && this._payload.sender.userId;
     }
 
     setSender(value) {
-        this._attrs.sender = {userId: value};
+        this._payload.sender = {userId: value};
     }
 
     getThreadExpression(value) {
-        return this._attrs.distribution.expression;
+        return this._payload.distribution.expression;
     }
 
     setThreadExpression(value) {
-        if (!this._attrs.distribution) {
-            this._attrs.distribution = {};
+        if (!this._payload.distribution) {
+            this._payload.distribution = {};
         }
-        this._attrs.distribution.expression = value;
+        this._payload.distribution.expression = value;
     }
 
     getThreadId() {
-        return this._attrs.threadId;
+        return this._payload.threadId;
     }
 
     setThreadId(value) {
-        this._attrs.threadId = value;
+        this._payload.threadId = value;
     }
 
     getThreadType() {
-        return this._attrs.threadType;
+        return this._payload.threadType;
     }
 
     setThreadType(value) {
-        this._attrs.threadType = value;
+        this._payload.threadType = value;
     }
 
     getThreadTitle() {
-        return this._attrs.threadTitle;
+        return this._payload.threadTitle;
     }
 
     setThreadTitle(value) {
-        this._attrs.threadTitle = value;
+        this._payload.threadTitle = value;
     }
 
     getMessageId() {
-        return this._attrs.messageId;
+        return this._payload.messageId;
     }
 
     setMessageId(value) {
-        this._attrs.messageId = value;
+        this._payload.messageId = value;
     }
 
     getMessageType() {
-        return this._attrs.messageType;
+        return this._payload.messageType;
     }
 
     setMessageType(value) {
-        this._attrs.messageType = value;
+        this._payload.messageType = value;
     }
 
     getMessageRef() {
-        return this._attrs.messageRef;
+        return this._payload.messageRef;
     }
 
     setMessageRef(value) {
-        this._attrs.messageRef = value;
+        this._payload.messageRef = value;
     }
 
     getAttachments() {
-        return this._attrs.attachments;
+        return this._payload.attachments;
     }
 
     setAttachments(value) {
-        this._attrs.attachments = value;
+        this._payload.attachments = value;
     }
 
     getUserAgent() {
-        return this._attrs.userAgent;
+        return this._payload.userAgent;
     }
 
     setUserAgent(value) {
-        this._attrs.userAgent = value;
+        this._payload.userAgent = value;
     }
 
     getDataProperty(key) {
-        return this._attrs.data && this._attrs.data[key];
+        return this._payload.data && this._payload.data[key];
     }
 
     setDataProperty(key, value) {
-        if (!this._attrs.data) {
-            this._attrs.data = {};
+        if (!this._payload.data) {
+            this._payload.data = {};
         }
-        this._attrs.data[key] = value;
+        this._payload.data[key] = value;
     }
 };
 ExchangeClasses[1] = exports.ExchangeV1;
