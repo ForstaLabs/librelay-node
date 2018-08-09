@@ -36,36 +36,6 @@ exports.create = function(options) {
 
 exports.Exchange = class Exchange {
 
-    constructor(options) {
-        options = options || {};
-        this._msgSender = options.messageSender;
-        this._msgReceiver = options.messageReceiver;
-        this._atlas = options.atlas;
-        this._signal = options.signal;
-    }
-
-    decode(dataMessage, payload) {
-        this.setExpiration(dataMessage.expireTimer);
-        this.setFlags(dataMessage.flags);
-        this.decodePayload(payload);
-    }
-
-    encode() {
-        return protobufs.DataMessage.create({
-            flags: this.getFlags(),
-            expireTimer: this.getExpiration(),
-            body: JSON.stringify([this.encodePayload()])
-        });
-    }
-
-    decodePayload(payload) {
-        throw new Error("Subclasss impl required");
-    }
-
-    encodePayload() {
-        throw new Error("Subclasss impl required");
-    }
-
     async _getMessageSender() {
         if (!this._msgSender) {
             this._msgSender = await MessageSender.factory();
@@ -94,7 +64,29 @@ exports.Exchange = class Exchange {
         return this._signal;
     }
 
-    async reply(options) {
+    constructor(options) {
+        options = options || {};
+        this._msgSender = options.messageSender;
+        this._msgReceiver = options.messageReceiver;
+        this._atlas = options.atlas;
+        this._signal = options.signal;
+    }
+
+    decode(dataMessage, payload) {
+        this.setExpiration(dataMessage.expireTimer);
+        this.setFlags(dataMessage.flags);
+        this.decodePayload(payload);
+    }
+
+    encode() {
+        return protobufs.DataMessage.create({
+            flags: this.getFlags(),
+            expireTimer: this.getExpiration(),
+            body: JSON.stringify([this.encodePayload()])
+        });
+    }
+
+    async sendReply(options) {
         const atlas = await this._getAtlasClient();
         const distribution = await atlas.resolveTags(this.getThreadExpression());
         const addrs = options.onlySender ? [this.getSender()] : undefined;
@@ -105,6 +97,87 @@ exports.Exchange = class Exchange {
             threadType: this.getThreadType(),
             threadTitle: this.getThreadTitle(),
         }, options));
+    }
+
+    async addMessageListener(callback) {
+        // Add a filtered event listener on the message receiver that only
+        // fires events for message events pertaining to our thread ID.
+        if (!this._messageListeners) {
+            this._messageListeners = [];
+        }
+        this._messageListeners.push(callback);
+        if (!this._messageListener) {
+            const threadId = this.getThreadId();
+            this._messageListener = async ev => {
+                if (ev.data.exchange.getThreadId() === threadId) {
+                    for (const cb of this._messageListeners) {
+                        await cb(ev);
+                    }
+                }
+            };
+            const mr = await this._getMessageReceiver();
+            mr.addEventListener('message', this._messageListener);
+        }
+    }
+
+    async removeMessageListener(callback) {
+        const idx = this._messageListeners.indexOf(callback);
+        if (idx !== -1) {
+            this._messageListeners.splice(idx, 1);
+            if (!this._messageListeners.length) {
+                const mr = await this._getMessageReceiver();
+                mr.removeEventListener('message', this._messageListener);
+                this._messageListener = null;
+            }
+        }
+    }
+
+    *recvMessages(options) {
+        // Yield new message promises for this thread.  If timeout is set
+        // the promise will resolve to `null` and the iterator will not yield
+        // any more results.
+        options = options || {};
+        const timeout = options.timeout;
+        const queue = [];
+        let waiter;
+        let timeoutId;
+        const callback = ev => {
+            if (waiter) {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                waiter(ev.data.exchange);
+                waiter = null;
+            } else {
+                queue.push(ev.data.exchange);
+            }
+        };
+        this.addMessageListener(callback);
+        let active = true;
+        try {
+            while (active) {
+                if (queue.length) {
+                    yield Promise.resolve(queue.shift());
+                } else if (waiter) {
+                    throw new Error("Prior promise was not awaited");
+                } else {
+                    yield new Promise(resolve => {
+                        waiter = resolve;
+                        if (timeout) {
+                            timeoutId = setTimeout(() => {
+                                active = false;
+                                resolve(null);
+                            }, timeout);
+                        }
+                    });
+                }
+            }
+        } finally {
+            this.removeMessageListener(callback);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        }
     }
 
     getExpiration() {
@@ -145,6 +218,14 @@ exports.Exchange = class Exchange {
 
     setTimestamp(value) {
         this._timestamp = value;
+    }
+
+    decodePayload(payload) {
+        throw new Error("Subclasss impl required");
+    }
+
+    encodePayload() {
+        throw new Error("Subclasss impl required");
     }
 
     getBody(options) {
@@ -309,7 +390,7 @@ exports.ExchangeV1 = class ExchangeV1 extends exports.Exchange {
     }
 
     getThreadExpression(value) {
-        return this._payload.distribution.expression;
+        return this._payload.distribution && this._payload.distribution.expression;
     }
 
     setThreadExpression(value) {
