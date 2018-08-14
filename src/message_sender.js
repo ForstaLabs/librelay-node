@@ -68,7 +68,8 @@ class MessageSender extends eventing.EventTarget {
         attachments=undefined,
         flags=undefined,
         userAgent='librelay',
-        noSync=false
+        noSync=false,
+        actions=undefined
     }) {
         const ex = exchange.create();
         if (!distribution) {
@@ -95,8 +96,11 @@ class MessageSender extends eventing.EventTarget {
         ex.setSourceDevice(this.addr.deviceId);
         ex.setExpiration(expiration);
         ex.setFlags(flags);
+        if (actions && actions.length) {
+            ex.setDataProperty('actions', actions);
+        }
         for (const [k, v] of Object.entries(data)) {
-            ex.setDataAttr(k, v);
+            ex.setDataProperty(k, v);
         }
         if (attachments && attachments.length) {
             // TODO Port to exchange interfaces (TBD)
