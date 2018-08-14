@@ -1,5 +1,10 @@
 # Change Log
 
+## [5.0.0]
+### Added
+- Exchange class for simplified thread communication.
+
+
 ## [4.0.0]
 ### Changed
 - Added Postgres as a supported backing store 
@@ -32,6 +37,7 @@
 
 
 [unreleased]: https://github.com/ForstaLabs/librelay-node/tree/master
+[5.0.0]: https://github.com/ForstaLabs/librelay-node/tree/v5.0.0
 [4.0.0]: https://github.com/ForstaLabs/librelay-node/tree/v4.0.0
 [3.4.0]: https://github.com/ForstaLabs/librelay-node/tree/v3.4.0
 [3.3.0]: https://github.com/ForstaLabs/librelay-node/tree/v3.3.0
