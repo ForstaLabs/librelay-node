@@ -86,7 +86,7 @@ exports.Exchange = class Exchange {
         });
     }
 
-    async sendReply(options) {
+    async send(options) {
         const atlas = await this._getAtlasClient();
         const distribution = await atlas.resolveTags(this.getThreadExpression());
         const addrs = options.onlySender ? [this.getSender()] : undefined;
