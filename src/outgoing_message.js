@@ -7,6 +7,7 @@ const storage = require('./storage');
 const util = require('./util');
 
 
+/** @class */
 class OutgoingMessage {
 
     constructor(signal, timestamp, message) {

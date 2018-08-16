@@ -1,6 +1,8 @@
 // vim: ts=4:sw=4:expandtab
 
-'use strict';
+/**
+ * @class
+ */
 
 const util = require('../util');
 const libsignal = require('libsignal');

@@ -1,8 +1,4 @@
-/*
- * vim: ts=4:sw=4:expandtab
- */
-
-'use strict';
+// vim: ts=4:sw=4:expandtab
 
 const libsignal = require('libsignal');
 

@@ -1,7 +1,5 @@
 // vim: ts=4:sw=4:expandtab
 
-'use strict';
-
 const ProvisioningCipher = require('../provisioning_cipher');
 const errors = require('../errors');
 const fetch = require('./fetch');
@@ -26,6 +24,9 @@ const SIGNAL_HTTP_MESSAGES = {
 };
 
 
+/**
+ * @class
+ */
 class SignalClient {
 
     constructor(username, password, url) {
@@ -35,6 +36,9 @@ class SignalClient {
         this.attachment_id_regex = RegExp("^https://.*/(\\d+)?");
     }
 
+    /**
+     * Return a default instance.
+     */
     static async factory() {
         const url = await storage.getState('serverUrl');
         const username = await storage.getState('username');

@@ -1,11 +1,10 @@
 // vim: ts=4:sw=4:expandtab
 
-'use strict';
-
 const fs = require('fs');
 const path = require('path');
 
 
+/** @class */
 class Attachment {
 
     constructor({

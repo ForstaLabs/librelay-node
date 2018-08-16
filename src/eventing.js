@@ -1,8 +1,10 @@
 // vim: ts=4:sw=4:expandtab
+/** @module */
 
 const storage = require('./storage');
 
 
+/** @class */
 class Event {
     constructor(type) {
         this.type = type;
@@ -10,6 +12,7 @@ class Event {
 }
 
 
+/** @class */
 class KeyChangeEvent extends Event {
 
     constructor(keyError) {
@@ -25,6 +28,7 @@ class KeyChangeEvent extends Event {
 }
 
 
+/** @class */
 class EventTarget {
 
     async dispatchEvent(ev) {

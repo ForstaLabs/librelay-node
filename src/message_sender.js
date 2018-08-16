@@ -15,8 +15,15 @@ const util = require('./util');
 const uuid4 = require('uuid/v4');
 
 
+/** @class */
 class MessageSender extends eventing.EventTarget {
 
+    /**
+     * @param {Object} options
+     * @param {string} options.addr - Your signal address (e.g. your account UUID)
+     * @param {SignalClient} options.signal
+     * @param {AtlasClient} options.atlas
+     */
     constructor({addr, signal, atlas}) {
         super();
         this.addr = addr;
@@ -24,6 +31,10 @@ class MessageSender extends eventing.EventTarget {
         this.atlas = atlas;
     }
 
+    /**
+     * Return a default instance.
+     * @returns {MessageSender}
+     */
     static async factory() {
         const addr = await storage.getState('addr');
         const signal = await hub.SignalClient.factory();
@@ -31,7 +42,7 @@ class MessageSender extends eventing.EventTarget {
         return new this({addr, signal, atlas});
     }
 
-    async makeAttachmentPointer(attachment) {
+    async _makeAttachmentPointer(attachment) {
         if (!(attachment instanceof Attachment)) {
             throw TypeError("Expected `Attachment` type");
         }
@@ -46,13 +57,13 @@ class MessageSender extends eventing.EventTarget {
         return ptr;
     }
 
-    async uploadAttachments(attachments) {
-        if (!attachments || !attachments.length) {
-            return;
-        }
-        return await Promise.all(attachments.map(x => this.makeAttachmentPointer(x)));
-    }
-
+    /**
+     * Send a message
+     *
+     * @param {Object} options
+     * @param {string} options.to - Tag notation to send to. @example @jerry.lewis:supercorp
+     * @param {Object} options.distribution - Distribution object produced by {@link module:hub.resolveTags}
+     */
     async send({
         to=null, distribution=null,
         addrs=null,
@@ -110,34 +121,34 @@ class MessageSender extends eventing.EventTarget {
         if (attachments) {
             // TODO Port to exchange interfaces (TBD)
             dataMessage.attachments = await Promise.all(attachments.map(x =>
-                this.makeAttachmentPointer(x)));
+                this._makeAttachmentPointer(x)));
         }
         const content = protobufs.Content.create({dataMessage});
         const ts = Date.now();
         if (!noSync) {
             await this._sendSync(content, ts, threadId, expiration && Date.now());
         }
-        return this._send(content, ts, this.scrubSelf(addrs || distribution.userids));
+        return this._send(content, ts, this._scrubSelf(addrs || distribution.userids));
     }
 
     _send(content, timestamp, addrs) {
         console.assert(addrs instanceof Array);
         const outmsg = new OutgoingMessage(this.signal, timestamp, content);
-        outmsg.on('keychange', this.onKeyChange.bind(this));
+        outmsg.on('keychange', this._onKeyChange.bind(this));
         for (const addr of addrs) {
             queueAsync('message-send-job-' + addr, () =>
-                outmsg.sendToAddr(addr).catch(this.onError.bind(this)));
+                outmsg.sendToAddr(addr).catch(this._onError.bind(this)));
         }
         return outmsg;
     }
 
-    async onError(e) {
+    async _onError(e) {
         const ev = new eventing.Event('error');
         ev.error = e;
         await this.dispatchEvent(ev);
     }
 
-    async onKeyChange(e) {
+    async _onKeyChange(e) {
         await this.dispatchEvent(new eventing.KeyChangeEvent(e));
     }
 
@@ -170,7 +181,7 @@ class MessageSender extends eventing.EventTarget {
         return this._send(content, Date.now(), [this.addr]);
     }
 
-    scrubSelf(addrs) {
+    _scrubSelf(addrs) {
         const nset = new Set(addrs);
         nset.delete(this.addr);
         return Array.from(nset);

@@ -1,7 +1,5 @@
 // vim: ts=4:sw=4:expandtab
 
-'use strict';
-
 const errors = require('../errors');
 const fetch = require('./fetch');
 const storage = require('../storage');
@@ -39,6 +37,9 @@ function decodeJWT(encoded_token) {
 }
 
 
+/**
+ * @class
+ */
 class AtlasClient {
 
     constructor({url=defaultUrl, jwt=null}) {
@@ -55,6 +56,10 @@ class AtlasClient {
         this.authHeader = `JWT ${jwt}`;
     }
 
+    /**
+     * Produce a default instance.
+     * @returns {AtlasClient}
+     */
     static async factory() {
         const url = await storage.getState(urlStoreKey);
         const jwt = await storage.getState(credStoreKey);

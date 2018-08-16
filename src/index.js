@@ -15,5 +15,6 @@ module.exports = {
     registerDevice: hub.registerDevice,
     storage: require('./storage'),
     util: require('./util'),
-    exchange: require('./exchange')
+    exchange: require('./exchange'),
+    errors: require('./errors')
 };

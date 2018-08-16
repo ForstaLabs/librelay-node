@@ -1,7 +1,5 @@
 // vim: ts=4:sw=4:expandtab
 
-'use strict';
-
 const assert = require('assert');
 const crypto = require('crypto');
 const libsignal = require('libsignal');

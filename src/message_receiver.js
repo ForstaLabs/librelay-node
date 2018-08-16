@@ -1,7 +1,5 @@
 // vim: ts=4:sw=4:expandtab
 
-'use strict';
-
 const MessageSender = require('./message_sender');
 const WebSocketResource = require('./websocket_resource');
 const crypto = require('./crypto');
@@ -18,6 +16,7 @@ const ENV_TYPES = protobufs.Envelope.lookup('Type').values;
 const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
 
 
+/** @class */
 class MessageReceiver extends eventing.EventTarget {
 
     constructor({signal, atlas, addr, deviceId, signalingKey, noWebSocket}) {
@@ -43,6 +42,10 @@ class MessageReceiver extends eventing.EventTarget {
         }
     }
 
+    /**
+     * Build a default instance.
+     * @returns {MessageReceiver}
+     */
     static async factory(noWebSocket) {
         const signal = await hub.SignalClient.factory();
         const atlas = await hub.AtlasClient.factory();

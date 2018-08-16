@@ -1,11 +1,12 @@
 // vim: ts=4:sw=4:expandtab
+/** @module */
 
-'use strict';
 
-
+/** @class */
 class RelayError extends Error {}
 
 
+/** @class */
 class UnregisteredUserError extends RelayError {
     constructor(addr, httpError) {
         super(httpError.message);
@@ -17,6 +18,7 @@ class UnregisteredUserError extends RelayError {
 }
 
 
+/** @class */
 class ProtocolError extends RelayError {
     constructor(code, response) {
         super();
@@ -30,6 +32,7 @@ class ProtocolError extends RelayError {
 }
 
 
+/** @class */
 class NetworkError extends RelayError {
     constructor(a, b, c) {
         super(a, b, c);

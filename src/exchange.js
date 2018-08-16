@@ -1,7 +1,5 @@
-/*
- * Interface for communicating with other Forsta devices.
- * https://docs.google.com/document/d/16vKdrArCmr9QTXCaTNfo69Jp119OB3ipEXJJ0DfskkE
- */
+// vim: ts=4:sw=4:expandtab
+/** @module */
 
 const MessageReceiver = require('./message_receiver');
 const MessageSender = require('./message_sender');
@@ -12,29 +10,14 @@ const currentVersion = 1;
 const ExchangeClasses = {};
 
 
-exports.decode = function(dataMessage, options) {
-    if (!(dataMessage instanceof protobufs.DataMessage.ctor)) {
-        throw new TypeError("DataMessage argument required");
-    }
-    const payload = JSON.parse(dataMessage.body);
-    const ordered = Array.from(payload).sort((a, b) => a.version < b.version ? 1 : -1);
-    for (const x of ordered) {
-        if (ExchangeClasses.hasOwnProperty(x.version)) {
-            const instance = new ExchangeClasses[x.version](options);
-            instance.decode(dataMessage, x);
-            return instance;
-        }
-    }
-    throw new ReferenceError("No supported exchange versions found");
-};
 
-
-exports.create = function(options) {
-    return new ExchangeClasses[currentVersion](options);
-};
-
-
-exports.Exchange = class Exchange {
+/**
+ * Interface for communicating with other Forsta devices.
+ * {@link https://docs.google.com/document/d/16vKdrArCmr9QTXCaTNfo69Jp119OB3ipEXJJ0DfskkE Payload Definition}
+ *
+ * @class
+ */
+class Exchange {
 
     async _getMessageSender() {
         if (!this._msgSender) {
@@ -64,6 +47,16 @@ exports.Exchange = class Exchange {
         return this._signal;
     }
 
+    /**
+     * Normally you should not create an instance of this class yourself.
+     * Use {@link module:exchange.decode} or {@link module:exchange.create} instead.
+     *
+     * @param {Object} options
+     * @param {message_sender~MessageSender} [options.messageSender]
+     * @param {MessageReceiver} [options.messageReceiver]
+     * @param {AtlasClient} [options.atlas]
+     * @param {SignalClient} [options.signal]
+     */
     constructor(options) {
         options = options || {};
         this._msgSender = options.messageSender;
@@ -86,6 +79,15 @@ exports.Exchange = class Exchange {
         });
     }
 
+    /**
+     * Send a message to this exchange's thread.
+     *
+     * @param {Object} options - Send options.  See {@link MessageSender#send} for
+     *        complete list of options.
+     * @param {bool} [options.onlySender] - Set to true if you want to send a message to
+     *        only the original sender of this exchange object.  Used for private replies
+     *        to an individual regardless of the thread distribution.
+     */
     async send(options) {
         const atlas = await this._getAtlasClient();
         const distribution = await atlas.resolveTags(this.getThreadExpression());
@@ -132,10 +134,15 @@ exports.Exchange = class Exchange {
         }
     }
 
+    /**
+     * Generator for receiving new messages on this exchange's thread.
+     *
+     * @param {Object} options
+     * @param {number} [options.timeout] - Timeout in milliseconds
+     * @yields {Promise} exchangePromise - Promise that resolves to the next available message or 
+     *                                     undefined if timeout is reached.
+     */
     *recvMessages(options) {
-        // Yield new message promises for this thread.  If timeout is set
-        // the promise will resolve to `null` and the iterator will not yield
-        // any more results.
         options = options || {};
         const timeout = options.timeout;
         const queue = [];
@@ -220,113 +227,140 @@ exports.Exchange = class Exchange {
         this._timestamp = value;
     }
 
+    /** @abstract */
     decodePayload(payload) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     encodePayload() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getBody(options) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setBody(value, options) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getSender() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setSender(value) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getThreadExpression() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setThreadExpression(value) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getThreadId() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setThreadId(value) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getThreadType() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setThreadType(value) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getThreadTitle() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setThreadTitle(value) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getMessageId() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setMessageId(value) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getMessageType() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setMessageType(value) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getMessageRef() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setMessageRef(value) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getAttachments() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setAttachments(value) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getUserAgent() {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setUserAgent(value) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     getDataProperty(key) {
         throw new Error("Subclasss impl required");
     }
 
+    /** @abstract */
     setDataProperty(key, value) {
         throw new Error("Subclasss impl required");
     }
 };
+exports.Exchange = Exchange;
 
 
-exports.ExchangeV1 = class ExchangeV1 extends exports.Exchange {
+class ExchangeV1 extends Exchange {
 
     constructor(options) {
         super(options);
@@ -474,5 +508,40 @@ exports.ExchangeV1 = class ExchangeV1 extends exports.Exchange {
         }
         this._payload.data[key] = value;
     }
+}
+exports.ExchangeV1 = ExchangeClasses[1] = ExchangeV1;
+
+/**
+ * Return a versioned Exchange instance based on the protocol buffer argument.
+ *
+ * @param {protobufs.DataMessage} dataMessage The protocol buffer to decode.
+ * @param {Object} [options] Options to pass into the Exchange constructor.
+ * @returns {module:exchange~Exchange}
+ */
+exports.decode = function(dataMessage, options) {
+    if (!(dataMessage instanceof protobufs.DataMessage.ctor)) {
+        throw new TypeError("DataMessage argument required");
+    }
+    const payload = JSON.parse(dataMessage.body);
+    const ordered = Array.from(payload).sort((a, b) => a.version < b.version ? 1 : -1);
+    for (const x of ordered) {
+        if (ExchangeClasses.hasOwnProperty(x.version)) {
+            const instance = new ExchangeClasses[x.version](options);
+            instance.decode(dataMessage, x);
+            return instance;
+        }
+    }
+    throw new ReferenceError("No supported exchange versions found");
 };
-ExchangeClasses[1] = exports.ExchangeV1;
+
+
+/**
+ * Build a new Exchange object with our most current exchange version.
+ *
+ * @param {Object} [options] Constructor options.
+ * @returns {module:exchange~Exchange}
+ */
+exports.create = function(options) {
+    return new ExchangeClasses[currentVersion](options);
+};
+

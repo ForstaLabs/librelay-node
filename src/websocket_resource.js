@@ -1,7 +1,5 @@
 // vim: ts=4:sw=4:expandtab
 
-'use strict';
-
 const Long = require('long');
 const WebSocket = require('ws');
 const crypto = require('crypto');

@@ -1,7 +1,4 @@
-'use strict';
-
 const protobuf = require('protobufjs');
-
 
 const proto_files = [
     'IncomingPushMessageSignal.proto',

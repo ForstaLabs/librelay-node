@@ -1,7 +1,5 @@
 // vim: ts=4:sw=4:expandtab
 
-'use strict';
-
 const _queueAsyncBuckets = new Map();
 
 async function _asyncQueueExecutor(queue, cleanup) {
