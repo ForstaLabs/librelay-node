@@ -28,9 +28,10 @@
     "ws": "3.2.0"
   },
   "devDependencies": {
-    "eslint": "4.9.0"
+    "eslint": "4.9.0",
+    "jsdoc": "3.5.5"
   },
   "scripts": {
-    "register": "node examples/register.js"
+    "docs": "jsdoc -d docs -P package.json --recurse -R README.md src"
   }
 }
