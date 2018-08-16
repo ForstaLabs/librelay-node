@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3>librelay 5.2.0</h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>librelay - Forsta Relay Node.js library</h1><p>Signal based Node.js library for end-to-end crypto with Forsta messaging platform.</p>
+<p><a href="https://www.npmjs.com/package/librelay"><img src="https://img.shields.io/npm/v/librelay.svg" alt="NPM"></a>
+<a href="https://github.com/ForstaLabs/librelay-node"><img src="https://img.shields.io/npm/l/librelay.svg" alt="License"></a>
+<a href="https://github.com/ForstaLabs/librelay-node/blob/master/CHANGELOG.md"><img src="https://img.shields.io/badge/change-log-blue.svg" alt="Change Log"></a></p>
+<h2>About</h2><p>This is a Node.js library used to communicate with the Forsta messaging
+platform.  The underlying protocol is based on the Signal end-to-end
+crypto system.  The primary differences surround how provisioning is done
+and the data payload, which is a custom JSON specification,
+<a href="https://goo.gl/eX7gyC">https://goo.gl/eX7gyC</a></p>
+<h2>Installation</h2><p>Ensure that you are using Node 8 (needs <em>async/await</em> support) or higher and
+simply install from NPM:</p>
+<pre class="prettyprint source"><code>$ npm install librelay</code></pre><h2>Storage</h2><p>Librelay needs a backing store for holding crypto material.  The default
+storage backing is <code>fs</code> which will store files in your local file-system
+under <code>~/.librelay/storage</code>.  Redis is also supported by setting
+<code>RELAY_STORAGE_BACKING=redis</code> in your env or calling
+<code>librelay.storage.setBacking('redis')</code>.</p>
+<p>To support multiple instances of librelay on a single backing store you can
+specify a custom label.  This essentially operates as a namespace for all
+storage data.  The storage label can be set via the env, a la.
+<code>RELAY_STORAGE_LABEL=&quot;special&quot;</code> or by calling <code>librelay.storage.setLabel('special')</code>
+from inside your application.</p>
+<p>You'll need to ensure your backing store is running properly with a call 
+to <code>await librelay.storage.initialize()</code>, and if possible you should
+tear it down before quitting, with <code>await librelay.storage.shutdown()</code>.</p>
+<h2>Provisioning</h2><p>PREREQUISITE: To use librelay you must first have a valid Forsta account.  You
+can sign-up for free at <a href="https://app.forsta.io/join">https://app.forsta.io/join</a>.  Once you have a valid
+Forsta account you need to provision your librelay based application. </p>
+<p>With your Forsta account (e.g. <code>myusername:myorgname</code>) you can get started
+with the <code>registerAccount</code> function or the <code>registerDevice</code> function if adding
+supplemental devices.</p>
+<pre class="prettyprint source lang-javascript"><code>const relay = require('librelay');
+
+async function main(secondary) {
+    const userTag = await relay.util.consoleInput(&quot;Enter your login (e.g user:org): &quot;);
+    const challange = await relay.AtlasClient.requestAuthentication(userTag);
+    const prompt = challange.type === 'sms' ? 'SMS Code: ' : 'Password: ';
+    await challange.authenticate(await relay.util.consoleInput(prompt));
+    if (secondary) {
+        const registration = await relay.registerDevice();
+        console.info(&quot;Awaiting auto-registration response...&quot;);
+        await registration.done;
+        console.info(&quot;Successfully registered new device&quot;);
+    } else {
+        await relay.registerAccount();
+        console.info(&quot;Successfully registered account&quot;);
+    }
+}
+
+main();</code></pre><p>Ref: <a href="https://github.com/ForstaLabs/librelay-node/blob/master/examples/register.js">https://github.com/ForstaLabs/librelay-node/blob/master/examples/register.js</a></p>
+<h2>Message Receiving</h2><p>Once your application is provisioned you can participate in the messaging
+platform.   The simplest way to get familiar with the platform is to listen
+for incoming messages and examine the content sent to your application in a
+debugger.   Here is a very simple example of receiving messages.</p>
+<pre class="prettyprint source lang-javascript"><code>const relay = require('librelay');
+
+function onMessage(ev) {
+    const message = ev.data;
+    console.info(&quot;Got message&quot;, message);
+}
+
+async function main() {
+    const msgReceiver = await relay.MessageReceiver.factory();
+    msgReceiver.addEventListener('message', onMessage);
+    await msgReceiver.connect();
+}
+
+main();</code></pre><p>Ref: <a href="https://github.com/ForstaLabs/librelay-node/blob/master/examples/recvmessage.js">https://github.com/ForstaLabs/librelay-node/blob/master/examples/recvmessage.js</a></p>
+<h2>Message Sending</h2><p><em>This example reads text from standard input and forwards to a hard coded
+thread.</em></p>
+<pre class="prettyprint source lang-javascript"><code>const process = require('process');
+const relay = require('librelay');
+
+async function main() {
+    const argv = process.argv;
+    if (argv.length &lt; 4) {
+        console.error(`Usage: ${argv[0]} ${argv[1]} TO MESSAGE [THREADID]`);
+        return process.exit(2);
+    }
+
+    const sender = await relay.MessageSender.factory();
+    await sender.send({
+        to: argv[2],
+        text: argv[3],
+        threadId: argv[4] || '00000000-1111-2222-3333-444444444444'
+    });
+}
+
+main();</code></pre><p>Ref: <a href="https://github.com/ForstaLabs/librelay-node/blob/master/examples/sendmessage.js">https://github.com/ForstaLabs/librelay-node/blob/master/examples/sendmessage.js</a></p>
+<h2>Cryptography Notice</h2><p>This distribution includes cryptographic software. The country in which you
+currently reside may have restrictions on the import, possession, use, and/or
+re-export to another country, of encryption software.  BEFORE using any
+encryption software, please check your country's laws, regulations and
+policies concerning the import, possession, or use, and re-export of
+encryption software, to see if this is permitted.  See
+<a href="https://www.wassenaar.org/">https://www.wassenaar.org/</a> for more information.</p>
+<p>The U.S. Government Department of Commerce, Bureau of Industry and Security
+(BIS), has classified this software as Export Commodity Control Number (ECCN)
+5D002.C.1, which includes information security software using or performing
+cryptographic functions with asymmetric algorithms.  The form and manner of
+this distribution makes it eligible for export under the License Exception ENC
+Technology Software Unrestricted (TSU) exception (see the BIS Export
+Administration Regulations, Section 740.13) for both object code and source code.</p>
+<h2>License</h2><p>Licensed under the GPLv3: http://<a href="http://www.gnu.org/licenses/gpl-3.0.html">www.gnu.org/licenses/gpl-3.0.html</a></p>
+<ul>
+<li>Copyright 2014-2016 Open Whisper Systems</li>
+<li>Copyright 2017-2018 Forsta Inc.</li>
+</ul></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-backing.html">backing</a></li><li><a href="module-errors.html">errors</a></li><li><a href="module-eventing.html">eventing</a></li><li><a href="module-exchange.html">exchange</a></li><li><a href="module-util.html">util</a></li></ul><h3>Classes</h3><ul><li><a href="AtlasClient.html">AtlasClient</a></li><li><a href="Attachment.html">Attachment</a></li><li><a href="MessageReceiver.html">MessageReceiver</a></li><li><a href="MessageSender.html">MessageSender</a></li><li><a href="module-errors-NetworkError.html">NetworkError</a></li><li><a href="module-errors-ProtocolError.html">ProtocolError</a></li><li><a href="module-errors-RelayError.html">RelayError</a></li><li><a href="module-errors-UnregisteredUserError.html">UnregisteredUserError</a></li><li><a href="module-eventing-Event.html">Event</a></li><li><a href="module-eventing-EventTarget.html">EventTarget</a></li><li><a href="module-eventing-KeyChangeEvent.html">KeyChangeEvent</a></li><li><a href="module-exchange-Exchange.html">Exchange</a></li><li><a href="OutgoingMessage.html">OutgoingMessage</a></li><li><a href="SignalClient.html">SignalClient</a></li><li><a href="util.html">util</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Aug 16 2018 17:08:44 GMT-0600 (MDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
