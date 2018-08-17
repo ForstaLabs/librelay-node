@@ -33,6 +33,6 @@
     "jsdoc": "3.5.5"
   },
   "scripts": {
-    "docs": "jsdoc -d docs -P package.json --recurse -R README.md src"
+    "docs": "jsdoc -d docs -P package.json --verbose --recurse -R README.md -t node_modules/ink-docstrap/template src"
   }
 }
