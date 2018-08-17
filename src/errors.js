@@ -2,11 +2,17 @@
 /** @module */
 
 
-/** @class */
+/**
+ * Base class for all librelay errors.
+ */
 class RelayError extends Error {}
 
 
-/** @class */
+/**
+ * Thrown when trying to communicate with an invalid user.
+ *
+ * @extends {module:errors~RelayError}
+ */
 class UnregisteredUserError extends RelayError {
     constructor(addr, httpError) {
         super(httpError.message);
@@ -18,7 +24,12 @@ class UnregisteredUserError extends RelayError {
 }
 
 
-/** @class */
+/**
+ * Protocol errors come from the Signal or Atlas service.  They are request problems
+ * and not communication issues.
+ *
+ * @extends {module:errors~RelayError}
+ */
 class ProtocolError extends RelayError {
     constructor(code, response) {
         super();
@@ -32,7 +43,11 @@ class ProtocolError extends RelayError {
 }
 
 
-/** @class */
+/**
+ * Represents a connectivity issue.
+ *
+ * @extends {module:errors~RelayError}
+ */
 class NetworkError extends RelayError {
     constructor(a, b, c) {
         super(a, b, c);

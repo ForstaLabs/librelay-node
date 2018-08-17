@@ -19,6 +19,12 @@ class Attachment {
         this.mtime = mtime;
     }
 
+    /**
+     * Produce an {Attachment} instance based on a local file-system file.
+     *
+     * @param {string} filePath
+     * @param {string} [type] - The file mime type.
+     */
     static fromFile(filePath, type) {
         const fStat = fs.statSync(filePath);
         const buffer = fs.readFileSync(filePath);

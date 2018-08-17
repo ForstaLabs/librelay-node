@@ -4,7 +4,9 @@
 const storage = require('./storage');
 
 
-/** @class */
+/**
+ * @property {string} type - The event type (name).
+ */
 class Event {
     constructor(type) {
         this.type = type;
@@ -12,7 +14,14 @@ class Event {
 }
 
 
-/** @class */
+/**
+ * Fired from message sending and receiving contexts when a peer's identity
+ * key has changed.
+ *
+ * @event keychange
+ * @property {libsignal.UntrustedIdentityKeyError} keyError
+ * @property {string} type=keychange
+ */
 class KeyChangeEvent extends Event {
 
     constructor(keyError) {
@@ -20,6 +29,10 @@ class KeyChangeEvent extends Event {
         this.keyError = keyError;
     }
 
+    /**
+     * @method
+     * Can be called during event handling to accept the new identity key.
+     */
     async accept() {
         await storage.removeIdentity(this.keyError.addr);
         await storage.saveIdentity(this.keyError.addr, this.keyError.identityKey);
@@ -27,8 +40,14 @@ class KeyChangeEvent extends Event {
     }
 }
 
+/**
+ * @callback module:eventing~EventTarget~listenerCallback
+ * @param {Event} ev
+ */
 
-/** @class */
+/**
+ * Base class used to implement event dispatching and listening.
+ */
 class EventTarget {
 
     async dispatchEvent(ev) {
@@ -47,6 +66,10 @@ class EventTarget {
         }
     }
 
+    /**
+     * @param {string} eventName
+     * @param {module:eventing~EventTarget~listenerCallback} callback
+     */
     addEventListener(eventName, callback) {
         if (typeof eventName !== 'string') {
             throw new TypeError('First argument expects a string');
@@ -64,6 +87,10 @@ class EventTarget {
         }
     }
 
+    /**
+     * @param {string} eventName
+     * @param {module:eventing~EventTarget~listenerCallback} callback
+     */
     removeEventListener(eventName, callback) {
         if (typeof eventName !== 'string') {
             throw new TypeError('First argument expects a string');

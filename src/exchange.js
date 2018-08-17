@@ -9,13 +9,9 @@ const protobufs = require('./protobufs');
 const currentVersion = 1;
 const ExchangeClasses = {};
 
-
-
 /**
  * Interface for communicating with other Forsta devices.
- * {@link https://docs.google.com/document/d/16vKdrArCmr9QTXCaTNfo69Jp119OB3ipEXJJ0DfskkE Payload Definition}
- *
- * @class
+ * {@link https://goo.gl/eX7gyC Payload Definition}
  */
 class Exchange {
 
@@ -47,16 +43,6 @@ class Exchange {
         return this._signal;
     }
 
-    /**
-     * Normally you should not create an instance of this class yourself.
-     * Use {@link module:exchange.decode} or {@link module:exchange.create} instead.
-     *
-     * @param {Object} options
-     * @param {message_sender~MessageSender} [options.messageSender]
-     * @param {MessageReceiver} [options.messageReceiver]
-     * @param {AtlasClient} [options.atlas]
-     * @param {SignalClient} [options.signal]
-     */
     constructor(options) {
         options = options || {};
         this._msgSender = options.messageSender;
@@ -101,6 +87,11 @@ class Exchange {
         }, options));
     }
 
+    /**
+     * Listen for new message events on pertaining to this exchange's thread.
+     *
+     * @param {callback} callback
+     */
     async addMessageListener(callback) {
         // Add a filtered event listener on the message receiver that only
         // fires events for message events pertaining to our thread ID.
@@ -122,6 +113,11 @@ class Exchange {
         }
     }
 
+   /**
+     * Remove message event listener added by {@link addMessageListener}.
+     *
+     * @param {callback} callback
+     */
     async removeMessageListener(callback) {
         const idx = this._messageListeners.indexOf(callback);
         if (idx !== -1) {
@@ -187,172 +183,293 @@ class Exchange {
         }
     }
 
+    /**
+     * @returns {number} Expiration time for messages on this thread.
+     */
     getExpiration() {
         return this._expiration;
     }
 
+    /**
+     * @param {number} value - Expiration time for messages on this thread.
+     */
     setExpiration(value) {
         this._expiration = value;
     }
 
+    /**
+     * @returns {string} UUID for user that sent or is sending this message.
+     */
     getSource() {
         return this._source;
     }
 
+    /** 
+     * @param {string} UUID of user sending this message.
+     */
     setSource(value) {
         this._source = value;
     }
 
+    /**
+     * @returns {number} device ID of source user.
+     */
     getSourceDevice() {
         return this._sourceDevice;
     }
 
+    /**
+     * @param {number} value - Device ID of source user.
+     */
     setSourceDevice(value) {
         this._sourceDevice = value;
     }
 
+    /**
+     * @returns {number} Signal flags associated with this message.
+     */
     getFlags() {
         return this._flags;
     }
 
+    /**
+     * @param {number} value - Signal flags associated with this message.
+     */
     setFlags(value) {
         this._flags = value;
     }
 
+    /**
+     * Every message has a global and non-secret timestamp that is used to'
+     * cross reference things like read-receipts and session retransmits.
+     *
+     * @returns {number} Milliseconds since 1970.
+     */
     getTimestamp() {
         return this._timestamp;
     }
 
+    /**
+     * @param {number} value - Timestamp of this message in milliseconds since 1970.
+     */
     setTimestamp(value) {
         this._timestamp = value;
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @protected
+     * @param {Object} payload - Version specific payload object.
+     */
     decodePayload(payload) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @protected
+     */
     encodePayload() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * Get the message body.  E.g. the localized text for this message.
+     *
+     * @abstract
+     * @param {Object} options
+     */
     getBody(options) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * Set the message body.  E.g. the localized text for this message.
+     *
+     * @abstract
+     * @param {string} value - The body contents. E.g. text or html.
+     * @param {Object} [options]
+     */
     setBody(value, options) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @deprecated Use {@link getSource} instead 
+     */
     getSender() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @deprecated Use {@link setSource} instead 
+     * @param {string} value - The sender's UUID.
+     */
     setSender(value) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @returns {string} The universal tag expression for this exchange's thread. 
+     */
     getThreadExpression() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @param {string} value - The universal tag expression for this exchange's thread.
+     */
     setThreadExpression(value) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @returns {string} The UUID for this exhcange's thread.
+     */
     getThreadId() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @param {string} value - The thread UUID for this exchange.
+     */
     setThreadId(value) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @returns {('converstaion'|'announcement')} The thread type for this message.
+     */
     getThreadType() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @param {('conversation'|'announcement')} value - The thread type for this exchange.
+     */
     setThreadType(value) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @returns {?string} The optional thread title.
+     */
     getThreadTitle() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @param {?string} value - Localized thread title text.
+     */
     setThreadTitle(value) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @returns {string} The UUID for this message.
+     */
     getMessageId() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @param {string} value - UUID for this message.
+     */
     setMessageId(value) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @returns {string} The message type.
+     */
     getMessageType() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @param {string} value - The message type. E.g. "content", "control", ...
+     */
     setMessageType(value) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @returns {?string} The optional message reference.  E.g. the UUID of a prior
+     *                    message that this message refers/replies to. 
+     */
     getMessageRef() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @param {string} value - Message UUID to reference.  E.g. the replied to UUID.
+     */
     setMessageRef(value) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @returns {?Attachment[]} Attachments for this message.
+     */
     getAttachments() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @param {Attachment[]} value - Attachments array for this message. 
+     */
     setAttachments(value) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @returns {string} The device user agent string.
+     */
     getUserAgent() {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+      * @abstract
+      * @param {string} value - The user agent string for this message.
+      */
     setUserAgent(value) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @param {string} key - The data key to get.
+     * @returns {Object} The natively typed value for this data property.
+     */
     getDataProperty(key) {
         throw new Error("Subclasss impl required");
     }
 
-    /** @abstract */
+    /**
+     * @abstract
+     * @param {string} key - The data key to set.
+     * @param {Object} value - The natively typed value for this data property.
+     */
     setDataProperty(key, value) {
         throw new Error("Subclasss impl required");
     }
@@ -360,6 +477,10 @@ class Exchange {
 exports.Exchange = Exchange;
 
 
+/**
+ * @version 1
+ * @extends module:exchange~Exchange
+ */
 class ExchangeV1 extends Exchange {
 
     constructor(options) {
