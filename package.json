@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "eslint": "4.9.0",
+    "ink-docstrap": "github:docstrap/docstrap",
     "jsdoc": "3.5.5"
   },
   "scripts": {
