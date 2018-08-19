@@ -1,7 +1,5 @@
 // vim: ts=4:sw=4:expandtab
 
-'use strict';
-
 const AtlasClient = require('./atlas');
 const ProvisioningCipher = require('../provisioning_cipher');
 const SignalClient = require('./signal');
@@ -23,6 +21,16 @@ function generateSignalingKey() {
     return crypto.randomBytes(32 + 20);
 }
 
+/**
+ * Create a new identity key and create or replace the signal account.
+ * Note that any existing devices asssociated with your account will be
+ * purged as a result of this action.  This should only be used for new
+ * accounts or when you need to start over.
+ *
+ * @param {Object} [options]
+ * @param {string} [options.name] - The public name to store in the signal server.
+ * @param {AtlasClient} [options.atlasClient]
+ */
 async function registerAccount(options) {
     options = options || {};
     const atlasClient = options.atlasClient || await AtlasClient.factory();
@@ -61,7 +69,27 @@ async function registerAccount(options) {
     await sc.registerKeys(await sc.generateKeys());
 }
 
+/**
+ * Returned by {@link registerDevice}.
+ *
+ * @typedef {Object} RegisterDeviceResult
+ * @property {Promise} done - Resolves when the registration process has completed.
+ * @property {boolean} waiting - True while no auto-provisioning response has been received.
+ * @property {function} cancel - Cancel the provision process (async).
+ */
 
+/**
+ * Register an additional device with an existing signal account.
+ *
+ * @param {Object} [options]
+ * @param {string} [options.name] - The public name to store in the signal server.
+ * @param {AtlasClient} [options.atlasClient]
+ * @param {boolean} [options.autoProvision=true] - Attempt to use Forsta auto-provisioning.
+ *                                                 Requires existing online devices.
+ * @param {function} [options.onProvisionReady] - Callback executed when a peer has an provisioning
+ *                                                response.  Can be called more than once.
+ * @returns {RegisterDeviceResult}
+ */
 async function registerDevice(options) {
     options = options || {};
     const atlasClient = options.atlasClient || await AtlasClient.factory();

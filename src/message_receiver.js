@@ -16,7 +16,64 @@ const ENV_TYPES = protobufs.Envelope.lookup('Type').values;
 const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
 
 
-/** @class */
+/**
+ * New incoming message event from peer.  Does not include messages sent by your other
+ * devices.  Use the {@link sent} event for that.
+ *
+ * @event MessageReceiver#message
+ * @type {module:eventing~Event}
+ * @property {Object} data
+ * @property {number} data.timestamp - The senders sent timestamp.  Warning, this is subject
+ *                                     to clock skew;   Only use for cross referencing.
+ * @property {string} data.source - The user UUID of the sender.
+ * @property {number} data.sourceDevice - The device ID of the sender.
+ * @property {message} data.message - The raw data message.  See {@link exchange} instead.
+ * @property {module:exchange~Exchange} data.exchange - The recommended object for
+ *                                                      message/thread interaction.
+ * @property {boolean} data.keyChange - True if a keychange was detected and accepted.
+ */
+
+/**
+ * New outgoing message event from one of your devices.
+ *
+ * @event MessageReceiver#sent
+ * @type {module:eventing~Event}
+ * @property {Object} data
+ * @property {number} data.timestamp - The senders sent timestamp.  Warning, this is subject
+ *                                     to clock skew;   Only use for cross referencing.
+ * @property {string} data.source - The user UUID of the sender (You).
+ * @property {number} data.sourceDevice - The device ID of the sender (Your other device).
+ * @property {message} data.message - The raw data message.  See {@link exchange} instead.
+ * @property {destination} data.destination - The thread UUID this message was sent to.
+ * @property {module:exchange~Exchange} data.exchange - The recommended object for
+ *                                                      message/thread interaction.
+ */
+
+/**
+ * Delivery receipt from from the signal server.
+ *
+ * @event MessageReceiver#receipt
+ * @type {module:eventing~Event}
+ * @property {Object} proto - The message envelope.
+ */
+
+/**
+ * @event MessageReceiver#error
+ * @type {module:eventing~Event}
+ * @property {Error} error
+ */
+
+/**
+ * Primary interface for handling incoming messages.  User interaction is
+ * primarily performed via event listeners.
+ *
+ * @extends {module:eventing~EventTarget}
+ * @fires MessageReceiver#message
+ * @fires MessageReceiver#sent
+ * @fires MessageReceiver#receipt
+ * @fires MessageReceiver#error
+ * @fires keychange
+ */
 class MessageReceiver extends eventing.EventTarget {
 
     constructor({signal, atlas, addr, deviceId, signalingKey, noWebSocket}) {
@@ -67,6 +124,10 @@ class MessageReceiver extends eventing.EventTarget {
         }
     }
 
+    /** 
+     * Place the receiver into the connected state.  Once issued the receiver will
+     * maintain the connection until {@link stop} is called.
+     */
     async connect() {
         if (this._closing) {
             throw new Error("Invalid State: Already Closed");
@@ -94,13 +155,18 @@ class MessageReceiver extends eventing.EventTarget {
         this._connecting = null;
     }
 
+    /**
+     * Perform a shutdown of the websocket.
+     */
     close() {
         this._closing = true;
         this.wsr.close();
     }
 
+    /**
+     * Pop messages directly from the messages API until it's empty.
+     */
     async drain() {
-        /* Pop messages directly from the messages API until it's empty. */
         if (this.wsr) {
             throw new TypeError("Fetch is invalid when websocket is in use");
         }

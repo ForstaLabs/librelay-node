@@ -9,6 +9,7 @@ const protobufs = require('./protobufs');
 const currentVersion = 1;
 const ExchangeClasses = {};
 
+
 /**
  * Interface for communicating with other Forsta devices.
  * {@link https://goo.gl/eX7gyC Payload Definition}
@@ -473,7 +474,7 @@ class Exchange {
     setDataProperty(key, value) {
         throw new Error("Subclasss impl required");
     }
-};
+}
 exports.Exchange = Exchange;
 
 

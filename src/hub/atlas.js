@@ -38,6 +38,49 @@ function decodeJWT(encoded_token) {
 
 
 /**
+ * A tag is of the form, "@label:org".  They can be used for describing users or groups.
+ *
+ * @typedef {string} Tag
+ */
+
+/**
+ * Response from an authentication request indicating the type
+ * of auth challenge required to complete.
+ *
+ * @typedef {Object} AuthenticationRequestChallenge
+ * @property {string} type - The authentication type.  E.g. "password", "totp", etc..
+ * @property {function} authenticate - Handler function to be called with challenge response.
+ */
+
+/**
+ * Tag expression are informal arrangement of {@link Tag}s using set operators like
+ * "-" (minus) "+" (plus).  Paranthesis can be used to create logical groups too.
+ * For example "@joe + @brunchgroup" would respresent all users in the @brunchgroup
+ * as well as @joe (assuming he was not already in @brunchgroup).  You can exclude
+ * specific users with "-", ie. "@brunchgroup - @cindy" or even,
+ * "@brunchgroup - (@joe + @cindy)".
+ *
+ * @typedef {string} TagExpression
+ */
+
+/**
+ * A resolved tag expression is the computed set of data for a given {@link TagExpression}.
+ * It represents a snapshot of the current state of membership for a tag expression.
+ * The values can be cached for short periods but should avoid being stored perminantly
+ * as membership changes can occur behind the scenes.
+ *
+ * @typedef {Object} ResolvedTagExpression
+ * @property {string[]} userids - Array of UUIDs belonging to this tag expression.
+ * @property {string} universal - The universal (stable) representation of this tag expression
+ *                                This value should be used when managing Thread.expression
+ *                                values.
+ * @property {string[]} tagsIncluded - A list of tag UUIDs which are positively mentioned and
+ *                                     as such have affected the final membership.
+ * @property {string[]} tagsExcluded - A list of tag UUIDs which are negatively mentioned and
+ *                                     as such are NOT in the final membership.
+ */
+
+/**
  * @class
  */
 class AtlasClient {
@@ -66,6 +109,13 @@ class AtlasClient {
         return new this({url, jwt});
     }
 
+    /**
+     * Begin authentication process with Atlas server.
+     *
+     * @param {Tag} userTag
+     * @param {Object} [options] - Options to be fed to {@link 
+     * @returns {AuthenticationRequestChallenge}
+     */
     static async requestAuthentication(userTag, options) {
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
@@ -101,6 +151,16 @@ class AtlasClient {
         return smsCode => this.authenticateViaCode(userTag, smsCode, options);
     }
 
+    /**
+     * Authentication challenge response for SMS-code based users.  You probably don't need to call
+     * this method directly as it will be associated with
+     * {@link AuthenticationRequestChallenge.authenticate} in most cases.
+     *
+     * @param {Tag} userTag
+     * @param {string} code - The 6 digit SMS code you received
+     * @param {Object} [options] - Constructor options for {@link AtlasClient}
+     * @returns {AtlasClient}
+     */
     static async authenticateViaCode(userTag, code, options) {
         const client = new this(options || {});
         const [user, org] = client.parseTag(userTag);
@@ -109,24 +169,51 @@ class AtlasClient {
         return client;
     }
 
+    /**
+     * Authentication challenge response for API token users.   Typically used by bots.
+     *
+     * @param {string} userauthtoken - The secret auth token for this user.
+     * @param {Object} [options] - Constructor options for {@link AtlasClient}
+     * @returns {AtlasClient}
+     */
     static async authenticateViaToken(userauthtoken, options) {
         const client = new this(options || {});
         await client.authenticate({userauthtoken});
         return client;
     }
 
+    /**
+     * Authentication challenge response for password based users.  You probably don't need to call
+     * this method directly as it will be associated with
+     * {@link AuthenticationRequestChallenge.authenticate} in most cases.
+     *
+     * @param {Tag} userTag
+     * @param {string} password
+     * @param {Object} [options] - Constructor options for {@link AtlasClient}
+     * @returns {AtlasClient}
+     */
     static async authenticateViaPassword(fq_tag, password, options) {
         const client = new this(options || {});
         await client.authenticate({fq_tag, password});
         return client;
     }
 
+    /**
+     * Authentication challenge response for password+otp (two-factor auth) based users.
+     * You probably don't need to call this method directly as it will be associated with
+     * {@link AuthenticationRequestChallenge.authenticate} in most cases.
+     *
+     * @param {Tag} userTag
+     * @param {string} password
+     * @param {string} otp - 2FA code
+     * @param {Object} [options] - Constructor options for {@link AtlasClient}
+     * @returns {AtlasClient}
+     */
     static async authenticateViaPasswordOtp(fq_tag, password, otp, options) {
         const client = new this(options || {});
         await client.authenticate({fq_tag, password, otp});
         return client;
     }
-
 
     async authenticate(creds) {
         /* Creds should be an object of these supported forms..
@@ -167,6 +254,13 @@ class AtlasClient {
         }
     }
 
+    /**
+     * Perform an authenticated HTTP fetch to the Atlas service.
+     *
+     * @param {string} urn - The URN of the resource being requested.
+     * @param {Object} [options] - Standard fetch options.
+     * @returns {Object} - The response object (decoded JSON).
+     */
     async fetch(urn, options) {
         options = options || {};
         options.headers = options.headers || new fetch.Headers();
@@ -190,6 +284,13 @@ class AtlasClient {
         return respContent;
     }
 
+    /**
+     * A background task that will keep a sessions JWT fresh.
+     *
+     * @param {boolean} forceRefresh - Perform an immediate refresh.
+     * @param {function} authenticator - Auth handler used for doing JWT refresh.
+     * @param {function} [onRefresh] - Callback fired when refresh takes place.
+     */
     async maintainJWT(forceRefresh, authenticator, onRefresh) {
         /* Manage auth token expiration.  This routine will reschedule itself as needed. */
         let token = decodeJWT(await storage.getState(credStoreKey));
@@ -230,10 +331,25 @@ class AtlasClient {
         util.sleep(nextUpdate).then(this.maintainJWT.bind(this, false, authenticator, onRefresh));
     }
 
+    /**
+     * Take a tag expression (i.e "@foo + @bar - (@joe + @sarah)") and parse it into the
+     * current user membership.
+     *
+     * @param {TagExpression} expression 
+     * @returns {ResolvedTagExpression}
+     */
     async resolveTags(expression) {
         return (await this.resolveTagsBatch([expression]))[0];
     }
 
+    /**
+     * Like {@link resolveTags} but performs a batched fetch with an array
+     * of expressions.  The results are in the same order as the input array
+     * and invalid response will be set to undefined.
+     *
+     * @param {TagExpression[]} expression
+     * @returns {ResolvedTagExpression[]}
+     */
     async resolveTagsBatch(expressions) {
         if (!expressions.length) {
             return [];
@@ -269,6 +385,14 @@ class AtlasClient {
         return tags.join(' ');
     }
 
+    /**
+     * Get user objects based on a list of user IDs.
+     *
+     * @param {string[]} userIds - Array of user UUIDs to lookup.
+     * @param {boolean} [onlyDir] - Only use the Forsta public directory. E.g. only
+     *                              return lightweight user objects.
+     * @returns {Object[]} User objects.
+     */
     async getUsers(userIds, onlyDir) {
         const missing = new Set(userIds);
         const users = [];
@@ -289,6 +413,11 @@ class AtlasClient {
         return users;
     }
 
+    /**
+     *The current set of known devices for your account.
+     *
+     * @returns {Object[]} Device info objects.
+     */
     async getDevices() {
         try {
             return (await this.fetch('/v1/provision/account')).devices;
