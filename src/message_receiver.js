@@ -64,6 +64,11 @@ const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
  */
 
 /**
+ * @event MessageReceiver#keychange
+ * @type {module:eventing~KeyChangeEvent}
+ */
+
+/**
  * Primary interface for handling incoming messages.  User interaction is
  * primarily performed via event listeners.
  *
@@ -72,7 +77,7 @@ const DATA_FLAGS = protobufs.DataMessage.lookup('Flags').values;
  * @fires MessageReceiver#sent
  * @fires MessageReceiver#receipt
  * @fires MessageReceiver#error
- * @fires keychange
+ * @fires MessageReceiver#keychange
  */
 class MessageReceiver extends eventing.EventTarget {
 

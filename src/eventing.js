@@ -18,7 +18,7 @@ class Event {
  * Fired from message sending and receiving contexts when a peer's identity
  * key has changed.
  *
- * @event keychange
+ * @extends {module:eventing~Event}
  * @property {libsignal.UntrustedIdentityKeyError} keyError
  * @property {string} type=keychange
  */

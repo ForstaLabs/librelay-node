@@ -15,7 +15,53 @@ const util = require('./util');
 const uuid4 = require('uuid/v4');
 
 
-/** @class */
+/**
+ * @event MessageSender#error
+ * @type {module:eventing~Event}
+ * @property {Error} error
+ */
+
+/**
+ * @event MessageSender#keychange
+ * @type {module:eventing~KeyChangeEvent}
+ */
+
+/**
+ * @typedef {Object} Action
+ * @property {string} title - Text to be displayed in the recipients client.
+ * @property {string} action - The identifier included in responses.
+ * @property {string} [color]
+ */
+
+/**
+ * @typedef {Object} SendOptions
+ * @property {Object} options
+ * @property {TagExpression} options.to - Required unless {@link distribution} is set.
+ * @property {ResolvedTagExpression} options.distribution - This argument is required if {@link to} is ommited.
+ *                                                       
+ * @property {string} options.text - Text to send as message body.
+ * @property {string} [options.html] - HTML to send as message body.
+ * @property {Object} [options.data] - Misc data properties. (ADVANCED)
+ * @property {string} [options.threadId=uuid4()] - UUID of this thread
+ * @property {string} [options.threadType=conversation]
+ * @property {string} [options.messageType=content] - E.g. content, control, etc..
+ * @property {string} [options.messageId=uuid4()]
+ * @property {string} [options.messageRef] - UUID of message this message will be referencing (reply-to).
+ * @property {string} [options.expiration] - Offset for when message should expire.
+ * @property {Attachment[]} [options.attachments]
+ * @property {number} [options.flags] - Low level flags. (ADVANCED)
+ * @property {string} [options.userAgent=librelay]
+ * @property {boolean} [options.noSync=false] - When true a sync message will not be sent to your other
+ *                                              devices.  (ADVANCED)
+ * @property {Action[]} [options.actions] - (ADVANCED)
+ */
+
+/**
+ * Primary interface for sending messages to peers (or your other devices).
+ *
+ * @fires MessageSender#error
+ * @fires MessageSender#keychange
+ */
 class MessageSender extends eventing.EventTarget {
 
     /**
@@ -60,9 +106,8 @@ class MessageSender extends eventing.EventTarget {
     /**
      * Send a message
      *
-     * @param {Object} options
-     * @param {string} options.to - Tag notation to send to. @example @jerry.lewis:supercorp
-     * @param {Object} options.distribution - Distribution object produced by {@link module:hub.resolveTags}
+     * @param {SendOptions} options
+     * @returns {OutgoingMessage}
      */
     async send({
         to=null, distribution=null,

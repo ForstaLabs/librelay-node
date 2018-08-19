@@ -69,8 +69,7 @@ class Exchange {
     /**
      * Send a message to this exchange's thread.
      *
-     * @param {Object} options - Send options.  See {@link MessageSender#send} for
-     *        complete list of options.
+     * @param {SendOptions} options - All standard send options are supported plus...
      * @param {bool} [options.onlySender] - Set to true if you want to send a message to
      *        only the original sender of this exchange object.  Used for private replies
      *        to an individual regardless of the thread distribution.
