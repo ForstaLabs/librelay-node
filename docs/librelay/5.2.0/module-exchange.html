@@ -1,136 +1,52 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width">
-	<title>Documentation Module: exchange</title>
+    <meta charset="utf-8">
+    <title>exchange - Documentation</title>
 
-	<!--[if lt IE 9]>
-	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-	<![endif]-->
-	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
-
-	<link type="text/css" rel="stylesheet" href="styles/site.simplex.css">
-
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
 </head>
-
 <body>
 
-<div class="navbar navbar-default navbar-fixed-top ">
-<div class="container">
-	<div class="navbar-header">
-		<a class="navbar-brand" href="index.html">Documentation</a>
-		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-        </button>
-	</div>
-	<div class="navbar-collapse collapse" id="topNavigation">
-		<ul class="nav navbar-nav">
-			
-			<li class="dropdown">
-				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
-				<ul class="dropdown-menu ">
-					<li><a href="module-backing.html">backing</a></li><li><a href="module-errors.html">errors</a></li><li><a href="module-eventing.html">eventing</a></li><li><a href="module-exchange.html">exchange</a></li><li><a href="module-util.html">util</a></li>
-				</ul>
-			</li>
-			
-			<li class="dropdown">
-				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
-				<ul class="dropdown-menu ">
-					<li><a href="AtlasClient.html">AtlasClient</a></li><li><a href="Attachment.html">Attachment</a></li><li><a href="MessageReceiver.html">MessageReceiver</a></li><li><a href="MessageSender.html">MessageSender</a></li><li><a href="module-errors-NetworkError.html">errors~NetworkError</a></li><li><a href="module-errors-ProtocolError.html">errors~ProtocolError</a></li><li><a href="module-errors-RelayError.html">errors~RelayError</a></li><li><a href="module-errors-UnregisteredUserError.html">errors~UnregisteredUserError</a></li><li><a href="module-eventing-Event.html">eventing~Event</a></li><li><a href="module-eventing-EventTarget.html">eventing~EventTarget</a></li><li><a href="module-exchange-Exchange.html">exchange~Exchange</a></li><li><a href="module-exchange-ExchangeV1.html">exchange~ExchangeV1</a></li><li><a href="OutgoingMessage.html">OutgoingMessage</a></li><li><a href="SignalClient.html">SignalClient</a></li><li><a href="util.html">util</a></li>
-				</ul>
-			</li>
-			
-			<li class="dropdown">
-				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
-				<ul class="dropdown-menu ">
-					<li><a href="module-eventing.html#~event:keychange">event:keychange</a></li>
-				</ul>
-			</li>
-			
-		</ul>
-        
-            <div class="col-sm-3 col-md-3">
-                <form class="navbar-form" role="search">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
-                        <div class="input-group-btn">
-                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        
-	</div>
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
 
-</div>
-</div>
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AtlasClient.html">AtlasClient</a><ul class='methods'><li data-type='method'><a href="AtlasClient.html#.authenticateViaCode">authenticateViaCode</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaPassword">authenticateViaPassword</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaPasswordOtp">authenticateViaPasswordOtp</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaToken">authenticateViaToken</a></li><li data-type='method'><a href="AtlasClient.html#.factory">factory</a></li><li data-type='method'><a href="AtlasClient.html#.requestAuthentication">requestAuthentication</a></li><li data-type='method'><a href="AtlasClient.html#fetch">fetch</a></li><li data-type='method'><a href="AtlasClient.html#getDevices">getDevices</a></li><li data-type='method'><a href="AtlasClient.html#getUsers">getUsers</a></li><li data-type='method'><a href="AtlasClient.html#maintainJWT">maintainJWT</a></li><li data-type='method'><a href="AtlasClient.html#resolveTags">resolveTags</a></li><li data-type='method'><a href="AtlasClient.html#resolveTagsBatch">resolveTagsBatch</a></li></ul></li><li><a href="Attachment.html">Attachment</a><ul class='methods'><li data-type='method'><a href="Attachment.html#.fromFile">fromFile</a></li></ul></li><li><a href="MessageReceiver.html">MessageReceiver</a><ul class='methods'><li data-type='method'><a href="MessageReceiver.html#.factory">factory</a></li><li data-type='method'><a href="MessageReceiver.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="MessageReceiver.html#close">close</a></li><li data-type='method'><a href="MessageReceiver.html#connect">connect</a></li><li data-type='method'><a href="MessageReceiver.html#drain">drain</a></li><li data-type='method'><a href="MessageReceiver.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="MessageSender.html">MessageSender</a><ul class='methods'><li data-type='method'><a href="MessageSender.html#.factory">factory</a></li><li data-type='method'><a href="MessageSender.html#send">send</a></li></ul></li><li><a href="module-errors-NetworkError.html">NetworkError</a></li><li><a href="module-errors-ProtocolError.html">ProtocolError</a></li><li><a href="module-errors-RelayError.html">RelayError</a></li><li><a href="module-errors-UnregisteredUserError.html">UnregisteredUserError</a></li><li><a href="module-eventing-Event.html">Event</a></li><li><a href="module-eventing-EventTarget.html">EventTarget</a><ul class='methods'><li data-type='method'><a href="module-eventing-EventTarget.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="module-eventing-EventTarget.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="module-eventing-KeyChangeEvent.html">KeyChangeEvent</a></li><li><a href="module-exchange-Exchange.html">Exchange</a><ul class='methods'><li data-type='method'><a href="module-exchange-Exchange.html#addMessageListener">addMessageListener</a></li><li data-type='method'><a href="module-exchange-Exchange.html#decodePayload">decodePayload</a></li><li data-type='method'><a href="module-exchange-Exchange.html#encodePayload">encodePayload</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getAttachments">getAttachments</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getBody">getBody</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getDataProperty">getDataProperty</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getExpiration">getExpiration</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getFlags">getFlags</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageId">getMessageId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageRef">getMessageRef</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageType">getMessageType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSender">getSender</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSource">getSource</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSourceDevice">getSourceDevice</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadExpression">getThreadExpression</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadId">getThreadId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadTitle">getThreadTitle</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadType">getThreadType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getUserAgent">getUserAgent</a></li><li data-type='method'><a href="module-exchange-Exchange.html#recvMessages">recvMessages</a></li><li data-type='method'><a href="module-exchange-Exchange.html#removeMessageListener">removeMessageListener</a></li><li data-type='method'><a href="module-exchange-Exchange.html#send">send</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setAttachments">setAttachments</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setBody">setBody</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setDataProperty">setDataProperty</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setExpiration">setExpiration</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setFlags">setFlags</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageId">setMessageId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageRef">setMessageRef</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageType">setMessageType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSender">setSender</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSource">setSource</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSourceDevice">setSourceDevice</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadExpression">setThreadExpression</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadId">setThreadId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadTitle">setThreadTitle</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadType">setThreadType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setTimestamp">setTimestamp</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setUserAgent">setUserAgent</a></li></ul></li><li><a href="module-exchange-ExchangeV1.html">ExchangeV1</a><ul class='methods'><li data-type='method'><a href="module-exchange-ExchangeV1.html#addMessageListener">addMessageListener</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#decodePayload">decodePayload</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#encodePayload">encodePayload</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getAttachments">getAttachments</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getBody">getBody</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getDataProperty">getDataProperty</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getExpiration">getExpiration</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getFlags">getFlags</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageId">getMessageId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageRef">getMessageRef</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageType">getMessageType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSender">getSender</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSource">getSource</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSourceDevice">getSourceDevice</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadExpression">getThreadExpression</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadId">getThreadId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadTitle">getThreadTitle</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadType">getThreadType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getUserAgent">getUserAgent</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#recvMessages">recvMessages</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#removeMessageListener">removeMessageListener</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#send">send</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setAttachments">setAttachments</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setBody">setBody</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setDataProperty">setDataProperty</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setExpiration">setExpiration</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setFlags">setFlags</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageId">setMessageId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageRef">setMessageRef</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageType">setMessageType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSender">setSender</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSource">setSource</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSourceDevice">setSourceDevice</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadExpression">setThreadExpression</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadId">setThreadId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadTitle">setThreadTitle</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadType">setThreadType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setTimestamp">setTimestamp</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setUserAgent">setUserAgent</a></li></ul></li><li><a href="OutgoingMessage.html">OutgoingMessage</a></li><li><a href="SignalClient.html">SignalClient</a><ul class='methods'><li data-type='method'><a href="SignalClient.html#.factory">factory</a></li></ul></li><li><a href="util.html">util</a></li></ul><h3>Modules</h3><ul><li><a href="module-backing.html">backing</a></li><li><a href="module-errors.html">errors</a></li><li><a href="module-eventing.html">eventing</a><ul class='methods'><li data-type='method'><a href="module-eventing.html#~accept">accept</a></li></ul></li><li><a href="module-exchange.html">exchange</a><ul class='methods'><li data-type='method'><a href="module-exchange.html#.create">create</a></li><li data-type='method'><a href="module-exchange.html#.decode">decode</a></li></ul></li><li><a href="module-util.html">util</a><ul class='methods'><li data-type='method'><a href="module-util.html#~consoleInput">consoleInput</a></li><li data-type='method'><a href="module-util.html#~never">never</a></li><li data-type='method'><a href="module-util.html#~sleep">sleep</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="MessageReceiver.html#event:error">error</a></li><li><a href="MessageReceiver.html#event:keychange">keychange</a></li><li><a href="MessageReceiver.html#event:message">message</a></li><li><a href="MessageReceiver.html#event:receipt">receipt</a></li><li><a href="MessageReceiver.html#event:sent">sent</a></li><li><a href="MessageSender.html#event:error">error</a></li><li><a href="MessageSender.html#event:keychange">keychange</a></li></ul><h3>Global</h3><ul><li><a href="global.html#registerAccount">registerAccount</a></li><li><a href="global.html#registerDevice">registerDevice</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">exchange</h1>
+    
+
+    
 
 
-<div class="container" id="toc-content">
-<div class="row">
 
-	
-	<div class="col-md-8">
-	
-		<div id="main">
-			
 
-	<h1 class="page-title">Module: exchange</h1>
 <section>
 
 <header>
     
+        
+    
 </header>
-
 
 <article>
     <div class="container-overview">
     
         
-
-        
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
 
         
     
@@ -152,7 +68,7 @@
         </dl>
     
 
-    
+     
 
     
 
@@ -161,32 +77,80 @@
     
         <h3 class="subsection-title">Methods</h3>
 
-        <dl>
-            
-<hr>
-<dt>
-    <h4 class="name" id=".create"><span class="type-signature">&lt;static> </span>create( [options])</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Build a new Exchange object with our most current exchange version.
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
         
+            
 
-<table class="params table table-striped">
+    
+
+    <h4 class="name" id=".create"><span class="type-signature">(static) </span>create<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="module-exchange-Exchange.html">module:exchange~Exchange</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line665">line 665</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Build a new Exchange object with our most current exchange version.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -196,7 +160,7 @@
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -217,7 +181,6 @@
             
                 
 <span class="param-type">Object</span>
-
 
 
             
@@ -244,65 +207,25 @@
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <h5>Returns:</h5>
-    
-            
 
 
-<dl>
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -311,42 +234,86 @@
 <span class="param-type"><a href="module-exchange-Exchange.html">module:exchange~Exchange</a></span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id=".decode"><span class="type-signature">&lt;static> </span>decode(dataMessage [, options])</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Return a versioned Exchange instance based on the protocol buffer argument.
-    </div>
-    
 
     
 
+    <h4 class="name" id=".decode"><span class="type-signature">(static) </span>decode<span class="signature">(dataMessage, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="module-exchange-Exchange.html">module:exchange~Exchange</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line642">line 642</a>
+    </li></ul></dd>
     
 
     
-    
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Return a versioned Exchange instance based on the protocol buffer argument.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -356,7 +323,7 @@
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -377,7 +344,6 @@
             
                 
 <span class="param-type">protobufs.DataMessage</span>
-
 
 
             
@@ -411,7 +377,6 @@
 <span class="param-type">Object</span>
 
 
-
             
             </td>
 
@@ -436,65 +401,25 @@
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <h5>Returns:</h5>
-    
-            
 
 
-<dl>
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -503,17 +428,13 @@
 <span class="param-type"><a href="module-exchange-Exchange.html">module:exchange~Exchange</a></span>
 
 
-
     </dd>
 </dl>
 
+    
+
 
         
-
-    
-</dd>
-
-        </dl>
     
 
     
@@ -526,132 +447,15 @@
 
 
 
-		</div>
-	</div>
-
-	<div class="clearfix"></div>
-
-	
-		<div class="col-md-3">
-			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
-		</div>
-	
-
-</div>
 </div>
 
-
-    <div class="modal fade" id="searchResults">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">Search results</h4>
-          </div>
-          <div class="modal-body"></div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div>
-
+<br class="clear">
 
 <footer>
-
-
-<span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
-	
-		on 2018-08-16T19:53:38-06:00
-	
-	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
-</span>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Aug 19 2018 13:44:32 GMT-0600 (MDT) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
-<script src="scripts/docstrap.lib.js"></script>
-<script src="scripts/toc.js"></script>
-
-    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
-
-
-<script>
-$( function () {
-	$( "[id*='$']" ).each( function () {
-		var $this = $( this );
-
-		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
-	} );
-
-	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
-		var $this = $( this );
-
-		var example = $this.find( "code" );
-		exampleText = example.html();
-		var lang = /{@lang (.*?)}/.exec( exampleText );
-		if ( lang && lang[1] ) {
-			exampleText = exampleText.replace( lang[0], "" );
-			example.html( exampleText );
-			lang = lang[1];
-		} else {
-			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
-			lang = langClassMatch ? langClassMatch[1] : "javascript";
-		}
-
-		if ( lang ) {
-
-			$this
-			.addClass( "sunlight-highlight-" + lang )
-			.addClass( "linenums" )
-			.html( example.html() );
-
-		}
-	} );
-
-	Sunlight.highlightAll( {
-		lineNumbers : false,
-		showMenu : true,
-		enableDoclinks : true
-	} );
-
-	$.catchAnchorLinks( {
-        navbarOffset: 10
-	} );
-	$( "#toc" ).toc( {
-		anchorName  : function ( i, heading, prefix ) {
-			return $( heading ).attr( "id" ) || ( prefix + i );
-		},
-		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
-		showAndHide : false,
-		smoothScrolling: true
-	} );
-
-	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
-	$( '.dropdown-toggle' ).dropdown();
-
-    $( "table" ).each( function () {
-      var $this = $( this );
-      $this.addClass('table');
-    } );
-
-} );
-</script>
-
-
-
-<!--Navigation and Symbol Display-->
-
-
-<!--Google Analytics-->
-
-
-
-    <script type="text/javascript">
-        $(document).ready(function() {
-            SearcherDisplay.init();
-        });
-    </script>
-
-
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
 </body>
 </html>

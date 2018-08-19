@@ -1,85 +1,40 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width">
-	<title>Documentation Class: ExchangeV1</title>
+    <meta charset="utf-8">
+    <title>ExchangeV1 - Documentation</title>
 
-	<!--[if lt IE 9]>
-	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-	<![endif]-->
-	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
-
-	<link type="text/css" rel="stylesheet" href="styles/site.simplex.css">
-
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
 </head>
-
 <body>
 
-<div class="navbar navbar-default navbar-fixed-top ">
-<div class="container">
-	<div class="navbar-header">
-		<a class="navbar-brand" href="index.html">Documentation</a>
-		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-        </button>
-	</div>
-	<div class="navbar-collapse collapse" id="topNavigation">
-		<ul class="nav navbar-nav">
-			
-			<li class="dropdown">
-				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
-				<ul class="dropdown-menu ">
-					<li><a href="module-backing.html">backing</a></li><li><a href="module-errors.html">errors</a></li><li><a href="module-eventing.html">eventing</a></li><li><a href="module-exchange.html">exchange</a></li><li><a href="module-util.html">util</a></li>
-				</ul>
-			</li>
-			
-			<li class="dropdown">
-				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
-				<ul class="dropdown-menu ">
-					<li><a href="AtlasClient.html">AtlasClient</a></li><li><a href="Attachment.html">Attachment</a></li><li><a href="MessageReceiver.html">MessageReceiver</a></li><li><a href="MessageSender.html">MessageSender</a></li><li><a href="module-errors-NetworkError.html">errors~NetworkError</a></li><li><a href="module-errors-ProtocolError.html">errors~ProtocolError</a></li><li><a href="module-errors-RelayError.html">errors~RelayError</a></li><li><a href="module-errors-UnregisteredUserError.html">errors~UnregisteredUserError</a></li><li><a href="module-eventing-Event.html">eventing~Event</a></li><li><a href="module-eventing-EventTarget.html">eventing~EventTarget</a></li><li><a href="module-exchange-Exchange.html">exchange~Exchange</a></li><li><a href="module-exchange-ExchangeV1.html">exchange~ExchangeV1</a></li><li><a href="OutgoingMessage.html">OutgoingMessage</a></li><li><a href="SignalClient.html">SignalClient</a></li><li><a href="util.html">util</a></li>
-				</ul>
-			</li>
-			
-			<li class="dropdown">
-				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
-				<ul class="dropdown-menu ">
-					<li><a href="module-eventing.html#~event:keychange">event:keychange</a></li>
-				</ul>
-			</li>
-			
-		</ul>
-        
-            <div class="col-sm-3 col-md-3">
-                <form class="navbar-form" role="search">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
-                        <div class="input-group-btn">
-                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        
-	</div>
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
 
-</div>
-</div>
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AtlasClient.html">AtlasClient</a><ul class='methods'><li data-type='method'><a href="AtlasClient.html#.authenticateViaCode">authenticateViaCode</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaPassword">authenticateViaPassword</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaPasswordOtp">authenticateViaPasswordOtp</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaToken">authenticateViaToken</a></li><li data-type='method'><a href="AtlasClient.html#.factory">factory</a></li><li data-type='method'><a href="AtlasClient.html#.requestAuthentication">requestAuthentication</a></li><li data-type='method'><a href="AtlasClient.html#fetch">fetch</a></li><li data-type='method'><a href="AtlasClient.html#getDevices">getDevices</a></li><li data-type='method'><a href="AtlasClient.html#getUsers">getUsers</a></li><li data-type='method'><a href="AtlasClient.html#maintainJWT">maintainJWT</a></li><li data-type='method'><a href="AtlasClient.html#resolveTags">resolveTags</a></li><li data-type='method'><a href="AtlasClient.html#resolveTagsBatch">resolveTagsBatch</a></li></ul></li><li><a href="Attachment.html">Attachment</a><ul class='methods'><li data-type='method'><a href="Attachment.html#.fromFile">fromFile</a></li></ul></li><li><a href="MessageReceiver.html">MessageReceiver</a><ul class='methods'><li data-type='method'><a href="MessageReceiver.html#.factory">factory</a></li><li data-type='method'><a href="MessageReceiver.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="MessageReceiver.html#close">close</a></li><li data-type='method'><a href="MessageReceiver.html#connect">connect</a></li><li data-type='method'><a href="MessageReceiver.html#drain">drain</a></li><li data-type='method'><a href="MessageReceiver.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="MessageSender.html">MessageSender</a><ul class='methods'><li data-type='method'><a href="MessageSender.html#.factory">factory</a></li><li data-type='method'><a href="MessageSender.html#send">send</a></li></ul></li><li><a href="module-errors-NetworkError.html">NetworkError</a></li><li><a href="module-errors-ProtocolError.html">ProtocolError</a></li><li><a href="module-errors-RelayError.html">RelayError</a></li><li><a href="module-errors-UnregisteredUserError.html">UnregisteredUserError</a></li><li><a href="module-eventing-Event.html">Event</a></li><li><a href="module-eventing-EventTarget.html">EventTarget</a><ul class='methods'><li data-type='method'><a href="module-eventing-EventTarget.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="module-eventing-EventTarget.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="module-eventing-KeyChangeEvent.html">KeyChangeEvent</a></li><li><a href="module-exchange-Exchange.html">Exchange</a><ul class='methods'><li data-type='method'><a href="module-exchange-Exchange.html#addMessageListener">addMessageListener</a></li><li data-type='method'><a href="module-exchange-Exchange.html#decodePayload">decodePayload</a></li><li data-type='method'><a href="module-exchange-Exchange.html#encodePayload">encodePayload</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getAttachments">getAttachments</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getBody">getBody</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getDataProperty">getDataProperty</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getExpiration">getExpiration</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getFlags">getFlags</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageId">getMessageId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageRef">getMessageRef</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageType">getMessageType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSender">getSender</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSource">getSource</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSourceDevice">getSourceDevice</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadExpression">getThreadExpression</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadId">getThreadId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadTitle">getThreadTitle</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadType">getThreadType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getUserAgent">getUserAgent</a></li><li data-type='method'><a href="module-exchange-Exchange.html#recvMessages">recvMessages</a></li><li data-type='method'><a href="module-exchange-Exchange.html#removeMessageListener">removeMessageListener</a></li><li data-type='method'><a href="module-exchange-Exchange.html#send">send</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setAttachments">setAttachments</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setBody">setBody</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setDataProperty">setDataProperty</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setExpiration">setExpiration</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setFlags">setFlags</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageId">setMessageId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageRef">setMessageRef</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageType">setMessageType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSender">setSender</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSource">setSource</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSourceDevice">setSourceDevice</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadExpression">setThreadExpression</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadId">setThreadId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadTitle">setThreadTitle</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadType">setThreadType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setTimestamp">setTimestamp</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setUserAgent">setUserAgent</a></li></ul></li><li><a href="module-exchange-ExchangeV1.html">ExchangeV1</a><ul class='methods'><li data-type='method'><a href="module-exchange-ExchangeV1.html#addMessageListener">addMessageListener</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#decodePayload">decodePayload</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#encodePayload">encodePayload</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getAttachments">getAttachments</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getBody">getBody</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getDataProperty">getDataProperty</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getExpiration">getExpiration</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getFlags">getFlags</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageId">getMessageId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageRef">getMessageRef</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageType">getMessageType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSender">getSender</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSource">getSource</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSourceDevice">getSourceDevice</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadExpression">getThreadExpression</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadId">getThreadId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadTitle">getThreadTitle</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadType">getThreadType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getUserAgent">getUserAgent</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#recvMessages">recvMessages</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#removeMessageListener">removeMessageListener</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#send">send</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setAttachments">setAttachments</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setBody">setBody</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setDataProperty">setDataProperty</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setExpiration">setExpiration</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setFlags">setFlags</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageId">setMessageId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageRef">setMessageRef</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageType">setMessageType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSender">setSender</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSource">setSource</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSourceDevice">setSourceDevice</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadExpression">setThreadExpression</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadId">setThreadId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadTitle">setThreadTitle</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadType">setThreadType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setTimestamp">setTimestamp</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setUserAgent">setUserAgent</a></li></ul></li><li><a href="OutgoingMessage.html">OutgoingMessage</a></li><li><a href="SignalClient.html">SignalClient</a><ul class='methods'><li data-type='method'><a href="SignalClient.html#.factory">factory</a></li></ul></li><li><a href="util.html">util</a></li></ul><h3>Modules</h3><ul><li><a href="module-backing.html">backing</a></li><li><a href="module-errors.html">errors</a></li><li><a href="module-eventing.html">eventing</a><ul class='methods'><li data-type='method'><a href="module-eventing.html#~accept">accept</a></li></ul></li><li><a href="module-exchange.html">exchange</a><ul class='methods'><li data-type='method'><a href="module-exchange.html#.create">create</a></li><li data-type='method'><a href="module-exchange.html#.decode">decode</a></li></ul></li><li><a href="module-util.html">util</a><ul class='methods'><li data-type='method'><a href="module-util.html#~consoleInput">consoleInput</a></li><li data-type='method'><a href="module-util.html#~never">never</a></li><li data-type='method'><a href="module-util.html#~sleep">sleep</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="MessageReceiver.html#event:error">error</a></li><li><a href="MessageReceiver.html#event:keychange">keychange</a></li><li><a href="MessageReceiver.html#event:message">message</a></li><li><a href="MessageReceiver.html#event:receipt">receipt</a></li><li><a href="MessageReceiver.html#event:sent">sent</a></li><li><a href="MessageSender.html#event:error">error</a></li><li><a href="MessageSender.html#event:keychange">keychange</a></li></ul><h3>Global</h3><ul><li><a href="global.html#registerAccount">registerAccount</a></li><li><a href="global.html#registerDevice">registerDevice</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">ExchangeV1</h1>
+    
+
+    
 
 
-<div class="container" id="toc-content">
-<div class="row">
 
-	
-	<div class="col-md-8">
-	
-		<div id="main">
-			
 
-	<h1 class="page-title">Class: ExchangeV1</h1>
 <section>
 
 <header>
@@ -93,45 +48,32 @@
     
 </header>
 
-
 <article>
     <div class="container-overview">
     
         
-<hr>
-<dt>
-    <h4 class="name" id="ExchangeV1"><span class="type-signature"></span>new ExchangeV1()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="ExchangeV1"><span class="type-signature"></span>new ExchangeV1<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line484">line 484</a>
+    </li></ul></dd>
     
 
-	
-	<dt class="tag-version method-doc-label method-doc-details-label">Version:</dt>
-	<dd class="tag-version">
-		<ul class="dummy">
-			<li>1</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
+    
+    <dt class="tag-version">Version:</dt>
+    <dd class="tag-version"><ul class="dummy"><li>1</li></ul></dd>
     
 
     
@@ -140,42 +82,56 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     
     </div>
@@ -197,7 +153,7 @@
 
     
 
-    
+     
 
     
 
@@ -206,32 +162,85 @@
     
         <h3 class="subsection-title">Methods</h3>
 
-        <dl>
-            
-<hr>
-<dt>
-    <h4 class="name" id="addMessageListener"><span class="type-signature">&lt;async> </span>addMessageListener(callback)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Listen for new message events on pertaining to this exchange's thread.
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
         
+            
 
-<table class="params table table-striped">
+    
+
+    <h4 class="name" id="addMessageListener"><span class="type-signature">(async) </span>addMessageListener<span class="signature">(callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line95">line 95</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#addMessageListener">module:exchange~Exchange#addMessageListener</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Listen for new message events on pertaining to this exchange's thread.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -262,7 +271,6 @@
 <span class="param-type">callback</span>
 
 
-
             
             </td>
 
@@ -277,81 +285,41 @@
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#addMessageListener">module:exchange~Exchange#addMessageListener</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="decodePayload"><span class="type-signature">&lt;abstract, protected> </span>decodePayload(payload)</h4>
+
     
+
+    <h4 class="name" id="decodePayload"><span class="type-signature">(abstract, protected) </span>decodePayload<span class="signature">(payload)</span><span class="type-signature"></span></h4>
+
     
-</dt>
-<dd>
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line264">line 264</a>
+    </li></ul></dd>
+    
 
     
 
@@ -360,11 +328,53 @@
     
 
     
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#decodePayload">module:exchange~Exchange#decodePayload</a>
+    </li></ul></dd>
     
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -395,7 +405,6 @@
 <span class="param-type">Object</span>
 
 
-
             
             </td>
 
@@ -410,31 +419,39 @@
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="encodePayload"><span class="type-signature">(abstract, protected) </span>encodePayload<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#decodePayload">module:exchange~Exchange#decodePayload</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#decodePayload">module:exchange~Exchange#decodePayload</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line272">line 272</a>
     </li></ul></dd>
     
 
@@ -443,81 +460,6 @@
     
 
     
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="encodePayload"><span class="type-signature">&lt;abstract, protected> </span>encodePayload()</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#encodePayload">module:exchange~Exchange#encodePayload</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -532,80 +474,77 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getAttachments"><span class="type-signature">&lt;abstract> </span>getAttachments()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getAttachments"><span class="type-signature">(abstract) </span>getAttachments<span class="signature">()</span><span class="type-signature"> &rarr; (nullable) {Array.&lt;<a href="Attachment.html">Attachment</a>>}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line431">line 431</a>
+    </li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getAttachments">module:exchange~Exchange#getAttachments</a>
-			</li>
-		</ul>
-	</dd>
-	
+    
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -620,49 +559,59 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     Attachments for this message.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -671,42 +620,91 @@
 <span class="param-type">Array.&lt;<a href="Attachment.html">Attachment</a>></span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getBody"><span class="type-signature">&lt;abstract> </span>getBody(options)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Get the message body.  E.g. the localized text for this message.
-    </div>
-    
 
     
 
+    <h4 class="name" id="getBody"><span class="type-signature">(abstract) </span>getBody<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line282">line 282</a>
+    </li></ul></dd>
     
 
     
-    
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#getBody">module:exchange~Exchange#getBody</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Get the message body.  E.g. the localized text for this message.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -737,7 +735,6 @@
 <span class="param-type">Object</span>
 
 
-
             
             </td>
 
@@ -752,31 +749,39 @@
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="getDataProperty"><span class="type-signature">(abstract) </span>getDataProperty<span class="signature">(key)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getBody">module:exchange~Exchange#getBody</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#getBody">module:exchange~Exchange#getBody</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line464">line 464</a>
     </li></ul></dd>
     
 
@@ -786,65 +791,54 @@
 
     
 
-	
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#getDataProperty">module:exchange~Exchange#getDataProperty</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="getDataProperty"><span class="type-signature">&lt;abstract> </span>getDataProperty(key)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -875,7 +869,6 @@
 <span class="param-type">string</span>
 
 
-
             
             </td>
 
@@ -890,31 +883,72 @@
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The natively typed value for this data property.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
 
     
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getExpiration"><span class="type-signature"></span>getExpiration<span class="signature">()</span><span class="type-signature"> &rarr; {number}</span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getDataProperty">module:exchange~Exchange#getDataProperty</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#getDataProperty">module:exchange~Exchange#getDataProperty</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line189">line 189</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#getExpiration">module:exchange~Exchange#getExpiration</a>
     </li></ul></dd>
     
 
@@ -924,156 +958,61 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <h5>Returns:</h5>
-    
-            
-<div class="param-desc">
-    The natively typed value for this data property.
-</div>
 
 
 
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
 
 
 
-    </dd>
-</dl>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
 
         
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="getExpiration"><span class="type-signature"></span>getExpiration()</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getExpiration">module:exchange~Exchange#getExpiration</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <h5>Returns:</h5>
-    
-            
 <div class="param-desc">
     Expiration time for messages on this thread.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1082,54 +1021,31 @@
 <span class="param-type">number</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getFlags"><span class="type-signature"></span>getFlags()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getFlags"><span class="type-signature"></span>getFlags<span class="signature">()</span><span class="type-signature"> &rarr; {number}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
     
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getFlags">module:exchange~Exchange#getFlags</a>
-			</li>
-		</ul>
-	</dd>
-	
-
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line231">line 231</a>
+    </li></ul></dd>
     
 
     
@@ -1137,50 +1053,73 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#getFlags">module:exchange~Exchange#getFlags</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     Signal flags associated with this message.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1189,53 +1128,38 @@
 <span class="param-type">number</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getMessageId"><span class="type-signature">&lt;abstract> </span>getMessageId()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getMessageId"><span class="type-signature">(abstract) </span>getMessageId<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line382">line 382</a>
+    </li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getMessageId">module:exchange~Exchange#getMessageId</a>
-			</li>
-		</ul>
-	</dd>
-	
+    
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -1250,49 +1174,59 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     The UUID for this message.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1301,53 +1235,38 @@
 <span class="param-type">string</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getMessageRef"><span class="type-signature">&lt;abstract> </span>getMessageRef()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getMessageRef"><span class="type-signature">(abstract) </span>getMessageRef<span class="signature">()</span><span class="type-signature"> &rarr; (nullable) {string}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line415">line 415</a>
+    </li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getMessageRef">module:exchange~Exchange#getMessageRef</a>
-			</li>
-		</ul>
-	</dd>
-	
+    
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -1362,42 +1281,52 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     The optional message reference.  E.g. the UUID of a prior
                    message that this message refers/replies to.
@@ -1405,7 +1334,7 @@
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1414,53 +1343,38 @@
 <span class="param-type">string</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getMessageType"><span class="type-signature">&lt;abstract> </span>getMessageType()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getMessageType"><span class="type-signature">(abstract) </span>getMessageType<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line398">line 398</a>
+    </li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getMessageType">module:exchange~Exchange#getMessageType</a>
-			</li>
-		</ul>
-	</dd>
-	
+    
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -1475,49 +1389,59 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     The message type.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1526,53 +1450,38 @@
 <span class="param-type">string</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getSender"><span class="type-signature">&lt;abstract> </span>getSender()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getSender"><span class="type-signature">(abstract) </span>getSender<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line301">line 301</a>
+    </li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getSender">module:exchange~Exchange#getSender</a>
-			</li>
-		</ul>
-	</dd>
-	
+    
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -1587,90 +1496,72 @@
 
     
 
-	
-	<dt class="important tag-deprecated method-doc-label method-doc-details-label">Deprecated:</dt>
-	
-    <dd>
-        <ul class="dummy">
-            <li>Use getSource instead</li>
-        </ul>
-    </dd>
     
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>Use <code>getSource</code> instead</li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getSource"><span class="type-signature"></span>getSource()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getSource"><span class="type-signature"></span>getSource<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
     
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getSource">module:exchange~Exchange#getSource</a>
-			</li>
-		</ul>
-	</dd>
-	
-
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line203">line 203</a>
+    </li></ul></dd>
     
 
     
@@ -1678,50 +1569,73 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#getSource">module:exchange~Exchange#getSource</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     UUID for user that sent or is sending this message.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1730,54 +1644,31 @@
 <span class="param-type">string</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getSourceDevice"><span class="type-signature"></span>getSourceDevice()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getSourceDevice"><span class="type-signature"></span>getSourceDevice<span class="signature">()</span><span class="type-signature"> &rarr; {number}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
     
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getSourceDevice">module:exchange~Exchange#getSourceDevice</a>
-			</li>
-		</ul>
-	</dd>
-	
-
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line217">line 217</a>
+    </li></ul></dd>
     
 
     
@@ -1785,50 +1676,73 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#getSourceDevice">module:exchange~Exchange#getSourceDevice</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     device ID of source user.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1837,53 +1751,38 @@
 <span class="param-type">number</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getThreadExpression"><span class="type-signature">&lt;abstract> </span>getThreadExpression()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getThreadExpression"><span class="type-signature">(abstract) </span>getThreadExpression<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line318">line 318</a>
+    </li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getThreadExpression">module:exchange~Exchange#getThreadExpression</a>
-			</li>
-		</ul>
-	</dd>
-	
+    
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -1898,49 +1797,59 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     The universal tag expression for this exchange's thread.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -1949,53 +1858,38 @@
 <span class="param-type">string</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getThreadId"><span class="type-signature">&lt;abstract> </span>getThreadId()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getThreadId"><span class="type-signature">(abstract) </span>getThreadId<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line334">line 334</a>
+    </li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getThreadId">module:exchange~Exchange#getThreadId</a>
-			</li>
-		</ul>
-	</dd>
-	
+    
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -2010,49 +1904,59 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     The UUID for this exhcange's thread.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -2061,53 +1965,38 @@
 <span class="param-type">string</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getThreadTitle"><span class="type-signature">&lt;abstract> </span>getThreadTitle()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getThreadTitle"><span class="type-signature">(abstract) </span>getThreadTitle<span class="signature">()</span><span class="type-signature"> &rarr; (nullable) {string}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line366">line 366</a>
+    </li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getThreadTitle">module:exchange~Exchange#getThreadTitle</a>
-			</li>
-		</ul>
-	</dd>
-	
+    
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -2122,49 +2011,59 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     The optional thread title.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -2173,53 +2072,38 @@
 <span class="param-type">string</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getThreadType"><span class="type-signature">&lt;abstract> </span>getThreadType()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getThreadType"><span class="type-signature">(abstract) </span>getThreadType<span class="signature">()</span><span class="type-signature"> &rarr; {'converstaion'|'announcement'}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line350">line 350</a>
+    </li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getThreadType">module:exchange~Exchange#getThreadType</a>
-			</li>
-		</ul>
-	</dd>
-	
+    
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -2234,49 +2118,59 @@
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     The thread type for this message.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -2288,59 +2182,31 @@
 <span class="param-type">'announcement'</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getTimestamp"><span class="type-signature"></span>getTimestamp()</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Every message has a global and non-secret timestamp that is used to'
-cross reference things like read-receipts and session retransmits.
-    </div>
-    
 
     
 
-    
+    <h4 class="name" id="getTimestamp"><span class="type-signature"></span>getTimestamp<span class="signature">()</span><span class="type-signature"> &rarr; {number}</span></h4>
 
     
-    
 
-    
+
+
+
 <dl class="details">
+
     
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getTimestamp">module:exchange~Exchange#getTimestamp</a>
-			</li>
-		</ul>
-	</dd>
-	
-
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line248">line 248</a>
+    </li></ul></dd>
     
 
     
@@ -2348,50 +2214,78 @@ cross reference things like read-receipts and session retransmits.
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#getTimestamp">module:exchange~Exchange#getTimestamp</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
+<div class="description">
+    Every message has a global and non-secret timestamp that is used to'
+cross reference things like read-receipts and session retransmits.
+</div>
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     Milliseconds since 1970.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -2400,53 +2294,38 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">number</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="getUserAgent"><span class="type-signature">&lt;abstract> </span>getUserAgent()</h4>
-    
-    
-</dt>
-<dd>
 
     
 
-    
+    <h4 class="name" id="getUserAgent"><span class="type-signature">(abstract) </span>getUserAgent<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
-    
-    
 
-    
+
+
 <dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line447">line 447</a>
+    </li></ul></dd>
     
 
-	
+    
 
-	
+    
 
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#getUserAgent">module:exchange~Exchange#getUserAgent</a>
-			</li>
-		</ul>
-	</dd>
-	
+    
 
     
     <dt class="tag-overrides">Overrides:</dt>
@@ -2461,49 +2340,59 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
-
-	
-
-	
-
-	
+    
 </dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-    <h5>Returns:</h5>
-    
-            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
 <div class="param-desc">
     The device user agent string.
 </div>
 
 
 
-<dl>
+<dl class="param-type">
     <dt>
         Type
     </dt>
@@ -2512,42 +2401,91 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">string</span>
 
 
-
     </dd>
 </dl>
 
-
-        
-
     
-</dd>
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="recvMessages"><span class="type-signature">&lt;generator> </span>recvMessages(options)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Generator for receiving new messages on this exchange's thread.
-    </div>
-    
 
     
 
+    <h4 class="name" id="recvMessages"><span class="type-signature">(generator) </span>recvMessages<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line141">line 141</a>
+    </li></ul></dd>
     
 
     
-    
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#recvMessages">module:exchange~Exchange#recvMessages</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Generator for receiving new messages on this exchange's thread.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -2578,7 +2516,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">Object</span>
 
 
-
             
             </td>
 
@@ -2587,10 +2524,10 @@ cross reference things like read-receipts and session retransmits.
             
 
             <td class="description last">
-                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                <h6>Properties</h6>
                 
 
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -2600,7 +2537,7 @@ cross reference things like read-receipts and session retransmits.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -2621,7 +2558,6 @@ cross reference things like read-receipts and session retransmits.
             
                 
 <span class="param-type">number</span>
-
 
 
             
@@ -2655,98 +2591,100 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#recvMessages">module:exchange~Exchange#recvMessages</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="removeMessageListener"><span class="type-signature">&lt;async> </span>removeMessageListener(callback)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Remove message event listener added by addMessageListener.
-    </div>
-    
 
     
 
+    <h4 class="name" id="removeMessageListener"><span class="type-signature">(async) </span>removeMessageListener<span class="signature">(callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line121">line 121</a>
+    </li></ul></dd>
     
 
     
-    
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#removeMessageListener">module:exchange~Exchange#removeMessageListener</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Remove message event listener added by <code>addMessageListener</code>.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -2777,7 +2715,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">callback</span>
 
 
-
             
             </td>
 
@@ -2792,98 +2729,100 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#removeMessageListener">module:exchange~Exchange#removeMessageListener</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="send"><span class="type-signature">&lt;async> </span>send(options)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Send a message to this exchange's thread.
-    </div>
-    
 
     
 
+    <h4 class="name" id="send"><span class="type-signature">(async) </span>send<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line77">line 77</a>
+    </li></ul></dd>
     
 
     
-    
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#send">module:exchange~Exchange#send</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Send a message to this exchange's thread.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -2911,8 +2850,7 @@ cross reference things like read-receipts and session retransmits.
             <td class="type">
             
                 
-<span class="param-type">Object</span>
-
+<span class="param-type"><a href="global.html#SendOptions">SendOptions</a></span>
 
 
             
@@ -2922,12 +2860,11 @@ cross reference things like read-receipts and session retransmits.
 
             
 
-            <td class="description last">Send options.  See <a href="MessageSender.html#send">MessageSender#send</a> for
-       complete list of options.
-                <h6 class="method-params-label method-subparams-label">Properties</h6>
+            <td class="description last">All standard send options are supported plus...
+                <h6>Properties</h6>
                 
 
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -2937,7 +2874,7 @@ cross reference things like read-receipts and session retransmits.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -2958,7 +2895,6 @@ cross reference things like read-receipts and session retransmits.
             
                 
 <span class="param-type">bool</span>
-
 
 
             
@@ -2994,81 +2930,41 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#send">module:exchange~Exchange#send</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="setAttachments"><span class="type-signature">&lt;abstract> </span>setAttachments(value)</h4>
+
     
+
+    <h4 class="name" id="setAttachments"><span class="type-signature">(abstract) </span>setAttachments<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
     
-</dt>
-<dd>
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line439">line 439</a>
+    </li></ul></dd>
+    
 
     
 
@@ -3077,11 +2973,53 @@ cross reference things like read-receipts and session retransmits.
     
 
     
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setAttachments">module:exchange~Exchange#setAttachments</a>
+    </li></ul></dd>
     
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -3112,7 +3050,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">Array.&lt;<a href="Attachment.html">Attachment</a>></span>
 
 
-
             
             </td>
 
@@ -3127,31 +3064,39 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setBody"><span class="type-signature">(abstract) </span>setBody<span class="signature">(value, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setAttachments">module:exchange~Exchange#setAttachments</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setAttachments">module:exchange~Exchange#setAttachments</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line293">line 293</a>
     </li></ul></dd>
     
 
@@ -3161,69 +3106,58 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setBody">module:exchange~Exchange#setBody</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
+
+
+
+<div class="description">
+    Set the message body.  E.g. the localized text for this message.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setBody"><span class="type-signature">&lt;abstract> </span>setBody(value [, options])</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        Set the message body.  E.g. the localized text for this message.
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -3233,7 +3167,7 @@ cross reference things like read-receipts and session retransmits.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -3254,7 +3188,6 @@ cross reference things like read-receipts and session retransmits.
             
                 
 <span class="param-type">string</span>
-
 
 
             
@@ -3288,7 +3221,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">Object</span>
 
 
-
             
             </td>
 
@@ -3313,31 +3245,39 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setDataProperty"><span class="type-signature">(abstract) </span>setDataProperty<span class="signature">(key, value)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setBody">module:exchange~Exchange#setBody</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setBody">module:exchange~Exchange#setBody</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line473">line 473</a>
     </li></ul></dd>
     
 
@@ -3347,65 +3287,54 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setDataProperty">module:exchange~Exchange#setDataProperty</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setDataProperty"><span class="type-signature">&lt;abstract> </span>setDataProperty(key, value)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -3436,7 +3365,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">string</span>
 
 
-
             
             </td>
 
@@ -3460,7 +3388,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">Object</span>
 
 
-
             
             </td>
 
@@ -3475,31 +3402,50 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setExpiration"><span class="type-signature"></span>setExpiration<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setDataProperty">module:exchange~Exchange#setDataProperty</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setDataProperty">module:exchange~Exchange#setDataProperty</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line196">line 196</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setExpiration">module:exchange~Exchange#setExpiration</a>
     </li></ul></dd>
     
 
@@ -3509,65 +3455,43 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
-
-	
-
-	
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setExpiration"><span class="type-signature"></span>setExpiration(value)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -3596,7 +3520,6 @@ cross reference things like read-receipts and session retransmits.
             
                 
 <span class="param-type">number</span>
-
 
 
             
@@ -3613,81 +3536,52 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setExpiration">module:exchange~Exchange#setExpiration</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="setFlags"><span class="type-signature"></span>setFlags(value)</h4>
+
     
+
+    <h4 class="name" id="setFlags"><span class="type-signature"></span>setFlags<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
     
-</dt>
-<dd>
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line238">line 238</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setFlags">module:exchange~Exchange#setFlags</a>
+    </li></ul></dd>
+    
 
     
 
@@ -3696,11 +3590,42 @@ cross reference things like read-receipts and session retransmits.
     
 
     
-    
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -3731,7 +3656,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">number</span>
 
 
-
             
             </td>
 
@@ -3746,81 +3670,41 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setFlags">module:exchange~Exchange#setFlags</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="setMessageId"><span class="type-signature">&lt;abstract> </span>setMessageId(value)</h4>
+
     
+
+    <h4 class="name" id="setMessageId"><span class="type-signature">(abstract) </span>setMessageId<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
     
-</dt>
-<dd>
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line390">line 390</a>
+    </li></ul></dd>
+    
 
     
 
@@ -3829,11 +3713,53 @@ cross reference things like read-receipts and session retransmits.
     
 
     
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setMessageId">module:exchange~Exchange#setMessageId</a>
+    </li></ul></dd>
     
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -3862,7 +3788,6 @@ cross reference things like read-receipts and session retransmits.
             
                 
 <span class="param-type">string</span>
-
 
 
             
@@ -3879,31 +3804,39 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setMessageRef"><span class="type-signature">(abstract) </span>setMessageRef<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setMessageId">module:exchange~Exchange#setMessageId</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setMessageId">module:exchange~Exchange#setMessageId</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line423">line 423</a>
     </li></ul></dd>
     
 
@@ -3913,65 +3846,54 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setMessageRef">module:exchange~Exchange#setMessageRef</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setMessageRef"><span class="type-signature">&lt;abstract> </span>setMessageRef(value)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -4000,7 +3922,6 @@ cross reference things like read-receipts and session retransmits.
             
                 
 <span class="param-type">string</span>
-
 
 
             
@@ -4017,31 +3938,39 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setMessageType"><span class="type-signature">(abstract) </span>setMessageType<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setMessageRef">module:exchange~Exchange#setMessageRef</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setMessageRef">module:exchange~Exchange#setMessageRef</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line406">line 406</a>
     </li></ul></dd>
     
 
@@ -4051,65 +3980,54 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setMessageType">module:exchange~Exchange#setMessageType</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setMessageType"><span class="type-signature">&lt;abstract> </span>setMessageType(value)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -4138,7 +4056,6 @@ cross reference things like read-receipts and session retransmits.
             
                 
 <span class="param-type">string</span>
-
 
 
             
@@ -4155,31 +4072,39 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setSender"><span class="type-signature">(abstract) </span>setSender<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setMessageType">module:exchange~Exchange#setMessageType</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setMessageType">module:exchange~Exchange#setMessageType</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line310">line 310</a>
     </li></ul></dd>
     
 
@@ -4189,65 +4114,56 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setSender">module:exchange~Exchange#setSender</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>Use <code>setSource</code> instead</li></ul></dd>
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setSender"><span class="type-signature">&lt;abstract> </span>setSender(value)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -4278,7 +4194,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">string</span>
 
 
-
             
             </td>
 
@@ -4293,31 +4208,50 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setSource"><span class="type-signature"></span>setSource<span class="signature">(UUID)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setSender">module:exchange~Exchange#setSender</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setSender">module:exchange~Exchange#setSender</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line210">line 210</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setSource">module:exchange~Exchange#setSource</a>
     </li></ul></dd>
     
 
@@ -4327,74 +4261,43 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
-	<dt class="important tag-deprecated method-doc-label method-doc-details-label">Deprecated:</dt>
-	
-    <dd>
-        <ul class="dummy">
-            <li>Use setSource instead</li>
-        </ul>
-    </dd>
-    
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
-
-	
-
-	
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setSource"><span class="type-signature"></span>setSource(UUID)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -4425,7 +4328,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">string</span>
 
 
-
             
             </td>
 
@@ -4440,81 +4342,52 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setSource">module:exchange~Exchange#setSource</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="setSourceDevice"><span class="type-signature"></span>setSourceDevice(value)</h4>
+
     
+
+    <h4 class="name" id="setSourceDevice"><span class="type-signature"></span>setSourceDevice<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
     
-</dt>
-<dd>
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line224">line 224</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setSourceDevice">module:exchange~Exchange#setSourceDevice</a>
+    </li></ul></dd>
+    
 
     
 
@@ -4523,11 +4396,42 @@ cross reference things like read-receipts and session retransmits.
     
 
     
-    
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -4558,7 +4462,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">number</span>
 
 
-
             
             </td>
 
@@ -4573,81 +4476,41 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setSourceDevice">module:exchange~Exchange#setSourceDevice</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="setThreadExpression"><span class="type-signature">&lt;abstract> </span>setThreadExpression(value)</h4>
+
     
+
+    <h4 class="name" id="setThreadExpression"><span class="type-signature">(abstract) </span>setThreadExpression<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
     
-</dt>
-<dd>
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line326">line 326</a>
+    </li></ul></dd>
+    
 
     
 
@@ -4656,11 +4519,53 @@ cross reference things like read-receipts and session retransmits.
     
 
     
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setThreadExpression">module:exchange~Exchange#setThreadExpression</a>
+    </li></ul></dd>
     
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -4689,7 +4594,6 @@ cross reference things like read-receipts and session retransmits.
             
                 
 <span class="param-type">string</span>
-
 
 
             
@@ -4706,31 +4610,39 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setThreadId"><span class="type-signature">(abstract) </span>setThreadId<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setThreadExpression">module:exchange~Exchange#setThreadExpression</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setThreadExpression">module:exchange~Exchange#setThreadExpression</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line342">line 342</a>
     </li></ul></dd>
     
 
@@ -4740,65 +4652,54 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setThreadId">module:exchange~Exchange#setThreadId</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setThreadId"><span class="type-signature">&lt;abstract> </span>setThreadId(value)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -4827,7 +4728,6 @@ cross reference things like read-receipts and session retransmits.
             
                 
 <span class="param-type">string</span>
-
 
 
             
@@ -4844,31 +4744,39 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setThreadTitle"><span class="type-signature">(abstract) </span>setThreadTitle<span class="signature">(value<span class="signature-attributes">nullable</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setThreadId">module:exchange~Exchange#setThreadId</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setThreadId">module:exchange~Exchange#setThreadId</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line374">line 374</a>
     </li></ul></dd>
     
 
@@ -4878,65 +4786,54 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setThreadTitle">module:exchange~Exchange#setThreadTitle</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setThreadTitle"><span class="type-signature">&lt;abstract> </span>setThreadTitle(value)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -4946,7 +4843,7 @@ cross reference things like read-receipts and session retransmits.
         <th>Type</th>
 
         
-        <th>Argument</th>
+        <th>Attributes</th>
         
 
         
@@ -4967,7 +4864,6 @@ cross reference things like read-receipts and session retransmits.
             
                 
 <span class="param-type">string</span>
-
 
 
             
@@ -4994,31 +4890,39 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setThreadType"><span class="type-signature">(abstract) </span>setThreadType<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setThreadTitle">module:exchange~Exchange#setThreadTitle</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setThreadTitle">module:exchange~Exchange#setThreadTitle</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line358">line 358</a>
     </li></ul></dd>
     
 
@@ -5028,65 +4932,54 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setThreadType">module:exchange~Exchange#setThreadType</a>
+    </li></ul></dd>
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
+
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setThreadType"><span class="type-signature">&lt;abstract> </span>setThreadType(value)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -5120,7 +5013,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">'announcement'</span>
 
 
-
             
             </td>
 
@@ -5135,31 +5027,50 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
 
     
+
+    <h4 class="name" id="setTimestamp"><span class="type-signature"></span>setTimestamp<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
 <dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setThreadType">module:exchange~Exchange#setThreadType</a>
-			</li>
-		</ul>
-	</dd>
-	
 
     
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setThreadType">module:exchange~Exchange#setThreadType</a>
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line255">line 255</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setTimestamp">module:exchange~Exchange#setTimestamp</a>
     </li></ul></dd>
     
 
@@ -5169,65 +5080,43 @@ cross reference things like read-receipts and session retransmits.
 
     
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
-	
+    
 
+    
 
+    
 
-	
+    
 
-	
-
-	
-
-	
+    
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="setTimestamp"><span class="type-signature"></span>setTimestamp(value)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
+<table class="params">
     <thead>
     <tr>
         
@@ -5258,7 +5147,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">number</span>
 
 
-
             
             </td>
 
@@ -5273,81 +5161,41 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setTimestamp">module:exchange~Exchange#setTimestamp</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
+
+
+
 
         
             
-<hr>
-<dt>
-    <h4 class="name" id="setUserAgent"><span class="type-signature">&lt;abstract> </span>setUserAgent(value)</h4>
+
     
+
+    <h4 class="name" id="setUserAgent"><span class="type-signature">(abstract) </span>setUserAgent<span class="signature">(value)</span><span class="type-signature"></span></h4>
+
     
-</dt>
-<dd>
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="exchange.js.html">exchange.js</a>, <a href="exchange.js.html#line455">line 455</a>
+    </li></ul></dd>
+    
 
     
 
@@ -5356,11 +5204,53 @@ cross reference things like read-receipts and session retransmits.
     
 
     
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="module-exchange-Exchange.html#setUserAgent">module:exchange~Exchange#setUserAgent</a>
+    </li></ul></dd>
     
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -5391,7 +5281,6 @@ cross reference things like read-receipts and session retransmits.
 <span class="param-type">string</span>
 
 
-
             
             </td>
 
@@ -5406,78 +5295,22 @@ cross reference things like read-receipts and session retransmits.
     </tbody>
 </table>
 
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-	<dt class="inherited-from method-doc-label method-doc-details-label">Inherited From:</dt>
-	<dd class="inherited-from">
-		<ul class="dummy">
-			<li>
-				<a href="module-exchange-Exchange.html#setUserAgent">module:exchange~Exchange#setUserAgent</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-    
-    <dt class="tag-overrides">Overrides:</dt>
-    <dd class="tag-overrides"><ul class="dummy"><li>
-        <a href="module-exchange-Exchange.html#setUserAgent">module:exchange~Exchange#setUserAgent</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
 
 
 
-	
-
-	
-
-	
-
-	
-</dl>
 
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
-</dd>
 
-        </dl>
+
+
+
+        
     
 
     
@@ -5490,132 +5323,15 @@ cross reference things like read-receipts and session retransmits.
 
 
 
-		</div>
-	</div>
-
-	<div class="clearfix"></div>
-
-	
-		<div class="col-md-3">
-			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
-		</div>
-	
-
-</div>
 </div>
 
-
-    <div class="modal fade" id="searchResults">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">Search results</h4>
-          </div>
-          <div class="modal-body"></div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div>
-
+<br class="clear">
 
 <footer>
-
-
-<span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
-	
-		on 2018-08-16T19:53:38-06:00
-	
-	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
-</span>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Aug 19 2018 13:44:32 GMT-0600 (MDT) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
-<script src="scripts/docstrap.lib.js"></script>
-<script src="scripts/toc.js"></script>
-
-    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
-
-
-<script>
-$( function () {
-	$( "[id*='$']" ).each( function () {
-		var $this = $( this );
-
-		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
-	} );
-
-	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
-		var $this = $( this );
-
-		var example = $this.find( "code" );
-		exampleText = example.html();
-		var lang = /{@lang (.*?)}/.exec( exampleText );
-		if ( lang && lang[1] ) {
-			exampleText = exampleText.replace( lang[0], "" );
-			example.html( exampleText );
-			lang = lang[1];
-		} else {
-			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
-			lang = langClassMatch ? langClassMatch[1] : "javascript";
-		}
-
-		if ( lang ) {
-
-			$this
-			.addClass( "sunlight-highlight-" + lang )
-			.addClass( "linenums" )
-			.html( example.html() );
-
-		}
-	} );
-
-	Sunlight.highlightAll( {
-		lineNumbers : false,
-		showMenu : true,
-		enableDoclinks : true
-	} );
-
-	$.catchAnchorLinks( {
-        navbarOffset: 10
-	} );
-	$( "#toc" ).toc( {
-		anchorName  : function ( i, heading, prefix ) {
-			return $( heading ).attr( "id" ) || ( prefix + i );
-		},
-		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
-		showAndHide : false,
-		smoothScrolling: true
-	} );
-
-	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
-	$( '.dropdown-toggle' ).dropdown();
-
-    $( "table" ).each( function () {
-      var $this = $( this );
-      $this.addClass('table');
-    } );
-
-} );
-</script>
-
-
-
-<!--Navigation and Symbol Display-->
-
-
-<!--Google Analytics-->
-
-
-
-    <script type="text/javascript">
-        $(document).ready(function() {
-            SearcherDisplay.init();
-        });
-    </script>
-
-
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
 </body>
 </html>
