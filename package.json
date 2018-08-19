@@ -30,7 +30,6 @@
   "devDependencies": {
     "docdash": "0.4.0",
     "eslint": "4.9.0",
-    "ink-docstrap": "github:docstrap/docstrap",
     "jsdoc": "3.5.5"
   },
   "scripts": {
