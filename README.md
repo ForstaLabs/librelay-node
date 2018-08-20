@@ -6,6 +6,7 @@ Signal based Node.js library for end-to-end crypto with Forsta messaging platfor
 [![NPM](https://img.shields.io/npm/v/librelay.svg)](https://www.npmjs.com/package/librelay)
 [![License](https://img.shields.io/npm/l/librelay.svg)](https://github.com/ForstaLabs/librelay-node)
 [![Change Log](https://img.shields.io/badge/change-log-blue.svg)](https://github.com/ForstaLabs/librelay-node/blob/master/CHANGELOG.md)
+[![Docs](https://img.shields.io/badge/docs-api-lightgrey.svg)](https://forstalabs.github.io/librelay-node/librelay/5.2.0/index.html)
 
 
 About
