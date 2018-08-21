@@ -1,3 +1,4 @@
+
 body {
     font-size: 14px;
 }
@@ -18,6 +19,14 @@ h3 {
     font-size: 1.33em;
 }
 
+h4 {
+    font-size: 1.25em;
+}
+
+nav {
+    padding-bottom: 2rem;
+}
+
 nav > h2 > a {
     color: black !important;
     font-size: 1.2em;
@@ -26,11 +35,11 @@ nav > h2 > a {
 
 nav ul ul a,
 nav ul ul a:active {
-    color: #265881;
+    color: #222;
 }
 
 nav ul ul a:hover {
-    color: #366891;
+    color: black;
 }
 
 nav a:hover,
@@ -38,9 +47,13 @@ nav a:active {
     color: black;
 }
 
+h1.page-title {
+    margin: 1em 2rem;
+}
+
 #main section {
     max-width: 60em;
-    padding: 0 1em 0 3em;
+    padding: 0 1rem 0 2rem;
 }
 
 #main section .class-description {
@@ -48,20 +61,28 @@ nav a:active {
 }
 
 #main section .container-overview {
-    padding-left: 1em;
+    /*padding-left: 1rem;*/
 }
 
 #main section .container-overview h2 {
-    margin-left: -2em;
+    margin-left: -2rem;
 }
 
 #main section .container-overview h4.name {
-    margin-left: -1em;
+    margin-left: -1rem;
 }
 
 h4.name {
     background: #424242;
-    margin-left: -0.6em;
+    margin-left: -1rem;
+    margin-top: 3rem;
+    border-radius: 0.2em;
+    border: none;
+}
+
+h3.subsection-title + h4.name,
+.container-overview > h4.name:first-child {
+    margin-top: 0.5rem;
 }
 
 h4.name a {
@@ -72,18 +93,23 @@ nav > ul > li > a {
     color: black;
 }
 
-.signature,
+.signature {
+    color: #7ab4ff;
+    font-size: 0.85em;
+}
+
 a, a.active,
 span.param-type, .params td .param-type, .param-type dd {
-    color: #8cb8ff;
+    color: #458bfa;
 }
 
 #main > section > article {
-    padding-left: 3em;
+    padding-left: 1rem;
 }
 
 #main > section > article > .subsection-title {
-    margin-left: -1em;
+    margin-left: -1rem;
+    margin-top: 2rem;
 }
 
 article a {
@@ -92,12 +118,13 @@ article a {
 
 article a:hover, 
 article a:active {
-    color: #1183ff;
+    color: #007aff;
 }
 
 .type-signature,
 .type-signature a {
-    color: #bbb !important;
+    color: #ff9f48 !important;
+    font-size: 0.8em;
 }
 .type-signature a {
     border: none;
@@ -115,4 +142,9 @@ article a:active {
 
 .tag-source a:hover {
     color: #777;
+}
+
+dl.details {
+    margin-left: -1rem;
+    margin-top: -0.5rem;
 }
