@@ -1,4 +1,6 @@
-/** @module backing */
+/**
+ * @module storage/backing
+ */
 
 module.exports = {
     RedisBacking: require('./redis'),

@@ -31,8 +31,6 @@ class KeyChangeEvent extends Event {
 
     /**
      * Can be called during event handling to accept the new identity key.
-     *
-     * @method accept
      */
     async accept() {
         await storage.removeIdentity(this.keyError.addr);
