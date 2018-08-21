@@ -7,6 +7,13 @@ a:hover {
     text-decoration: underline;
 }
 
+/* Reset */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: bold;
+    line-height: normal;
+    letter-spacing: normal;
+}
+
 h1 {
     font-size: 2em;
 }
@@ -16,11 +23,25 @@ h2 {
 }
 
 h3 {
-    font-size: 1.33em;
+    font-size: 1.17em;
 }
 
 h4 {
-    font-size: 1.25em;
+    font-size: 1em;
+}
+
+h5 {
+    font-size: 0.83em;
+}
+
+h1.page-title {
+    font-size: 3em;
+    font-weight: normal;
+}
+
+ul {
+    margin-top: 0;
+    padding-left: 2em;
 }
 
 nav {
@@ -61,7 +82,7 @@ h1.page-title {
 }
 
 #main section .container-overview {
-    /*padding-left: 1rem;*/
+    padding-left: 1rem;
 }
 
 #main section .container-overview h2 {
@@ -81,7 +102,7 @@ h4.name {
 }
 
 h3.subsection-title + h4.name,
-.container-overview > h4.name:first-child {
+.container-overview > h4.name {
     margin-top: 0.5rem;
 }
 
@@ -99,17 +120,55 @@ nav > ul > li > a {
 }
 
 a, a.active,
-span.param-type, .params td .param-type, .param-type dd {
+span.param-type,.params td .param-type, .param-type dd {
     color: #458bfa;
+}
+
+table.params,
+table.props {
+    font-size: 0.9em;
+    margin: 0.5em 0;
+}
+
+table.params th,
+table.props th {
+    padding: 0.7em;
+}
+
+table.params td,
+table.props td {
+    padding: 0.7em;
+    border-top: 1px solid #eee;
+}
+
+table.params td > table.params,
+table.params td > table.props,
+table.props td > table.params,
+table.props td > table.props {
+    font-size: 0.8em;
+    border: none;
+    box-shadow: none;
+}
+
+table.params td > table.params thead,
+table.params td > table.props thead,
+table.props td > table.params thead,
+table.props td > table.props thead {
+    display: none;
 }
 
 #main > section > article {
     padding-left: 1rem;
 }
 
+.container-overview > h2 {
+    font-size: 1.3em;
+    text-transform: uppercase;
+}
+
 #main > section > article > .subsection-title {
-    margin-left: -1rem;
-    margin-top: 2rem;
+    margin: 2rem 0 0 -1rem;
+    text-transform: uppercase;
 }
 
 article a {
@@ -119,6 +178,11 @@ article a {
 article a:hover, 
 article a:active {
     color: #007aff;
+}
+
+article > h5 {
+    text-transform: uppercase;
+    font-size: 0.8em;
 }
 
 .type-signature,
@@ -146,5 +210,5 @@ article a:active {
 
 dl.details {
     margin-left: -1rem;
-    margin-top: -0.5rem;
+    margin-top: -0.4rem;
 }
