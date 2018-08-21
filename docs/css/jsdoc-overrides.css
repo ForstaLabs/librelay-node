@@ -1,0 +1,118 @@
+body {
+    font-size: 14px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.5em;
+}
+
+h3 {
+    font-size: 1.33em;
+}
+
+nav > h2 > a {
+    color: black !important;
+    font-size: 1.2em;
+    padding-bottom: 0.3em;
+}
+
+nav ul ul a,
+nav ul ul a:active {
+    color: #265881;
+}
+
+nav ul ul a:hover {
+    color: #366891;
+}
+
+nav a:hover,
+nav a:active {
+    color: black;
+}
+
+#main section {
+    max-width: 60em;
+    padding: 0 1em 0 3em;
+}
+
+#main section .class-description {
+    font-size: 1.1em;
+}
+
+#main section .container-overview {
+    padding-left: 1em;
+}
+
+#main section .container-overview h2 {
+    margin-left: -2em;
+}
+
+#main section .container-overview h4.name {
+    margin-left: -1em;
+}
+
+h4.name {
+    background: #424242;
+    margin-left: -0.6em;
+}
+
+h4.name a {
+    border: none;
+}
+
+nav > ul > li > a {
+    color: black;
+}
+
+.signature,
+a, a.active,
+span.param-type, .params td .param-type, .param-type dd {
+    color: #8cb8ff;
+}
+
+#main > section > article {
+    padding-left: 3em;
+}
+
+#main > section > article > .subsection-title {
+    margin-left: -1em;
+}
+
+article a {
+    border: none;
+}
+
+article a:hover, 
+article a:active {
+    color: #1183ff;
+}
+
+.type-signature,
+.type-signature a {
+    color: #bbb !important;
+}
+.type-signature a {
+    border: none;
+}
+
+.tag-source {
+    font-size: 0.7em;
+    color: #999
+}
+
+.tag-source a {
+    color: #999;
+    border: none;
+}
+
+.tag-source a:hover {
+    color: #777;
+}
