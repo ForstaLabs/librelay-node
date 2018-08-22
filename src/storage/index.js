@@ -58,25 +58,6 @@ function decode(obj) {
 
 
 /**
- * @typedef KeyPair
- * @type {Object}
- * @property {Buffer} pubKey
- * @property {Buffer} privKey
- */
-
-
-/**
- * String encoding of a fully qualified user address.  The value should be of the form
- * UUID[.DEVICE_ID], where the UUID is the hex formatted UUID for a given user and the 
- * DEVICE_ID is the integer number representing the device of that user.
- *
- * @typedef EncodedUserAddress
- * @type {string}
- * @example be1cfd18-d7e9-4689-8870-e9d2773e364d.1000
- */
-
-
-/**
  * Initialize the current {@link module:storage/backing~StorageInterface}
  */
 exports.initialize = () => _backing.initialize();
@@ -184,7 +165,7 @@ exports.removeState = async function(key) {
 
 
 /**
- * @returns {module:storage~KeyPair} The current user's identity key pair.
+ * @returns {KeyPair} The current user's identity key pair.
  */
 exports.getOurIdentity = async function() {
     return {
@@ -195,7 +176,7 @@ exports.getOurIdentity = async function() {
 
 
 /**
- * @param {module:storage~KeyPair} keyPair - New identity key pair for current user.
+ * @param {KeyPair} keyPair - New identity key pair for current user.
  */
 exports.saveOurIdentity = async function(keyPair) {
     await exports.putState('ourIdentityKey.pub', keyPair.pubKey);
@@ -224,7 +205,7 @@ exports.getOurRegistrationId = async function() {
  * Get a prekey pair for the current user.
  *
  * @param {number} keyId
- * @returns {?module:storage~KeyPair}
+ * @returns {?KeyPair}
  */
 exports.loadPreKey = async function(keyId) {
     if (!await _backing.has(preKeyNS, keyId + '.pub')) {
@@ -241,7 +222,7 @@ exports.loadPreKey = async function(keyId) {
  * Store a new prekey pair for the current user.
  *
  * @param {number} keyId
- * @param {module:storage~KeyPair} keyPair
+ * @param {KeyPair} keyPair
  */
 exports.storePreKey = async function(keyId, keyPair) {
     await exports.set(preKeyNS, keyId + '.priv', keyPair.privKey);
@@ -271,7 +252,7 @@ exports.removePreKey = async function(keyId) {
  * Get a signed prekey pair for the current user.
  *
  * @param {number} keyId
- * @returns {?module:storage~KeyPair}
+ * @returns {?KeyPair}
  */
 exports.loadSignedPreKey = async function(keyId) {
     if (!await _backing.has(signedPreKeyNS, keyId + '.pub')) {
@@ -288,7 +269,7 @@ exports.loadSignedPreKey = async function(keyId) {
  * Store a new signed prekey pair for the current user.
  *
  * @param {number} keyId
- * @param {module:storage~KeyPair} keyPair
+ * @param {KeyPair} keyPair
  */
 exports.storeSignedPreKey = async function(keyId, keyPair) {
     await exports.set(signedPreKeyNS, keyId + '.priv', keyPair.privKey);
@@ -310,7 +291,7 @@ exports.removeSignedPreKey = async function(keyId) {
 /**
  * Load a signal cipher session for a peer.
  *
- * @param {module:storage~EncodedUserAddress} encodedAddr
+ * @param {EncodedUserAddress} encodedAddr
  * @returns {?libsignal.SessionRecord}
  */
 exports.loadSession = async function(encodedAddr) {
@@ -327,7 +308,7 @@ exports.loadSession = async function(encodedAddr) {
 /**
  * Store a signal cipher session for a peer.
  *
- * @param {module:storage~EncodedUserAddress} encodedAddr
+ * @param {EncodedUserAddress} encodedAddr
  * @returns {libsignal.SessionRecord} record
  */
 exports.storeSession = async function(encodedAddr, record) {
@@ -341,7 +322,7 @@ exports.storeSession = async function(encodedAddr, record) {
 /**
  * Remove a signal session cipher record for a peer.
  *
- * @param {module:storage~EncodedUserAddress} encodedAddr
+ * @param {EncodedUserAddress} encodedAddr
  */
 exports.removeSession = async function(encodedAddr) {
     await _backing.remove(sessionNS, encodedAddr);
@@ -450,7 +431,7 @@ exports.removeIdentity = async function(identifier) {
  * Get the current known list of device IDs for a peer.
  *
  * @params {string} addr - Address of peer
- * @returns {number{}}
+ * @returns {number[]}
  */
 exports.getDeviceIds = async function(addr) {
     if (addr === null || addr === undefined) {

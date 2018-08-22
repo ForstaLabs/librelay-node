@@ -66,7 +66,7 @@ function decodeJWT(encoded_token) {
 /**
  * A resolved tag expression is the computed set of data for a given {@link TagExpression}.
  * It represents a snapshot of the current state of membership for a tag expression.
- * The values can be cached for short periods but should avoid being stored perminantly
+ * The values can be cached for short periods but should avoid being stored permanently
  * as membership changes can occur behind the scenes.
  *
  * @typedef {Object} ResolvedTagExpression
@@ -74,10 +74,13 @@ function decodeJWT(encoded_token) {
  * @property {string} universal - The universal (stable) representation of this tag expression
  *                                This value should be used when managing Thread.expression
  *                                values.
- * @property {string[]} tagsIncluded - A list of tag UUIDs which are positively mentioned and
- *                                     as such have affected the final membership.
- * @property {string[]} tagsExcluded - A list of tag UUIDs which are negatively mentioned and
- *                                     as such are NOT in the final membership.
+ * @property {string} pretty - A human readable version of the tag expression.  Still valid
+ *                             syntax but should only be used for viewing.
+ * @property {Array} warnings - Any warnings associated with the input expression.
+ * @property {string[]} includedTagids - A list of tag UUIDs which are positively mentioned and
+ *                                       as such have affected the final membership.
+ * @property {string[]} excludedTagids - A list of tag UUIDs which are negatively mentioned and
+ *                                       as such are NOT in the final membership.
  */
 
 /**

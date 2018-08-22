@@ -18,3 +18,25 @@ module.exports = {
     exchange: require('./exchange'),
     errors: require('./errors')
 };
+
+/*
+ * Global jsdoc typedefs...
+ */
+
+/**
+ * @typedef KeyPair
+ * @type {Object}
+ * @property {Buffer} pubKey
+ * @property {Buffer} privKey
+ */
+
+
+/**
+ * String encoding of a fully qualified user address.  The value should be of the form
+ * UUID[.DEVICE_ID], where the UUID is the hex formatted UUID for a given user and the
+ * DEVICE_ID is the integer number representing the device of that user.
+ *
+ * @typedef EncodedUserAddress
+ * @type {string}
+ * @example be1cfd18-d7e9-4689-8870-e9d2773e364d.1000
+ */
