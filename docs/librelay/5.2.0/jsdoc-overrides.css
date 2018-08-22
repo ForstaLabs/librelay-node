@@ -101,6 +101,30 @@ h4.name {
     border: none;
 }
 
+h4.name.target::before {
+    content: '';
+    position: absolute;
+    height: 2.5em;
+    border-left: 3px dotted #0088c7;
+    margin-left: -1.5em;
+    margin-top: -0.6em;
+}
+
+nav a {
+    transition: background 400ms, color 400ms, padding 400ms;
+}
+nav a.target {
+    background: #0088c7;
+    color: white;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+nav a.target:hover {
+    color: white;
+    text-decoration: none;
+    cursor: initial;
+}
+
 h3.subsection-title + h4.name,
 .container-overview > h4.name {
     margin-top: 0.5rem;
