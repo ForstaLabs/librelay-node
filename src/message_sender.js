@@ -34,6 +34,13 @@ const uuid4 = require('uuid/v4');
  */
 
 /**
+ * @typedef {Object} ActionOptions
+ * @since 5.2.1
+ * @property {boolean} allowMultiple=false - Enable to prevent the action buttons
+ *                                           from disabling after use.
+ */
+
+/**
  * @typedef {Object} SendOptions
  * @property {Object} options
  * @property {TagExpression} options.to - Required unless {@link distribution} is set.
@@ -53,7 +60,8 @@ const uuid4 = require('uuid/v4');
  * @property {string} [options.userAgent=librelay]
  * @property {boolean} [options.noSync=false] - When true a sync message will not be sent to your other
  *                                              devices.  (ADVANCED)
- * @property {Action[]} [options.actions] - (ADVANCED)
+ * @property {ActionOptions} [options.actionOptions]
+ * @property {Action[]} [options.actions]
  */
 
 /**
