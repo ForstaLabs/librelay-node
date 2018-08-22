@@ -133,7 +133,8 @@ class MessageSender extends eventing.EventTarget {
         flags=undefined,
         userAgent='librelay',
         noSync=false,
-        actions=undefined
+        actions=undefined,
+        actionOptions=undefined
     }) {
         const ex = exchange.create();
         if (!distribution) {
@@ -162,6 +163,9 @@ class MessageSender extends eventing.EventTarget {
         ex.setFlags(flags);
         if (actions && actions.length) {
             ex.setDataProperty('actions', actions);
+            if (actionOptions) {
+                ex.setDataProperty('actionOptions', actionOptions);
+            }
         }
         for (const [k, v] of Object.entries(data)) {
             ex.setDataProperty(k, v);
