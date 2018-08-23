@@ -25,7 +25,8 @@ const SIGNAL_HTTP_MESSAGES = {
 
 
 /**
- * @class
+ * Interface with the Signal server.  The signal server handles the exchange
+ * of encrypted messages and brokering of public keys.
  */
 class SignalClient {
 
@@ -46,6 +47,16 @@ class SignalClient {
         return new this(username, password, url);
     }
 
+    /**
+     * Respond positively to a provision request from a new foreign device.
+     * WARNING: This will send your private identity key to the requesting
+     * device!
+     *
+     * @param {string} uuid - UUID param provided by the foreign device.
+     * @param {string} pubKey - Ephemeral public key used for provisioning.
+     * @param {Object} [options]
+     * @param {string} [options.userAgent]
+     */
     async linkDevice(uuid, pubKey, options) {
         options = options || {};
         const provisionResp = await this.request({
@@ -74,6 +85,16 @@ class SignalClient {
         }
     }
 
+    /**
+     * Generate a new signed prekey and pool of prekeys if needed.
+     * If new keys are generated they are uploaded to the signal service
+     * so they can be used for new incoming messages.
+     *
+     * @param {number} [minLevel=10] - If less then this many keys are
+     *                                 available then generate new keys.
+     * @param {number} [fill=100] - The number of new keys to generate when
+     *                              needed.
+     */
     async refreshPreKeys(minLevel=10, fill=100) {
         const preKeyCount = await this.getMyKeys();
         if (preKeyCount <= minLevel) {
@@ -123,8 +144,6 @@ class SignalClient {
         await storage.putState('signedKeyId', signedKeyId + 1);
         return result;
     }
-
-    /* BREAK api signal code.... */
 
     authHeader(username, password) {
         const token = Buffer.from(username + ':' + password).toString('base64');
@@ -194,6 +213,13 @@ class SignalClient {
         }
     }
 
+    /**
+     * Authenticated fetch to the signal service.
+     *
+     * @param {string} urn
+     * @param {Object} [options]
+     * @returns {*} - Data response from service.
+     */
     async fetch(urn, options) {
         /* Thin wrapper to augment json and auth support. */
         options = options || {};
@@ -206,6 +232,11 @@ class SignalClient {
         return await fetch(`${this.url}/${urn.replace(/^\//, '')}`, options);
     }
 
+    /**
+     * Fetch the current list of known devices associated with your account.
+     *
+     * @returns {Array} - Array of device info objects.
+     */
     async getDevices() {
         const data = await this.request({call: 'devices'});
         return data && data.devices;
@@ -242,6 +273,13 @@ class SignalClient {
         return res.count;
     }
 
+    /**
+     * Get a public prekey and signed prekey for a peer.
+     *
+     * @param {string} addr
+     * @param {number} deviceId
+     * @returns {Object} - Key material object.
+     */
     async getKeysForAddr(addr, deviceId) {
         if (deviceId === undefined) {
             deviceId = "*";
@@ -273,6 +311,13 @@ class SignalClient {
         return res;
     }
 
+    /**
+     * Transmit encrypted messages to the signal service.
+     *
+     * @param {string} destination - Address of peer
+     * @param {Array} messages - Array of encrypted messages
+     * @param {number} timestamp - Official timestamp for these messages.
+     */
     async sendMessages(destination, messages, timestamp) {
         return await this.request({
             call: 'messages',
@@ -285,6 +330,14 @@ class SignalClient {
         });
     }
 
+    /**
+     * Transmit a single encrytped message to the signal service.
+     * Use this when sending a message to just 1 peer device.
+     *
+     * @param {string} addr
+     * @param {number} deviceId
+     * @param {Object} message - Encrypted message
+     */
     async sendMessage(addr, deviceId, message) {
         return await this.request({
             call: 'messages',
@@ -294,6 +347,12 @@ class SignalClient {
         });
     }
 
+    /**
+     * Download an encrypted attachment.
+     *
+     * @param {string} id - The remote ID to fetch.
+     * @returns {Buffer} - The encrypted attachment.
+     */
     async getAttachment(id) {
         // XXX Build in retry handling...
         const response = await this.request({
@@ -313,6 +372,12 @@ class SignalClient {
         return await attachment.buffer();
     }
 
+    /**
+     * Upload an encrypted attachment.
+     *
+     * @param {Buffer} - Encrypted attachment data.
+     * @returns {string} - The ID for this remote attachment.
+     */
     async putAttachment(body) {
         // XXX Build in retry handling...
         const ptrResp = await this.request({call: 'attachment'});
@@ -335,7 +400,7 @@ class SignalClient {
         });
         if (!dataResp.ok) {
             const msg = await dataResp.text();
-            console.error("Upload attachement error:", msg);
+            console.error("Upload attachment error:", msg);
             throw new Error('Upload Attachment Error: ' + msg);
         }
         return match[1];
@@ -353,16 +418,18 @@ class SignalClient {
                                 '/v1/websocket/provisioning/';
     }
 
-    /* The GCM reg ID configures the data needed for the PushServer to wake us up
-     * using google cloud messaging's Push Server (an exercise for the user) */
-    async updateGcmRegistrationId(gcm_reg_id) {
+    /**
+     * The GCM reg ID configures the data needed to wake us up using google cloud messaging
+     * service.  No data other than a "wakeup" is sent through this service.
+     *
+     * @param {string} gcmRegistrationId
+     */
+    async updateGcmRegistrationId(gcmRegistrationId) {
         return await this.request({
             call: 'accounts',
             httpType: 'PUT',
             urlParameters: '/gcm',
-            json: {
-                gcmRegistrationId: gcm_reg_id
-            }
+            json: {gcmRegistrationId}
         });
     }
 }

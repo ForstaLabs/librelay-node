@@ -84,7 +84,7 @@ function decodeJWT(encoded_token) {
  */
 
 /**
- * @class
+ * Interface for the Forsta Atlas service.  Atlas provides user and tag managment.
  */
 class AtlasClient {
 
@@ -372,9 +372,14 @@ class AtlasClient {
         return resp.results;
     }
 
+    /**
+     * Clean up tags a bit. Add @ where needed.
+     * NOTE: This does not currently support universal format!
+     *
+     * @param {string} expression
+     * @returns {string} Cleaned expression
+     */
     sanitizeTags(expression) {
-        /* Clean up tags a bit. Add @ where needed.
-         * NOTE: This does not currently support universal format! */
         const tagSplitRe = /([\s()^&+-]+)/;
         const tags = [];
         for (let tag of expression.trim().split(tagSplitRe)) {
