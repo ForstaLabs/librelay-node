@@ -157,8 +157,7 @@ class MessageSender extends eventing.EventTarget {
         ex.setMessageId(messageId);
         ex.setMessageRef(messageRef);
         ex.setUserAgent(userAgent);
-        ex.setSource(this.addr.id);
-        ex.setSourceDevice(this.addr.deviceId);
+        ex.setSource(this.addr);
         ex.setExpiration(expiration);
         ex.setFlags(flags);
         if (actions && actions.length) {

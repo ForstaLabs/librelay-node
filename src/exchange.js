@@ -209,7 +209,6 @@ class Exchange {
      */
     setSource(value) {
         this._source = value;
-        this.setSender(value);  // XXX Must set this for android devices until they stop using it.
     }
 
     /**
