@@ -181,10 +181,15 @@ class MessageSender extends eventing.EventTarget {
         }
         const content = protobufs.Content.create({dataMessage});
         const ts = Date.now();
+        const outMsg = this._send(content, ts, this._scrubSelf(addrs || distribution.userids));
         if (!noSync) {
-            await this._sendSync(content, ts, threadId, expiration && Date.now());
+            const syncOutMsg = this._sendSync(content, ts, threadId, expiration && Date.now());
+            // Relay events from out message into the normal (non-sync) out-msg.  Even
+            // if this message is just for us, it makes the interface consistent.
+            syncOutMsg.on('sent', ev => outMsg.emit('sent', ev));
+            syncOutMsg.on('error', ev => outMsg.emit('error', ev));
         }
-        return this._send(content, ts, this._scrubSelf(addrs || distribution.userids));
+        return outMsg;
     }
 
     _send(content, timestamp, addrs) {
@@ -208,7 +213,7 @@ class MessageSender extends eventing.EventTarget {
         await this.dispatchEvent(new eventing.KeyChangeEvent(e));
     }
 
-    async _sendSync(content, timestamp, threadId, expirationStartTimestamp) {
+    _sendSync(content, timestamp, threadId, expirationStartTimestamp) {
         const sentMessage = protobufs.SyncMessage.Sent.create({
             timestamp,
             message: content.dataMessage
