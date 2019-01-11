@@ -1,6 +1,6 @@
 {
   "name": "librelay",
-  "version": "5.2.5",
+  "version": "5.2.6",
   "description": "Signal based end-to-end crypto for Forsta messaging platform",
   "repository": "ForstaLabs/librelay-node",
   "engines": {
@@ -16,20 +16,18 @@
   "main": "src",
   "license": "GPL-3.0",
   "dependencies": {
-    "bufferutil": "3.0.2",
     "libsignal": "2.0.0",
     "long": "3.2.0",
     "node-fetch": "1.7.3",
     "pg": "^7.4.1",
-    "protobufjs": "6.8.0",
+    "protobufjs": "6.8.8",
     "redis": "2.8.0",
-    "utf-8-validate": "3.0.3",
     "uuid": "3.1.0",
-    "ws": "3.2.0"
+    "ws": "6.1.2"
   },
   "devDependencies": {
     "docdash": "1.0.0",
-    "eslint": "4.9.0",
+    "eslint": "5.12.0",
     "jsdoc": "3.5.5"
   },
   "scripts": {
