@@ -186,8 +186,8 @@ class MessageSender extends eventing.EventTarget {
             const syncOutMsg = this._sendSync(content, ts, threadId, expiration && Date.now());
             // Relay events from out message into the normal (non-sync) out-msg.  Even
             // if this message is just for us, it makes the interface consistent.
-            syncOutMsg.on('sent', ev => outMsg.emit('sent', ev));
-            syncOutMsg.on('error', ev => outMsg.emit('error', ev));
+            syncOutMsg.on('sent', entry => outMsg._emitSentEntry(entry));
+            syncOutMsg.on('error', entry => outMsg._emitErrorEntry(entry));
         }
         return outMsg;
     }

@@ -105,19 +105,25 @@ class OutgoingMessage {
     async _emitError(addr, reason, error) {
         error.addr = addr;
         error.reason = reason;
-        const entry = {
+        await this._emitErrorEntry({
             timestamp: Date.now(),
             error
-        };
+        });
+    }
+
+    async _emitErrorEntry(entry) {
         this.errors.push(entry);
         await this._emit('error', entry);
     }
 
     async _emitSent(addr) {
-        const entry = {
+        await this._emitSentEntry({
             timestamp: Date.now(),
             addr
-        };
+        });
+    }
+
+    async _emitSentEntry(entry) {
         this.sent.push(entry);
         await this._emit('sent', entry);
     }
