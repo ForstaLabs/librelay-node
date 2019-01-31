@@ -197,7 +197,7 @@ class MessageSender extends eventing.EventTarget {
         const outmsg = new OutgoingMessage(this.signal, timestamp, content);
         outmsg.on('keychange', this._onKeyChange.bind(this));
         for (const addr of addrs) {
-            queueAsync('message-send-job-' + addr, () =>
+            queueAsync('message-send-job-' + addr.split('.')[0], () =>
                 outmsg.sendToAddr(addr).catch(this._onError.bind(this)));
         }
         return outmsg;
