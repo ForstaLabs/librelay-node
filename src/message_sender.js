@@ -43,8 +43,9 @@ const uuid4 = require('uuid/v4');
 /**
  * @typedef {Object} SendOptions
  * @property {Object} options
- * @property {TagExpression} options.to - Required unless {@link distribution} is set.
- * @property {ResolvedTagExpression} options.distribution - This argument is required if {@link to} is ommited.
+ * @property {TagExpression} options.to - Required unless {@link distribution} or {@addrs} are set.
+ * @property {ResolvedTagExpression} options.distribution - This argument is required if {@link to} and {@ addrs} are omitted.
+ * @property {string[]} options.addrs - This argument is required if {@link to} and {@distribution} are omitted.
  *                                                       
  * @property {string} options.text - Text to send as message body.
  * @property {string} [options.html] - HTML to send as message body.
@@ -118,8 +119,7 @@ class MessageSender extends eventing.EventTarget {
      * @returns {OutgoingMessage}
      */
     async send({
-        to=null, distribution=null,
-        addrs=null,
+        to=null, distribution=null, addrs=null,
         text=null, html=null,
         data={},
         threadId=uuid4(),
@@ -138,12 +138,15 @@ class MessageSender extends eventing.EventTarget {
     }) {
         const ex = exchange.create();
         if (!distribution) {
-            if (!to) {
-                throw TypeError("`to` or `distribution` required");
+            if (to) {
+                distribution = await this.atlas.resolveTags(to);
+            } else if (!addrs) {
+                throw TypeError("`to`, `distribution` or `addrs` required");
             }
-            distribution = await this.atlas.resolveTags(to);
         }
-        ex.setThreadExpression(distribution.universal);
+        if (distribution) {
+            ex.setThreadExpression(distribution.universal);
+        }
         if (text) {
             ex.setBody(text);
         }
@@ -266,6 +269,8 @@ class MessageSender extends eventing.EventTarget {
             noSync: true,
             flags: protobufs.DataMessage.Flags.END_SESSION,
             messageType: 'control',
+            messageId: 'deadbeef-1111-2222-3333-000000000000',
+            threadId: 'deadbeef-1111-2222-3333-000000000000',
             data: {
                 control: 'closeSession',
                 retransmit: options.retransmit
