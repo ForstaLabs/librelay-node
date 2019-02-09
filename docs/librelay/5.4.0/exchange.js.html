@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>exchange.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AtlasClient.html">AtlasClient</a><ul class='methods'><li data-type='method'><a href="AtlasClient.html#.authenticateViaCode">authenticateViaCode</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaPassword">authenticateViaPassword</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaPasswordOtp">authenticateViaPasswordOtp</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaToken">authenticateViaToken</a></li><li data-type='method'><a href="AtlasClient.html#.factory">factory</a></li><li data-type='method'><a href="AtlasClient.html#.requestAuthentication">requestAuthentication</a></li><li data-type='method'><a href="AtlasClient.html#fetch">fetch</a></li><li data-type='method'><a href="AtlasClient.html#getDevices">getDevices</a></li><li data-type='method'><a href="AtlasClient.html#getUsers">getUsers</a></li><li data-type='method'><a href="AtlasClient.html#maintainJWT">maintainJWT</a></li><li data-type='method'><a href="AtlasClient.html#resolveTags">resolveTags</a></li><li data-type='method'><a href="AtlasClient.html#resolveTagsBatch">resolveTagsBatch</a></li><li data-type='method'><a href="AtlasClient.html#sanitizeTags">sanitizeTags</a></li></ul></li><li><a href="Attachment.html">Attachment</a><ul class='methods'><li data-type='method'><a href="Attachment.html#.fromFile">fromFile</a></li></ul></li><li><a href="MessageReceiver.html">MessageReceiver</a><ul class='methods'><li data-type='method'><a href="MessageReceiver.html#.factory">factory</a></li><li data-type='method'><a href="MessageReceiver.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="MessageReceiver.html#close">close</a></li><li data-type='method'><a href="MessageReceiver.html#connect">connect</a></li><li data-type='method'><a href="MessageReceiver.html#drain">drain</a></li><li data-type='method'><a href="MessageReceiver.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="MessageSender.html">MessageSender</a><ul class='methods'><li data-type='method'><a href="MessageSender.html#.factory">factory</a></li><li data-type='method'><a href="MessageSender.html#send">send</a></li></ul></li><li><a href="module-errors-NetworkError.html">NetworkError</a></li><li><a href="module-errors-ProtocolError.html">ProtocolError</a></li><li><a href="module-errors-RelayError.html">RelayError</a></li><li><a href="module-errors-UnregisteredUserError.html">UnregisteredUserError</a></li><li><a href="module-eventing-Event.html">Event</a></li><li><a href="module-eventing-EventTarget.html">EventTarget</a><ul class='methods'><li data-type='method'><a href="module-eventing-EventTarget.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="module-eventing-EventTarget.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="module-eventing-KeyChangeEvent.html">KeyChangeEvent</a><ul class='methods'><li data-type='method'><a href="module-eventing-KeyChangeEvent.html#accept">accept</a></li></ul></li><li><a href="module-exchange-Exchange.html">Exchange</a><ul class='methods'><li data-type='method'><a href="module-exchange-Exchange.html#addMessageListener">addMessageListener</a></li><li data-type='method'><a href="module-exchange-Exchange.html#decodePayload">decodePayload</a></li><li data-type='method'><a href="module-exchange-Exchange.html#encodePayload">encodePayload</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getAttachments">getAttachments</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getBody">getBody</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getDataProperty">getDataProperty</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getExpiration">getExpiration</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getFlags">getFlags</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageId">getMessageId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageRef">getMessageRef</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageType">getMessageType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSender">getSender</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSource">getSource</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSourceDevice">getSourceDevice</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadExpression">getThreadExpression</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadId">getThreadId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadTitle">getThreadTitle</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadType">getThreadType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getUserAgent">getUserAgent</a></li><li data-type='method'><a href="module-exchange-Exchange.html#recvMessages">recvMessages</a></li><li data-type='method'><a href="module-exchange-Exchange.html#removeMessageListener">removeMessageListener</a></li><li data-type='method'><a href="module-exchange-Exchange.html#send">send</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setAttachments">setAttachments</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setBody">setBody</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setDataProperty">setDataProperty</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setExpiration">setExpiration</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setFlags">setFlags</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageId">setMessageId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageRef">setMessageRef</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageType">setMessageType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSender">setSender</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSource">setSource</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSourceDevice">setSourceDevice</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadExpression">setThreadExpression</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadId">setThreadId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadTitle">setThreadTitle</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadType">setThreadType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setTimestamp">setTimestamp</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setUserAgent">setUserAgent</a></li></ul></li><li><a href="module-exchange-ExchangeV1.html">ExchangeV1</a><ul class='methods'><li data-type='method'><a href="module-exchange-ExchangeV1.html#addMessageListener">addMessageListener</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#decodePayload">decodePayload</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#encodePayload">encodePayload</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getAttachments">getAttachments</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getBody">getBody</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getDataProperty">getDataProperty</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getExpiration">getExpiration</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getFlags">getFlags</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageId">getMessageId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageRef">getMessageRef</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageType">getMessageType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSender">getSender</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSource">getSource</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSourceDevice">getSourceDevice</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadExpression">getThreadExpression</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadId">getThreadId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadTitle">getThreadTitle</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadType">getThreadType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getUserAgent">getUserAgent</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#recvMessages">recvMessages</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#removeMessageListener">removeMessageListener</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#send">send</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setAttachments">setAttachments</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setBody">setBody</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setDataProperty">setDataProperty</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setExpiration">setExpiration</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setFlags">setFlags</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageId">setMessageId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageRef">setMessageRef</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageType">setMessageType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSender">setSender</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSource">setSource</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSourceDevice">setSourceDevice</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadExpression">setThreadExpression</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadId">setThreadId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadTitle">setThreadTitle</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadType">setThreadType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setTimestamp">setTimestamp</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setUserAgent">setUserAgent</a></li></ul></li><li><a href="module-storage_backing-StorageInterface.html">StorageInterface</a><ul class='methods'><li data-type='method'><a href="module-storage_backing-StorageInterface.html#get">get</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#has">has</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#initialize">initialize</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#keys">keys</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#remove">remove</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#set">set</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#shutdown">shutdown</a></li></ul></li><li><a href="OutgoingMessage.html">OutgoingMessage</a><ul class='methods'><li data-type='method'><a href="OutgoingMessage.html#on">on</a></li><li data-type='method'><a href="OutgoingMessage.html#sendToAddr">sendToAddr</a></li></ul></li><li><a href="SignalClient.html">SignalClient</a><ul class='methods'><li data-type='method'><a href="SignalClient.html#.factory">factory</a></li><li data-type='method'><a href="SignalClient.html#fetch">fetch</a></li><li data-type='method'><a href="SignalClient.html#getAttachment">getAttachment</a></li><li data-type='method'><a href="SignalClient.html#getDevices">getDevices</a></li><li data-type='method'><a href="SignalClient.html#getKeysForAddr">getKeysForAddr</a></li><li data-type='method'><a href="SignalClient.html#linkDevice">linkDevice</a></li><li data-type='method'><a href="SignalClient.html#putAttachment">putAttachment</a></li><li data-type='method'><a href="SignalClient.html#refreshPreKeys">refreshPreKeys</a></li><li data-type='method'><a href="SignalClient.html#sendMessage">sendMessage</a></li><li data-type='method'><a href="SignalClient.html#sendMessages">sendMessages</a></li><li data-type='method'><a href="SignalClient.html#updateGcmRegistrationId">updateGcmRegistrationId</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-errors.html">errors</a></li><li><a href="module-eventing.html">eventing</a></li><li><a href="module-exchange.html">exchange</a><ul class='methods'><li data-type='method'><a href="module-exchange.html#.create">create</a></li><li data-type='method'><a href="module-exchange.html#.decode">decode</a></li></ul></li><li><a href="module-storage.html">storage</a><ul class='methods'><li data-type='method'><a href="module-storage.html#.clearSessionStore">clearSessionStore</a></li><li data-type='method'><a href="module-storage.html#.get">get</a></li><li data-type='method'><a href="module-storage.html#.getDeviceIds">getDeviceIds</a></li><li data-type='method'><a href="module-storage.html#.getOurIdentity">getOurIdentity</a></li><li data-type='method'><a href="module-storage.html#.getOurRegistrationId">getOurRegistrationId</a></li><li data-type='method'><a href="module-storage.html#.getState">getState</a></li><li data-type='method'><a href="module-storage.html#.has">has</a></li><li data-type='method'><a href="module-storage.html#.initialize">initialize</a></li><li data-type='method'><a href="module-storage.html#.isBlocked">isBlocked</a></li><li data-type='method'><a href="module-storage.html#.isTrustedIdentity">isTrustedIdentity</a></li><li data-type='method'><a href="module-storage.html#.keys">keys</a></li><li data-type='method'><a href="module-storage.html#.loadIdentity">loadIdentity</a></li><li data-type='method'><a href="module-storage.html#.loadPreKey">loadPreKey</a></li><li data-type='method'><a href="module-storage.html#.loadSession">loadSession</a></li><li data-type='method'><a href="module-storage.html#.loadSignedPreKey">loadSignedPreKey</a></li><li data-type='method'><a href="module-storage.html#.putState">putState</a></li><li data-type='method'><a href="module-storage.html#.remove">remove</a></li><li data-type='method'><a href="module-storage.html#.removeAllSessions">removeAllSessions</a></li><li data-type='method'><a href="module-storage.html#.removeIdentity">removeIdentity</a></li><li data-type='method'><a href="module-storage.html#.removeOurIdentity">removeOurIdentity</a></li><li data-type='method'><a href="module-storage.html#.removePreKey">removePreKey</a></li><li data-type='method'><a href="module-storage.html#.removeSession">removeSession</a></li><li data-type='method'><a href="module-storage.html#.removeSignedPreKey">removeSignedPreKey</a></li><li data-type='method'><a href="module-storage.html#.removeState">removeState</a></li><li data-type='method'><a href="module-storage.html#.saveIdentity">saveIdentity</a></li><li data-type='method'><a href="module-storage.html#.saveOurIdentity">saveOurIdentity</a></li><li data-type='method'><a href="module-storage.html#.set">set</a></li><li data-type='method'><a href="module-storage.html#.setBacking">setBacking</a></li><li data-type='method'><a href="module-storage.html#.setLabel">setLabel</a></li><li data-type='method'><a href="module-storage.html#.shutdown">shutdown</a></li><li data-type='method'><a href="module-storage.html#.storePreKey">storePreKey</a></li><li data-type='method'><a href="module-storage.html#.storeSession">storeSession</a></li><li data-type='method'><a href="module-storage.html#.storeSignedPreKey">storeSignedPreKey</a></li></ul></li><li><a href="module-storage_backing.html">storage/backing</a></li><li><a href="module-util.html">util</a><ul class='methods'><li data-type='method'><a href="module-util.html#~consoleInput">consoleInput</a></li><li data-type='method'><a href="module-util.html#~never">never</a></li><li data-type='method'><a href="module-util.html#~sleep">sleep</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="MessageReceiver.html#event:error">error</a></li><li><a href="MessageReceiver.html#event:keychange">keychange</a></li><li><a href="MessageReceiver.html#event:message">message</a></li><li><a href="MessageReceiver.html#event:receipt">receipt</a></li><li><a href="MessageReceiver.html#event:sent">sent</a></li><li><a href="MessageSender.html#event:error">error</a></li><li><a href="MessageSender.html#event:keychange">keychange</a></li><li><a href="OutgoingMessage.html#event:error">error</a></li><li><a href="OutgoingMessage.html#event:keychange">keychange</a></li><li><a href="OutgoingMessage.html#event:sent">sent</a></li></ul><h3>Global</h3><ul><li><a href="global.html#registerAccount">registerAccount</a></li><li><a href="global.html#registerDevice">registerDevice</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">exchange.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// vim: ts=4:sw=4:expandtab
+/** @module */
+
+const MessageReceiver = require('./message_receiver');
+const MessageSender = require('./message_sender');
+const hub = require('./hub');
+const protobufs = require('./protobufs');
+
+const currentVersion = 1;
+const ExchangeClasses = {};
+
+
+/**
+ * Interface for communicating with other Forsta devices.
+ * {@link https://goo.gl/eX7gyC Payload Definition}
+ */
+class Exchange {
+
+    async _getMessageSender() {
+        if (!this._msgSender) {
+            this._msgSender = await MessageSender.factory();
+        }
+        return this._msgSender;
+    }
+
+    async _getMessageReceiver() {
+        if (!this._msgReceiver) {
+            this._msgReceiver = await MessageReceiver.factory();
+        }
+        return this._msgReceiver;
+    }
+
+    async _getAtlasClient() {
+        if (!this._atlas) {
+            this._atlas = await hub.AtlasClient.factory();
+        }
+        return this._atlas;
+    }
+
+    async _getSignalClient() {
+        if (!this._signal) {
+            this._signal = await hub.SignalClient.factory();
+        }
+        return this._signal;
+    }
+
+    constructor(options) {
+        options = options || {};
+        this._msgSender = options.messageSender;
+        this._msgReceiver = options.messageReceiver;
+        this._atlas = options.atlas;
+        this._signal = options.signal;
+    }
+
+    decode(dataMessage, payload) {
+        this.setExpiration(dataMessage.expireTimer);
+        this.setFlags(dataMessage.flags);
+        this.decodePayload(payload);
+    }
+
+    encode() {
+        return protobufs.DataMessage.create({
+            flags: this.getFlags(),
+            expireTimer: this.getExpiration(),
+            body: JSON.stringify([this.encodePayload()])
+        });
+    }
+
+    /**
+     * Send a message to this exchange's thread.
+     *
+     * @param {SendOptions} options - All standard send options are supported plus...
+     * @param {bool} [options.onlySender] - Set to true if you want to send a message to
+     *        only the original sender of this exchange object.  Used for private replies
+     *        to an individual regardless of the thread distribution.
+     */
+    async send(options) {
+        const atlas = await this._getAtlasClient();
+        const distribution = await atlas.resolveTags(this.getThreadExpression());
+        const addrs = options.onlySender ? [this.getSender()] : undefined;
+        return await (await this._getMessageSender()).send(Object.assign({
+            distribution,
+            addrs,
+            threadId: this.getThreadId(),
+            threadType: this.getThreadType(),
+            threadTitle: this.getThreadTitle(),
+        }, options));
+    }
+
+    /**
+     * Listen for new message events on pertaining to this exchange's thread.
+     *
+     * @param {callback} callback
+     */
+    async addMessageListener(callback) {
+        // Add a filtered event listener on the message receiver that only
+        // fires events for message events pertaining to our thread ID.
+        if (!this._messageListeners) {
+            this._messageListeners = [];
+        }
+        this._messageListeners.push(callback);
+        if (!this._messageListener) {
+            const threadId = this.getThreadId();
+            this._messageListener = async ev => {
+                if (ev.data.exchange.getThreadId() === threadId) {
+                    for (const cb of this._messageListeners) {
+                        await cb(ev);
+                    }
+                }
+            };
+            const mr = await this._getMessageReceiver();
+            mr.addEventListener('message', this._messageListener);
+        }
+    }
+
+   /**
+     * Remove message event listener added by {@link addMessageListener}.
+     *
+     * @param {callback} callback
+     */
+    async removeMessageListener(callback) {
+        const idx = this._messageListeners.indexOf(callback);
+        if (idx !== -1) {
+            this._messageListeners.splice(idx, 1);
+            if (!this._messageListeners.length) {
+                const mr = await this._getMessageReceiver();
+                mr.removeEventListener('message', this._messageListener);
+                this._messageListener = null;
+            }
+        }
+    }
+
+    /**
+     * Generator for receiving new messages on this exchange's thread.
+     *
+     * @param {Object} options
+     * @param {number} [options.timeout] - Timeout in milliseconds
+     * @yields {Promise} exchangePromise - Promise that resolves to the next available message or 
+     *                                     undefined if timeout is reached.
+     */
+    *recvMessages(options) {
+        options = options || {};
+        const timeout = options.timeout;
+        const queue = [];
+        let waiter;
+        let timeoutId;
+        const callback = ev => {
+            if (waiter) {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                waiter(ev.data.exchange);
+                waiter = null;
+            } else {
+                queue.push(ev.data.exchange);
+            }
+        };
+        this.addMessageListener(callback);
+        let active = true;
+        try {
+            while (active) {
+                if (queue.length) {
+                    yield Promise.resolve(queue.shift());
+                } else if (waiter) {
+                    throw new Error("Prior promise was not awaited");
+                } else {
+                    yield new Promise(resolve => {
+                        waiter = resolve;
+                        if (timeout) {
+                            timeoutId = setTimeout(() => {
+                                active = false;
+                                resolve(null);
+                            }, timeout);
+                        }
+                    });
+                }
+            }
+        } finally {
+            this.removeMessageListener(callback);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        }
+    }
+
+    /**
+     * @returns {number} Expiration time for messages on this thread.
+     */
+    getExpiration() {
+        return this._expiration;
+    }
+
+    /**
+     * @param {number} value - Expiration time for messages on this thread.
+     */
+    setExpiration(value) {
+        this._expiration = value;
+    }
+
+    /**
+     * @returns {string} UUID for user that sent or is sending this message.
+     */
+    getSource() {
+        return this._source;
+    }
+
+    /** 
+     * @param {string} UUID of user sending this message.
+     */
+    setSource(value) {
+        this._source = value;
+    }
+
+    /**
+     * @returns {number} device ID of source user.
+     */
+    getSourceDevice() {
+        return this._sourceDevice;
+    }
+
+    /**
+     * @param {number} value - Device ID of source user.
+     */
+    setSourceDevice(value) {
+        this._sourceDevice = value;
+    }
+
+    /**
+     * @returns {number} Signal flags associated with this message.
+     */
+    getFlags() {
+        return this._flags;
+    }
+
+    /**
+     * @param {number} value - Signal flags associated with this message.
+     */
+    setFlags(value) {
+        this._flags = value;
+    }
+
+    /**
+     * Every message has a global and non-secret timestamp that is used to'
+     * cross reference things like read-receipts and session retransmits.
+     *
+     * @returns {number} Milliseconds since 1970.
+     */
+    getTimestamp() {
+        return this._timestamp;
+    }
+
+    /**
+     * @param {number} value - Timestamp of this message in milliseconds since 1970.
+     */
+    setTimestamp(value) {
+        this._timestamp = value;
+    }
+
+    /**
+     * @abstract
+     * @protected
+     * @param {Object} payload - Version specific payload object.
+     */
+    decodePayload(payload) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @protected
+     */
+    encodePayload() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * Get the message body.  E.g. the localized text for this message.
+     *
+     * @abstract
+     * @param {Object} options
+     */
+    getBody(options) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * Set the message body.  E.g. the localized text for this message.
+     *
+     * @abstract
+     * @param {string} value - The body contents. E.g. text or html.
+     * @param {Object} [options]
+     */
+    setBody(value, options) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @deprecated Use {@link getSource} instead 
+     */
+    getSender() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @deprecated Use {@link setSource} instead 
+     * @param {string} value - The sender's UUID.
+     */
+    setSender(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @returns {string} The universal tag expression for this exchange's thread. 
+     */
+    getThreadExpression() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {string} value - The universal tag expression for this exchange's thread.
+     */
+    setThreadExpression(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @returns {string} The UUID for this exhcange's thread.
+     */
+    getThreadId() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {string} value - The thread UUID for this exchange.
+     */
+    setThreadId(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @returns {('converstaion'|'announcement')} The thread type for this message.
+     */
+    getThreadType() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {('conversation'|'announcement')} value - The thread type for this exchange.
+     */
+    setThreadType(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @returns {?string} The optional thread title.
+     */
+    getThreadTitle() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {?string} value - Localized thread title text.
+     */
+    setThreadTitle(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @returns {string} The UUID for this message.
+     */
+    getMessageId() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {string} value - UUID for this message.
+     */
+    setMessageId(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @returns {string} The message type.
+     */
+    getMessageType() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {string} value - The message type. E.g. "content", "control", ...
+     */
+    setMessageType(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @returns {?string} The optional message reference.  E.g. the UUID of a prior
+     *                    message that this message refers/replies to. 
+     */
+    getMessageRef() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {string} value - Message UUID to reference.  E.g. the replied to UUID.
+     */
+    setMessageRef(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @returns {?Attachment[]} Attachments for this message.
+     */
+    getAttachments() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {Attachment[]} value - Attachments array for this message. 
+     */
+    setAttachments(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @returns {string} The device user agent string.
+     */
+    getUserAgent() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+      * @abstract
+      * @param {string} value - The user agent string for this message.
+      */
+    setUserAgent(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {string} key - The data key to get.
+     * @returns {Object} The natively typed value for this data property.
+     */
+    getDataProperty(key) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {string} key - The data key to set.
+     * @param {Object} value - The natively typed value for this data property.
+     */
+    setDataProperty(key, value) {
+        throw new Error("Subclasss impl required");
+    }
+}
+exports.Exchange = Exchange;
+
+
+/**
+ * @version 1
+ * @extends module:exchange~Exchange
+ */
+class ExchangeV1 extends Exchange {
+
+    constructor(options) {
+        super(options);
+        this._payload = {};
+    }
+
+    decodePayload(payload) {
+        Object.assign(this._payload, payload);
+    }
+
+    encodePayload() {
+        return Object.assign({
+            version: 1,
+            sender: {
+                userId: this.getSource()  // DEPRECATED but needed for a while.
+            }
+        }, this._payload);
+    }
+
+    getBody(options) {
+        options = options || {};
+        if (this._payload &amp;&amp; this._payload.data &amp;&amp; this._payload.data.body) {
+            const body = this._payload.data.body;
+            if (!body.length) {
+                return;
+            }
+            let entry;
+            if (options.html) {
+                entry = body.find(x => x.type === 'text/html');
+            }
+            if (!entry) {
+                entry = body.find(x => x.type === 'text/plain');
+            }
+            if (!entry) {
+                entry = body[0];
+                console.warn("Unexpected type:", entry.type);
+            }
+            return entry.value;
+        }
+    }
+
+    setBody(value, options) {
+        options = options || {};
+        let body = this.getDataProperty('body');
+        if (!body) {
+            body = [];
+            this.setDataProperty('body', body);
+        }
+        body.push({
+            type: options.html ? 'text/html' : 'text/plain',
+            value
+        });
+    }
+
+    getSender() {
+        return this._payload.sender &amp;&amp; this._payload.sender.userId;
+    }
+
+    setSender(value) {
+        this._payload.sender = {userId: value};
+    }
+
+    getThreadExpression(value) {
+        return this._payload.distribution &amp;&amp; this._payload.distribution.expression;
+    }
+
+    setThreadExpression(value) {
+        if (!this._payload.distribution) {
+            this._payload.distribution = {};
+        }
+        this._payload.distribution.expression = value;
+    }
+
+    getThreadId() {
+        return this._payload.threadId;
+    }
+
+    setThreadId(value) {
+        this._payload.threadId = value;
+    }
+
+    getThreadType() {
+        return this._payload.threadType;
+    }
+
+    setThreadType(value) {
+        this._payload.threadType = value;
+    }
+
+    getThreadTitle() {
+        return this._payload.threadTitle;
+    }
+
+    setThreadTitle(value) {
+        this._payload.threadTitle = value;
+    }
+
+    getMessageId() {
+        return this._payload.messageId;
+    }
+
+    setMessageId(value) {
+        this._payload.messageId = value;
+    }
+
+    getMessageType() {
+        return this._payload.messageType;
+    }
+
+    setMessageType(value) {
+        this._payload.messageType = value;
+    }
+
+    getMessageRef() {
+        return this._payload.messageRef;
+    }
+
+    setMessageRef(value) {
+        this._payload.messageRef = value;
+    }
+
+    getAttachments() {
+        return this._payload.attachments;
+    }
+
+    setAttachments(value) {
+        this._payload.attachments = value;
+    }
+
+    getUserAgent() {
+        return this._payload.userAgent;
+    }
+
+    setUserAgent(value) {
+        this._payload.userAgent = value;
+    }
+
+    getDataProperty(key) {
+        return this._payload.data &amp;&amp; this._payload.data[key];
+    }
+
+    setDataProperty(key, value) {
+        if (!this._payload.data) {
+            this._payload.data = {};
+        }
+        this._payload.data[key] = value;
+    }
+}
+exports.ExchangeV1 = ExchangeClasses[1] = ExchangeV1;
+
+/**
+ * Return a versioned Exchange instance based on the protocol buffer argument.
+ *
+ * @param {protobufs.DataMessage} dataMessage The protocol buffer to decode.
+ * @param {Object} [options] Options to pass into the Exchange constructor.
+ * @returns {module:exchange~Exchange}
+ */
+exports.decode = function(dataMessage, options) {
+    if (!(dataMessage instanceof protobufs.DataMessage.ctor)) {
+        throw new TypeError("DataMessage argument required");
+    }
+    const payload = JSON.parse(dataMessage.body);
+    const ordered = Array.from(payload).sort((a, b) => a.version &lt; b.version ? 1 : -1);
+    for (const x of ordered) {
+        if (ExchangeClasses.hasOwnProperty(x.version)) {
+            const instance = new ExchangeClasses[x.version](options);
+            instance.decode(dataMessage, x);
+            return instance;
+        }
+    }
+    throw new ReferenceError("No supported exchange versions found");
+};
+
+
+/**
+ * Build a new Exchange object with our most current exchange version.
+ *
+ * @param {Object} [options] Constructor options.
+ * @returns {module:exchange~Exchange}
+ */
+exports.create = function(options) {
+    return new ExchangeClasses[currentVersion](options);
+};
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>
+
+<link type="text/css" rel="stylesheet" href="../../css/jsdoc-overrides.css"/>
+<link id="favicon" rel="shortcut icon" href="../../images/icon_256.png"/>
+<script src="../../js/jsdoc-overrides.js"></script>

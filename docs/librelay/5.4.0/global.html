@@ -1,0 +1,2792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Global - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AtlasClient.html">AtlasClient</a><ul class='methods'><li data-type='method'><a href="AtlasClient.html#.authenticateViaCode">authenticateViaCode</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaPassword">authenticateViaPassword</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaPasswordOtp">authenticateViaPasswordOtp</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaToken">authenticateViaToken</a></li><li data-type='method'><a href="AtlasClient.html#.factory">factory</a></li><li data-type='method'><a href="AtlasClient.html#.requestAuthentication">requestAuthentication</a></li><li data-type='method'><a href="AtlasClient.html#fetch">fetch</a></li><li data-type='method'><a href="AtlasClient.html#getDevices">getDevices</a></li><li data-type='method'><a href="AtlasClient.html#getUsers">getUsers</a></li><li data-type='method'><a href="AtlasClient.html#maintainJWT">maintainJWT</a></li><li data-type='method'><a href="AtlasClient.html#resolveTags">resolveTags</a></li><li data-type='method'><a href="AtlasClient.html#resolveTagsBatch">resolveTagsBatch</a></li><li data-type='method'><a href="AtlasClient.html#sanitizeTags">sanitizeTags</a></li></ul></li><li><a href="Attachment.html">Attachment</a><ul class='methods'><li data-type='method'><a href="Attachment.html#.fromFile">fromFile</a></li></ul></li><li><a href="MessageReceiver.html">MessageReceiver</a><ul class='methods'><li data-type='method'><a href="MessageReceiver.html#.factory">factory</a></li><li data-type='method'><a href="MessageReceiver.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="MessageReceiver.html#close">close</a></li><li data-type='method'><a href="MessageReceiver.html#connect">connect</a></li><li data-type='method'><a href="MessageReceiver.html#drain">drain</a></li><li data-type='method'><a href="MessageReceiver.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="MessageSender.html">MessageSender</a><ul class='methods'><li data-type='method'><a href="MessageSender.html#.factory">factory</a></li><li data-type='method'><a href="MessageSender.html#send">send</a></li></ul></li><li><a href="module-errors-NetworkError.html">NetworkError</a></li><li><a href="module-errors-ProtocolError.html">ProtocolError</a></li><li><a href="module-errors-RelayError.html">RelayError</a></li><li><a href="module-errors-UnregisteredUserError.html">UnregisteredUserError</a></li><li><a href="module-eventing-Event.html">Event</a></li><li><a href="module-eventing-EventTarget.html">EventTarget</a><ul class='methods'><li data-type='method'><a href="module-eventing-EventTarget.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="module-eventing-EventTarget.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="module-eventing-KeyChangeEvent.html">KeyChangeEvent</a><ul class='methods'><li data-type='method'><a href="module-eventing-KeyChangeEvent.html#accept">accept</a></li></ul></li><li><a href="module-exchange-Exchange.html">Exchange</a><ul class='methods'><li data-type='method'><a href="module-exchange-Exchange.html#addMessageListener">addMessageListener</a></li><li data-type='method'><a href="module-exchange-Exchange.html#decodePayload">decodePayload</a></li><li data-type='method'><a href="module-exchange-Exchange.html#encodePayload">encodePayload</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getAttachments">getAttachments</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getBody">getBody</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getDataProperty">getDataProperty</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getExpiration">getExpiration</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getFlags">getFlags</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageId">getMessageId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageRef">getMessageRef</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageType">getMessageType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSender">getSender</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSource">getSource</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSourceDevice">getSourceDevice</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadExpression">getThreadExpression</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadId">getThreadId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadTitle">getThreadTitle</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadType">getThreadType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getUserAgent">getUserAgent</a></li><li data-type='method'><a href="module-exchange-Exchange.html#recvMessages">recvMessages</a></li><li data-type='method'><a href="module-exchange-Exchange.html#removeMessageListener">removeMessageListener</a></li><li data-type='method'><a href="module-exchange-Exchange.html#send">send</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setAttachments">setAttachments</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setBody">setBody</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setDataProperty">setDataProperty</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setExpiration">setExpiration</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setFlags">setFlags</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageId">setMessageId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageRef">setMessageRef</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageType">setMessageType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSender">setSender</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSource">setSource</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSourceDevice">setSourceDevice</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadExpression">setThreadExpression</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadId">setThreadId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadTitle">setThreadTitle</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadType">setThreadType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setTimestamp">setTimestamp</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setUserAgent">setUserAgent</a></li></ul></li><li><a href="module-exchange-ExchangeV1.html">ExchangeV1</a><ul class='methods'><li data-type='method'><a href="module-exchange-ExchangeV1.html#addMessageListener">addMessageListener</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#decodePayload">decodePayload</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#encodePayload">encodePayload</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getAttachments">getAttachments</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getBody">getBody</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getDataProperty">getDataProperty</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getExpiration">getExpiration</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getFlags">getFlags</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageId">getMessageId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageRef">getMessageRef</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageType">getMessageType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSender">getSender</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSource">getSource</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSourceDevice">getSourceDevice</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadExpression">getThreadExpression</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadId">getThreadId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadTitle">getThreadTitle</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadType">getThreadType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getUserAgent">getUserAgent</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#recvMessages">recvMessages</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#removeMessageListener">removeMessageListener</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#send">send</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setAttachments">setAttachments</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setBody">setBody</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setDataProperty">setDataProperty</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setExpiration">setExpiration</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setFlags">setFlags</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageId">setMessageId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageRef">setMessageRef</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageType">setMessageType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSender">setSender</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSource">setSource</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSourceDevice">setSourceDevice</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadExpression">setThreadExpression</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadId">setThreadId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadTitle">setThreadTitle</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadType">setThreadType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setTimestamp">setTimestamp</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setUserAgent">setUserAgent</a></li></ul></li><li><a href="module-storage_backing-StorageInterface.html">StorageInterface</a><ul class='methods'><li data-type='method'><a href="module-storage_backing-StorageInterface.html#get">get</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#has">has</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#initialize">initialize</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#keys">keys</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#remove">remove</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#set">set</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#shutdown">shutdown</a></li></ul></li><li><a href="OutgoingMessage.html">OutgoingMessage</a><ul class='methods'><li data-type='method'><a href="OutgoingMessage.html#on">on</a></li><li data-type='method'><a href="OutgoingMessage.html#sendToAddr">sendToAddr</a></li></ul></li><li><a href="SignalClient.html">SignalClient</a><ul class='methods'><li data-type='method'><a href="SignalClient.html#.factory">factory</a></li><li data-type='method'><a href="SignalClient.html#fetch">fetch</a></li><li data-type='method'><a href="SignalClient.html#getAttachment">getAttachment</a></li><li data-type='method'><a href="SignalClient.html#getDevices">getDevices</a></li><li data-type='method'><a href="SignalClient.html#getKeysForAddr">getKeysForAddr</a></li><li data-type='method'><a href="SignalClient.html#linkDevice">linkDevice</a></li><li data-type='method'><a href="SignalClient.html#putAttachment">putAttachment</a></li><li data-type='method'><a href="SignalClient.html#refreshPreKeys">refreshPreKeys</a></li><li data-type='method'><a href="SignalClient.html#sendMessage">sendMessage</a></li><li data-type='method'><a href="SignalClient.html#sendMessages">sendMessages</a></li><li data-type='method'><a href="SignalClient.html#updateGcmRegistrationId">updateGcmRegistrationId</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-errors.html">errors</a></li><li><a href="module-eventing.html">eventing</a></li><li><a href="module-exchange.html">exchange</a><ul class='methods'><li data-type='method'><a href="module-exchange.html#.create">create</a></li><li data-type='method'><a href="module-exchange.html#.decode">decode</a></li></ul></li><li><a href="module-storage.html">storage</a><ul class='methods'><li data-type='method'><a href="module-storage.html#.clearSessionStore">clearSessionStore</a></li><li data-type='method'><a href="module-storage.html#.get">get</a></li><li data-type='method'><a href="module-storage.html#.getDeviceIds">getDeviceIds</a></li><li data-type='method'><a href="module-storage.html#.getOurIdentity">getOurIdentity</a></li><li data-type='method'><a href="module-storage.html#.getOurRegistrationId">getOurRegistrationId</a></li><li data-type='method'><a href="module-storage.html#.getState">getState</a></li><li data-type='method'><a href="module-storage.html#.has">has</a></li><li data-type='method'><a href="module-storage.html#.initialize">initialize</a></li><li data-type='method'><a href="module-storage.html#.isBlocked">isBlocked</a></li><li data-type='method'><a href="module-storage.html#.isTrustedIdentity">isTrustedIdentity</a></li><li data-type='method'><a href="module-storage.html#.keys">keys</a></li><li data-type='method'><a href="module-storage.html#.loadIdentity">loadIdentity</a></li><li data-type='method'><a href="module-storage.html#.loadPreKey">loadPreKey</a></li><li data-type='method'><a href="module-storage.html#.loadSession">loadSession</a></li><li data-type='method'><a href="module-storage.html#.loadSignedPreKey">loadSignedPreKey</a></li><li data-type='method'><a href="module-storage.html#.putState">putState</a></li><li data-type='method'><a href="module-storage.html#.remove">remove</a></li><li data-type='method'><a href="module-storage.html#.removeAllSessions">removeAllSessions</a></li><li data-type='method'><a href="module-storage.html#.removeIdentity">removeIdentity</a></li><li data-type='method'><a href="module-storage.html#.removeOurIdentity">removeOurIdentity</a></li><li data-type='method'><a href="module-storage.html#.removePreKey">removePreKey</a></li><li data-type='method'><a href="module-storage.html#.removeSession">removeSession</a></li><li data-type='method'><a href="module-storage.html#.removeSignedPreKey">removeSignedPreKey</a></li><li data-type='method'><a href="module-storage.html#.removeState">removeState</a></li><li data-type='method'><a href="module-storage.html#.saveIdentity">saveIdentity</a></li><li data-type='method'><a href="module-storage.html#.saveOurIdentity">saveOurIdentity</a></li><li data-type='method'><a href="module-storage.html#.set">set</a></li><li data-type='method'><a href="module-storage.html#.setBacking">setBacking</a></li><li data-type='method'><a href="module-storage.html#.setLabel">setLabel</a></li><li data-type='method'><a href="module-storage.html#.shutdown">shutdown</a></li><li data-type='method'><a href="module-storage.html#.storePreKey">storePreKey</a></li><li data-type='method'><a href="module-storage.html#.storeSession">storeSession</a></li><li data-type='method'><a href="module-storage.html#.storeSignedPreKey">storeSignedPreKey</a></li></ul></li><li><a href="module-storage_backing.html">storage/backing</a></li><li><a href="module-util.html">util</a><ul class='methods'><li data-type='method'><a href="module-util.html#~consoleInput">consoleInput</a></li><li data-type='method'><a href="module-util.html#~never">never</a></li><li data-type='method'><a href="module-util.html#~sleep">sleep</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="MessageReceiver.html#event:error">error</a></li><li><a href="MessageReceiver.html#event:keychange">keychange</a></li><li><a href="MessageReceiver.html#event:message">message</a></li><li><a href="MessageReceiver.html#event:receipt">receipt</a></li><li><a href="MessageReceiver.html#event:sent">sent</a></li><li><a href="MessageSender.html#event:error">error</a></li><li><a href="MessageSender.html#event:keychange">keychange</a></li><li><a href="OutgoingMessage.html#event:error">error</a></li><li><a href="OutgoingMessage.html#event:keychange">keychange</a></li><li><a href="OutgoingMessage.html#event:sent">sent</a></li></ul><h3>Global</h3><ul><li><a href="global.html#registerAccount">registerAccount</a></li><li><a href="global.html#registerDevice">registerDevice</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Global</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        
+        </h2>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+            
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="registerAccount"><span class="type-signature">(async) </span>registerAccount<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="hub_registration.js.html">hub/registration.js</a>, <a href="hub_registration.js.html#line34">line 34</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Create a new identity key and create or replace the signal account.
+Note that any existing devices asssociated with your account will be
+purged as a result of this action.  This should only be used for new
+accounts or when you need to start over.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The public name to store in the signal server.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>atlasClient</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="AtlasClient.html">AtlasClient</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="registerDevice"><span class="type-signature">(async) </span>registerDevice<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="global.html#RegisterDeviceResult">RegisterDeviceResult</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="hub_registration.js.html">hub/registration.js</a>, <a href="hub_registration.js.html#line93">line 93</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Register an additional device with an existing signal account.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The public name to store in the signal server.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>atlasClient</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="AtlasClient.html">AtlasClient</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>autoProvision</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>true</code>
+                
+                </td>
+            
+
+            <td class="description last">Attempt to use Forsta auto-provisioning.
+                                                Requires existing online devices.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onProvisionReady</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Callback executed when a peer has an provisioning
+                                               response.  Can be called more than once.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="global.html#RegisterDeviceResult">RegisterDeviceResult</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+<h4 class="name" id="Action">Action</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="message_sender.js.html">message_sender.js</a>, <a href="message_sender.js.html#line29">line 29</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Text to be displayed in the recipients client.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>action</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The identifier included in responses.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>color</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="ActionOptions">ActionOptions</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="message_sender.js.html">message_sender.js</a>, <a href="message_sender.js.html#line36">line 36</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-since">Since:</dt>
+    <dd class="tag-since"><ul class="dummy"><li>5.2.1</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>allowMultiple</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    <code>false</code>
+                
+                </td>
+            
+
+            <td class="description last">Enable to prevent the action buttons
+                                          from disabling after use.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AuthenticationRequestChallenge">AuthenticationRequestChallenge</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="hub_atlas.js.html">hub/atlas.js</a>, <a href="hub_atlas.js.html#line46">line 46</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The authentication type.  E.g. "password", "totp", etc..</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>authenticate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Handler function to be called with challenge response.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    Response from an authentication request indicating the type
+of auth challenge required to complete.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="EncodedUserAddress">EncodedUserAddress</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line34">line 34</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    String encoding of a fully qualified user address.  The value should be of the form
+UUID[.DEVICE_ID], where the UUID is the hex formatted UUID for a given user and the
+DEVICE_ID is the integer number representing the device of that user.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>be1cfd18-d7e9-4689-8870-e9d2773e364d.1000</code></pre>
+
+
+
+            
+                
+<h4 class="name" id="KeyPair">KeyPair</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line26">line 26</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pubKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Buffer</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>privKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Buffer</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="RegisterDeviceResult">RegisterDeviceResult</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="hub_registration.js.html">hub/registration.js</a>, <a href="hub_registration.js.html#line72">line 72</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>done</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Promise</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Resolves when the registration process has completed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>waiting</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">True while no auto-provisioning response has been received.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cancel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Cancel the provision process (async).</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    Returned by <a href="global.html#registerDevice"><code>registerDevice</code></a>.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="ResolvedTagExpression">ResolvedTagExpression</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="hub_atlas.js.html">hub/atlas.js</a>, <a href="hub_atlas.js.html#line66">line 66</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>userids</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Array of UUIDs belonging to this tag expression.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>universal</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The universal (stable) representation of this tag expression
+                               This value should be used when managing Thread.expression
+                               values.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pretty</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A human readable version of the tag expression.  Still valid
+                            syntax but should only be used for viewing.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>warnings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Any warnings associated with the input expression.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>includedTagids</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A list of tag UUIDs which are positively mentioned and
+                                      as such have affected the final membership.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>excludedTagids</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A list of tag UUIDs which are negatively mentioned and
+                                      as such are NOT in the final membership.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    A resolved tag expression is the computed set of data for a given <a href="global.html#TagExpression"><code>TagExpression</code></a>.
+It represents a snapshot of the current state of membership for a tag expression.
+The values can be cached for short periods but should avoid being stored permanently
+as membership changes can occur behind the scenes.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="SendOptions">SendOptions</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="message_sender.js.html">message_sender.js</a>, <a href="message_sender.js.html#line43">line 43</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>to</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#TagExpression">TagExpression</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Required unless <code>distribution</code> or {@addrs} are set.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>distribution</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#ResolvedTagExpression">ResolvedTagExpression</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">This argument is required if <code>to</code> and {@ addrs} are omitted.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>addrs</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">This argument is required if <code>to</code> and {@distribution} are omitted.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>text</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Text to send as message body.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>html</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">HTML to send as message body.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Misc data properties. (ADVANCED)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>threadId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>uuid4()</code>
+                
+                </td>
+            
+
+            <td class="description last">UUID of this thread</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>threadType</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>conversation</code>
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>messageType</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>content</code>
+                
+                </td>
+            
+
+            <td class="description last">E.g. content, control, etc..</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>messageId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>uuid4()</code>
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>messageRef</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">UUID of message this message will be referencing (reply-to).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>expiration</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Offset for when message should expire.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attachments</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="Attachment.html">Attachment</a>></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>flags</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Low level flags. (ADVANCED)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userAgent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>librelay</code>
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>noSync</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>false</code>
+                
+                </td>
+            
+
+            <td class="description last">When true a sync message will not be sent to your other
+                                             devices.  (ADVANCED)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>actionOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#ActionOptions">ActionOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>actions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="global.html#Action">Action</a>></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="Tag">Tag</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="hub_atlas.js.html">hub/atlas.js</a>, <a href="hub_atlas.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    A tag is of the form, "@label:org".  They can be used for describing users or groups.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="TagExpression">TagExpression</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="hub_atlas.js.html">hub/atlas.js</a>, <a href="hub_atlas.js.html#line55">line 55</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Tag expression are informal arrangement of <a href="global.html#Tag"><code>Tag</code></a>s using set operators like
+"-" (minus) "+" (plus).  Paranthesis can be used to create logical groups too.
+For example "@joe + @brunchgroup" would respresent all users in the @brunchgroup
+as well as @joe (assuming he was not already in @brunchgroup).  You can exclude
+specific users with "-", ie. "@brunchgroup - @cindy" or even,
+"@brunchgroup - (@joe + @cindy)".
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>
+
+<link type="text/css" rel="stylesheet" href="../../css/jsdoc-overrides.css"/>
+<link id="favicon" rel="shortcut icon" href="../../images/icon_256.png"/>
+<script src="../../js/jsdoc-overrides.js"></script>

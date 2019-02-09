@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>outgoing_message.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AtlasClient.html">AtlasClient</a><ul class='methods'><li data-type='method'><a href="AtlasClient.html#.authenticateViaCode">authenticateViaCode</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaPassword">authenticateViaPassword</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaPasswordOtp">authenticateViaPasswordOtp</a></li><li data-type='method'><a href="AtlasClient.html#.authenticateViaToken">authenticateViaToken</a></li><li data-type='method'><a href="AtlasClient.html#.factory">factory</a></li><li data-type='method'><a href="AtlasClient.html#.requestAuthentication">requestAuthentication</a></li><li data-type='method'><a href="AtlasClient.html#fetch">fetch</a></li><li data-type='method'><a href="AtlasClient.html#getDevices">getDevices</a></li><li data-type='method'><a href="AtlasClient.html#getUsers">getUsers</a></li><li data-type='method'><a href="AtlasClient.html#maintainJWT">maintainJWT</a></li><li data-type='method'><a href="AtlasClient.html#resolveTags">resolveTags</a></li><li data-type='method'><a href="AtlasClient.html#resolveTagsBatch">resolveTagsBatch</a></li><li data-type='method'><a href="AtlasClient.html#sanitizeTags">sanitizeTags</a></li></ul></li><li><a href="Attachment.html">Attachment</a><ul class='methods'><li data-type='method'><a href="Attachment.html#.fromFile">fromFile</a></li></ul></li><li><a href="MessageReceiver.html">MessageReceiver</a><ul class='methods'><li data-type='method'><a href="MessageReceiver.html#.factory">factory</a></li><li data-type='method'><a href="MessageReceiver.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="MessageReceiver.html#close">close</a></li><li data-type='method'><a href="MessageReceiver.html#connect">connect</a></li><li data-type='method'><a href="MessageReceiver.html#drain">drain</a></li><li data-type='method'><a href="MessageReceiver.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="MessageSender.html">MessageSender</a><ul class='methods'><li data-type='method'><a href="MessageSender.html#.factory">factory</a></li><li data-type='method'><a href="MessageSender.html#send">send</a></li></ul></li><li><a href="module-errors-NetworkError.html">NetworkError</a></li><li><a href="module-errors-ProtocolError.html">ProtocolError</a></li><li><a href="module-errors-RelayError.html">RelayError</a></li><li><a href="module-errors-UnregisteredUserError.html">UnregisteredUserError</a></li><li><a href="module-eventing-Event.html">Event</a></li><li><a href="module-eventing-EventTarget.html">EventTarget</a><ul class='methods'><li data-type='method'><a href="module-eventing-EventTarget.html#addEventListener">addEventListener</a></li><li data-type='method'><a href="module-eventing-EventTarget.html#removeEventListener">removeEventListener</a></li></ul></li><li><a href="module-eventing-KeyChangeEvent.html">KeyChangeEvent</a><ul class='methods'><li data-type='method'><a href="module-eventing-KeyChangeEvent.html#accept">accept</a></li></ul></li><li><a href="module-exchange-Exchange.html">Exchange</a><ul class='methods'><li data-type='method'><a href="module-exchange-Exchange.html#addMessageListener">addMessageListener</a></li><li data-type='method'><a href="module-exchange-Exchange.html#decodePayload">decodePayload</a></li><li data-type='method'><a href="module-exchange-Exchange.html#encodePayload">encodePayload</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getAttachments">getAttachments</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getBody">getBody</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getDataProperty">getDataProperty</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getExpiration">getExpiration</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getFlags">getFlags</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageId">getMessageId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageRef">getMessageRef</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getMessageType">getMessageType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSender">getSender</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSource">getSource</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getSourceDevice">getSourceDevice</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadExpression">getThreadExpression</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadId">getThreadId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadTitle">getThreadTitle</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getThreadType">getThreadType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="module-exchange-Exchange.html#getUserAgent">getUserAgent</a></li><li data-type='method'><a href="module-exchange-Exchange.html#recvMessages">recvMessages</a></li><li data-type='method'><a href="module-exchange-Exchange.html#removeMessageListener">removeMessageListener</a></li><li data-type='method'><a href="module-exchange-Exchange.html#send">send</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setAttachments">setAttachments</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setBody">setBody</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setDataProperty">setDataProperty</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setExpiration">setExpiration</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setFlags">setFlags</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageId">setMessageId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageRef">setMessageRef</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setMessageType">setMessageType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSender">setSender</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSource">setSource</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setSourceDevice">setSourceDevice</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadExpression">setThreadExpression</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadId">setThreadId</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadTitle">setThreadTitle</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setThreadType">setThreadType</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setTimestamp">setTimestamp</a></li><li data-type='method'><a href="module-exchange-Exchange.html#setUserAgent">setUserAgent</a></li></ul></li><li><a href="module-exchange-ExchangeV1.html">ExchangeV1</a><ul class='methods'><li data-type='method'><a href="module-exchange-ExchangeV1.html#addMessageListener">addMessageListener</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#decodePayload">decodePayload</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#encodePayload">encodePayload</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getAttachments">getAttachments</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getBody">getBody</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getDataProperty">getDataProperty</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getExpiration">getExpiration</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getFlags">getFlags</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageId">getMessageId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageRef">getMessageRef</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getMessageType">getMessageType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSender">getSender</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSource">getSource</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getSourceDevice">getSourceDevice</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadExpression">getThreadExpression</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadId">getThreadId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadTitle">getThreadTitle</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getThreadType">getThreadType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getTimestamp">getTimestamp</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#getUserAgent">getUserAgent</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#recvMessages">recvMessages</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#removeMessageListener">removeMessageListener</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#send">send</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setAttachments">setAttachments</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setBody">setBody</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setDataProperty">setDataProperty</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setExpiration">setExpiration</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setFlags">setFlags</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageId">setMessageId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageRef">setMessageRef</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setMessageType">setMessageType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSender">setSender</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSource">setSource</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setSourceDevice">setSourceDevice</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadExpression">setThreadExpression</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadId">setThreadId</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadTitle">setThreadTitle</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setThreadType">setThreadType</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setTimestamp">setTimestamp</a></li><li data-type='method'><a href="module-exchange-ExchangeV1.html#setUserAgent">setUserAgent</a></li></ul></li><li><a href="module-storage_backing-StorageInterface.html">StorageInterface</a><ul class='methods'><li data-type='method'><a href="module-storage_backing-StorageInterface.html#get">get</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#has">has</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#initialize">initialize</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#keys">keys</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#remove">remove</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#set">set</a></li><li data-type='method'><a href="module-storage_backing-StorageInterface.html#shutdown">shutdown</a></li></ul></li><li><a href="OutgoingMessage.html">OutgoingMessage</a><ul class='methods'><li data-type='method'><a href="OutgoingMessage.html#on">on</a></li><li data-type='method'><a href="OutgoingMessage.html#sendToAddr">sendToAddr</a></li></ul></li><li><a href="SignalClient.html">SignalClient</a><ul class='methods'><li data-type='method'><a href="SignalClient.html#.factory">factory</a></li><li data-type='method'><a href="SignalClient.html#fetch">fetch</a></li><li data-type='method'><a href="SignalClient.html#getAttachment">getAttachment</a></li><li data-type='method'><a href="SignalClient.html#getDevices">getDevices</a></li><li data-type='method'><a href="SignalClient.html#getKeysForAddr">getKeysForAddr</a></li><li data-type='method'><a href="SignalClient.html#linkDevice">linkDevice</a></li><li data-type='method'><a href="SignalClient.html#putAttachment">putAttachment</a></li><li data-type='method'><a href="SignalClient.html#refreshPreKeys">refreshPreKeys</a></li><li data-type='method'><a href="SignalClient.html#sendMessage">sendMessage</a></li><li data-type='method'><a href="SignalClient.html#sendMessages">sendMessages</a></li><li data-type='method'><a href="SignalClient.html#updateGcmRegistrationId">updateGcmRegistrationId</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-errors.html">errors</a></li><li><a href="module-eventing.html">eventing</a></li><li><a href="module-exchange.html">exchange</a><ul class='methods'><li data-type='method'><a href="module-exchange.html#.create">create</a></li><li data-type='method'><a href="module-exchange.html#.decode">decode</a></li></ul></li><li><a href="module-storage.html">storage</a><ul class='methods'><li data-type='method'><a href="module-storage.html#.clearSessionStore">clearSessionStore</a></li><li data-type='method'><a href="module-storage.html#.get">get</a></li><li data-type='method'><a href="module-storage.html#.getDeviceIds">getDeviceIds</a></li><li data-type='method'><a href="module-storage.html#.getOurIdentity">getOurIdentity</a></li><li data-type='method'><a href="module-storage.html#.getOurRegistrationId">getOurRegistrationId</a></li><li data-type='method'><a href="module-storage.html#.getState">getState</a></li><li data-type='method'><a href="module-storage.html#.has">has</a></li><li data-type='method'><a href="module-storage.html#.initialize">initialize</a></li><li data-type='method'><a href="module-storage.html#.isBlocked">isBlocked</a></li><li data-type='method'><a href="module-storage.html#.isTrustedIdentity">isTrustedIdentity</a></li><li data-type='method'><a href="module-storage.html#.keys">keys</a></li><li data-type='method'><a href="module-storage.html#.loadIdentity">loadIdentity</a></li><li data-type='method'><a href="module-storage.html#.loadPreKey">loadPreKey</a></li><li data-type='method'><a href="module-storage.html#.loadSession">loadSession</a></li><li data-type='method'><a href="module-storage.html#.loadSignedPreKey">loadSignedPreKey</a></li><li data-type='method'><a href="module-storage.html#.putState">putState</a></li><li data-type='method'><a href="module-storage.html#.remove">remove</a></li><li data-type='method'><a href="module-storage.html#.removeAllSessions">removeAllSessions</a></li><li data-type='method'><a href="module-storage.html#.removeIdentity">removeIdentity</a></li><li data-type='method'><a href="module-storage.html#.removeOurIdentity">removeOurIdentity</a></li><li data-type='method'><a href="module-storage.html#.removePreKey">removePreKey</a></li><li data-type='method'><a href="module-storage.html#.removeSession">removeSession</a></li><li data-type='method'><a href="module-storage.html#.removeSignedPreKey">removeSignedPreKey</a></li><li data-type='method'><a href="module-storage.html#.removeState">removeState</a></li><li data-type='method'><a href="module-storage.html#.saveIdentity">saveIdentity</a></li><li data-type='method'><a href="module-storage.html#.saveOurIdentity">saveOurIdentity</a></li><li data-type='method'><a href="module-storage.html#.set">set</a></li><li data-type='method'><a href="module-storage.html#.setBacking">setBacking</a></li><li data-type='method'><a href="module-storage.html#.setLabel">setLabel</a></li><li data-type='method'><a href="module-storage.html#.shutdown">shutdown</a></li><li data-type='method'><a href="module-storage.html#.storePreKey">storePreKey</a></li><li data-type='method'><a href="module-storage.html#.storeSession">storeSession</a></li><li data-type='method'><a href="module-storage.html#.storeSignedPreKey">storeSignedPreKey</a></li></ul></li><li><a href="module-storage_backing.html">storage/backing</a></li><li><a href="module-util.html">util</a><ul class='methods'><li data-type='method'><a href="module-util.html#~consoleInput">consoleInput</a></li><li data-type='method'><a href="module-util.html#~never">never</a></li><li data-type='method'><a href="module-util.html#~sleep">sleep</a></li></ul></li></ul><h3>Events</h3><ul><li><a href="MessageReceiver.html#event:error">error</a></li><li><a href="MessageReceiver.html#event:keychange">keychange</a></li><li><a href="MessageReceiver.html#event:message">message</a></li><li><a href="MessageReceiver.html#event:receipt">receipt</a></li><li><a href="MessageReceiver.html#event:sent">sent</a></li><li><a href="MessageSender.html#event:error">error</a></li><li><a href="MessageSender.html#event:keychange">keychange</a></li><li><a href="OutgoingMessage.html#event:error">error</a></li><li><a href="OutgoingMessage.html#event:keychange">keychange</a></li><li><a href="OutgoingMessage.html#event:sent">sent</a></li></ul><h3>Global</h3><ul><li><a href="global.html#registerAccount">registerAccount</a></li><li><a href="global.html#registerDevice">registerDevice</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">outgoing_message.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// vim: ts=4:sw=4:expandtab
+
+const errors = require('./errors.js');
+const libsignal = require('libsignal');
+const protobufs = require('./protobufs');
+const storage = require('./storage');
+const util = require('./util');
+
+
+/**
+ * Event indicating that a message was successfully sent to a specific peer.
+ * Note that this does not indicate the peer has read or even receieved the
+ * message, but instead that the server has indicated that it will enqueue
+ * this message for delivery to them.
+ *
+ * @event OutgoingMessage#sent
+ * @property {number} timestamp
+ * @property {EncodedUserAddress} addr
+ */
+
+/**
+ * An error occured while attempting send to a specific peer.
+ *
+ * @event OutgoingMessage#error
+ * @property {number} timestamp
+ * @property {Error} error
+ */
+
+/**
+ * A peers identity key has changed.
+ *
+ * @event OutgoingMessage#keychange
+ */
+
+
+/**
+ * An event bus for activity related to outgoing messages.  These objects
+ * are created and returned from the {@link MessageSender}.  Typical interfacing
+ * is done via event listeners.
+ *
+ * @fires OutgoingMessage#sent
+ * @fires OutgoingMessage#error
+ * @fires OutgoingMessage#keychange
+ * @property {Object} message - The message protocol buffer.
+ * @property {number} timestamp - The offical sent timestamp for this message.
+ * @property {OutgoingMessage#sent[]} sent - Array of {@link OutgoingMessage#sent} events.
+ * @property {OutgoingMessage#errors[]} errors - Array of {@link OutgoingMessage#errors} events.
+ * @property {number} created - Creation timestamp.
+ */
+class OutgoingMessage {
+
+    constructor(signal, timestamp, message) {
+        this.signal = signal;
+        this.timestamp = timestamp;
+        this.message = message;
+        this.sent = [];
+        this.errors = [];
+        this.created = Date.now();
+        this._listeners = {};
+    }
+
+    /**
+     * Add event listener.
+     *
+     * @param {string} event
+     * @param {function} callback
+     */
+    on(event, callback) {
+        let handlers = this._listeners[event];
+        if (!handlers) {
+            handlers = this._listeners[event] = [];
+        }
+        handlers.push(callback);
+    }
+
+    async _getOurAddr() {
+        if (this._ourAddr === undefined) {
+            this._ourAddr = await storage.getState('addr');
+        }
+        return this._ourAddr;
+    }
+
+    async _getOurDeviceId() {
+        if (this._ourDeviceId === undefined) {
+            this._ourDeviceId = await storage.getState('deviceId');
+        }
+        return this._ourDeviceId;
+    }
+
+    async _emit(event) {
+        const handlers = this._listeners[event];
+        if (!handlers) {
+            return;
+        }
+        const args = Array.from(arguments).slice(1);
+        for (const callback of handlers) {
+            try {
+                await callback.apply(this, args);
+            } catch(e) {
+                console.error("Event callback error:", e);
+            }
+        }
+    }
+
+    async _emitError(addr, reason, error) {
+        error.addr = addr;
+        error.reason = reason;
+        await this._emitErrorEntry({
+            timestamp: Date.now(),
+            error
+        });
+    }
+
+    async _emitErrorEntry(entry) {
+        this.errors.push(entry);
+        await this._emit('error', entry);
+    }
+
+    async _emitSent(addr) {
+        await this._emitSentEntry({
+            timestamp: Date.now(),
+            addr
+        });
+    }
+
+    async _emitSentEntry(entry) {
+        this.sent.push(entry);
+        await this._emit('sent', entry);
+    }
+
+    async _handleIdentityKeyError(e, options) {
+        options = options || {};
+        if (!(e instanceof libsignal.UntrustedIdentityKeyError)) {
+            throw new TypeError("UntrustedIdentityKeyError required");
+        }
+        if (!options.forceThrow) {
+            await this._emit('keychange', e);
+        }
+        if (!e.accepted) {
+            throw e;
+        }
+    }
+
+    async _getKeysForAddr(addr, updateDevices, reentrant) {
+        const _this = this;
+        const isSelf = addr === await this._getOurAddr();
+        const ourDeviceId = isSelf ? await this._getOurDeviceId() : null;
+        async function handleResult(response) {
+            await Promise.all(response.devices.map(async device => {
+                if (isSelf &amp;&amp; device.deviceId === ourDeviceId) {
+                    console.debug("Skipping prekey processing for self");
+                    return;
+                }
+                device.identityKey = response.identityKey;
+                const address = new libsignal.ProtocolAddress(addr, device.deviceId);
+                const builder = new libsignal.SessionBuilder(storage, address);
+                try {
+                    await builder.initOutgoing(device);
+                } catch(e) {
+                    if (e instanceof libsignal.UntrustedIdentityKeyError) {
+                        await _this._handleIdentityKeyError(e, {forceThrow: reentrant});
+                        await _this._getKeysForAddr(addr, updateDevices, /*reentrant*/ true);
+                    } else {
+                        throw e;
+                    }
+                }
+            }));
+        }
+        if (!updateDevices) {
+            try {
+                await handleResult(await this.signal.getKeysForAddr(addr));
+            } catch(e) {
+                if (e instanceof errors.ProtocolError &amp;&amp; e.code === 404) {
+                    console.warn("Unregistered address (no devices):", addr);
+                    await this._removeDeviceIdsForAddr(addr);
+                } else {
+                    throw e;
+                }
+            }
+        } else {
+            await Promise.all(updateDevices.map(async device => {
+                try {
+                    await handleResult(await _this.signal.getKeysForAddr(addr, device));
+                } catch(e) {
+                    if (e instanceof errors.ProtocolError &amp;&amp; e.code === 404) {
+                        console.warn("Unregistered device:", device);
+                        await this._removeDeviceIdsForAddr(addr, [device]);
+                    } else {
+                        throw e;
+                    }
+                }
+            }));
+        }
+    }
+
+    async _sendMessages(addr, messages, timestamp) {
+        try {
+            return await this.signal.sendMessages(addr, messages, timestamp);
+        } catch(e) {
+            if (e instanceof errors.ProtocolError &amp;&amp; e.code === 404) {
+                throw new errors.UnregisteredUserError(addr, e);
+            }
+            throw e;
+        }
+    }
+
+    _getPaddedMessageLength(messageLength) {
+        const messageLengthWithTerminator = messageLength + 1;
+        let messagePartCount = Math.floor(messageLengthWithTerminator / 160);
+        if (messageLengthWithTerminator % 160 !== 0) {
+            messagePartCount++;
+        }
+        return messagePartCount * 160;
+    }
+
+    _getPaddedMessageBuffer() {
+        let mBuf = protobufs.Content.encode(this.message).finish();
+        const padded = new Buffer(this._getPaddedMessageLength(mBuf.byteLength + 1) - 1);
+        padded.set(mBuf);
+        padded[mBuf.byteLength] = 0x80;
+        return padded;
+    }
+
+    async _sendToAddr(addr, recurse) {
+        const deviceIds = await storage.getDeviceIds(addr);
+        const paddedMessage = this._getPaddedMessageBuffer();
+        let messages;
+        let attempts = 0;
+        const ciphers = {};
+        do {
+            try {
+                messages = await Promise.all(deviceIds.map(async id => {
+                    const address = new libsignal.ProtocolAddress(addr, id);
+                    const sessionCipher = new libsignal.SessionCipher(storage, address);
+                    ciphers[address.deviceId] = sessionCipher;
+                    return this._toJSON(address, await sessionCipher.encrypt(paddedMessage));
+                }));
+            } catch(e) {
+                if (e instanceof libsignal.UntrustedIdentityKeyError) {
+                    await this._handleIdentityKeyError(e, {forceThrow: !!attempts});
+                } else {
+                    this._emitError(addr, "Failed to create message", e);
+                    return;
+                }
+            }
+        } while(!messages &amp;&amp; !attempts++);
+        try {
+            await this._sendMessages(addr, messages, this.timestamp);
+        } catch(e) {
+            if (e instanceof errors.ProtocolError &amp;&amp; (e.code === 410 || e.code === 409)) {
+                if (!recurse) {
+                    this._emitError(addr, "Hit retry limit attempting to reload device list", e);
+                    return;
+                }
+                if (e.code === 409) {
+                    await this._removeDeviceIdsForAddr(addr, e.response.extraDevices);
+                } else {
+                    await Promise.all(e.response.staleDevices.map(x => ciphers[x].closeOpenSession()));
+                }
+                const resetDevices = e.code === 410 ? e.response.staleDevices :
+                                                      e.response.missingDevices;
+                // Optimize first-contact key lookup (just get them all at once).
+                const updateDevices = messages.length ? resetDevices : undefined;
+                await this._getKeysForAddr(addr, updateDevices);
+                await this._sendToAddr(addr, /*recurse*/ (e.code === 409));
+            } else if (e.code === 401 || e.code === 403) {
+                throw e;
+            } else {
+                this._emitError(addr, "Failed to send message", e);
+                return;
+            }
+        }
+        this._emitSent(addr);
+    }
+
+    async _sendToDevice(addr, deviceId, recurse) {
+        const protoAddr = new libsignal.ProtocolAddress(addr, deviceId);
+        const sessionCipher = new libsignal.SessionCipher(storage, protoAddr);
+        if (!(await sessionCipher.hasOpenSession())) {
+            await this._getKeysForAddr(addr, [deviceId]);
+        }
+        let encryptedMessage;
+        let attempts = 0;
+        do {
+            try {
+                encryptedMessage = await sessionCipher.encrypt(this._getPaddedMessageBuffer());
+            } catch(e) {
+                if (e instanceof libsignal.UntrustedIdentityKeyError) {
+                    await this._handleIdentityKeyError(e, {forceThrow: !!attempts});
+                } else {
+                    this._emitError(addr, "Failed to create message", e);
+                    return;
+                }
+            }
+        } while(!encryptedMessage &amp;&amp; !attempts++);
+        const messageBundle = this._toJSON(protoAddr, encryptedMessage, this.timestamp);
+        try {
+            await this.signal.sendMessage(addr, deviceId, messageBundle);
+        } catch(e) {
+            if (e instanceof errors.ProtocolError &amp;&amp; e.code === 410) {
+                sessionCipher.closeOpenSession();  // Force getKeysForAddr on next call.
+                await this._sendToDevice(addr, /*recurse*/ false);
+            } else if (e.code === 401 || e.code === 403) {
+                throw e;
+            } else {
+                this._emitError(addr, "Failed to send message", e);
+                return;
+            }
+        }
+        this._emitSent(addr);
+    }
+
+    _toJSON(address, encryptedMsg, timestamp) {
+        return {
+            type: encryptedMsg.type,
+            destinationDeviceId: address.deviceId,
+            destinationRegistrationId: encryptedMsg.registrationId,
+            content: encryptedMsg.body.toString('base64'),
+            timestamp
+        };
+    }
+
+    async _initSessions(encodedAddr) {
+        // Scan the address for devices that have closed sessions and fetch
+        // new key material for said devices so we can encrypt messages for
+        // them.
+        const [addr, deviceId] = util.unencodeAddr(encodedAddr);
+        const deviceIds = deviceId ? [deviceId] : await storage.getDeviceIds(addr);
+        if (!deviceIds.length) {
+            return;
+        }
+        const stale = (await Promise.all(deviceIds.map(async id => {
+            const address = new libsignal.ProtocolAddress(addr, id);
+            const sessionCipher = new libsignal.SessionCipher(storage, address);
+            return !(await sessionCipher.hasOpenSession()) ? id : null;
+        }))).filter(x => x !== null);
+        if (stale.length === deviceIds.length) {
+            await this._getKeysForAddr(addr);  // Get them all at once.
+        } else if (stale.length) {
+            await this._getKeysForAddr(addr, stale);
+        }
+    }
+
+    async _removeDeviceIdsForAddr(addr, deviceIdsToRemove) {
+        if (!deviceIdsToRemove) {
+            await storage.removeAllSessions(addr);
+        } else {
+            for (const id of deviceIdsToRemove) {
+                const encodedAddr = addr + "." + id;
+                await storage.removeSession(encodedAddr);
+            }
+        }
+    }
+
+    /**
+     * Send this message to a specific peer or even a specific device of a given peer if
+     * the {@link encodedAddr} param is fully qualified.
+     *
+     * @param {EncodedUserAddress} encodedAddr
+     */
+    async sendToAddr(encodedAddr) {
+        try {
+            await this._initSessions(encodedAddr);
+        } catch(e) {
+            this._emitError(addr, "Failed to init sessions for: " + encodedAddr, e);
+            throw e;
+        }
+        const [addr, deviceId] = util.unencodeAddr(encodedAddr);
+        try {
+            if (deviceId) {
+                await this._sendToDevice(addr, deviceId, /*recurse*/ true);
+            } else {
+                await this._sendToAddr(addr, /*recurse*/ true);
+            }
+        } catch(e) {
+            this._emitError(encodedAddr, "Failed to send to address " + encodedAddr, e);
+            throw e;
+        }
+    }
+}
+
+module.exports = OutgoingMessage;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>
+
+<link type="text/css" rel="stylesheet" href="../../css/jsdoc-overrides.css"/>
+<link id="favicon" rel="shortcut icon" href="../../images/icon_256.png"/>
+<script src="../../js/jsdoc-overrides.js"></script>
