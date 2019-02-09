@@ -1,5 +1,10 @@
 # Change Log
 
+## [5.4.0]
+### Fixed
+- closeSession handling
+
+
 ## [5.2.0]
 ### Added
 - Exchange class for simplified thread communication.
@@ -37,6 +42,7 @@
 
 
 [unreleased]: https://github.com/ForstaLabs/librelay-node/tree/master
+[5.4.0]: https://github.com/ForstaLabs/librelay-node/tree/v5.4.0
 [5.2.0]: https://github.com/ForstaLabs/librelay-node/tree/v5.2.0
 [4.0.0]: https://github.com/ForstaLabs/librelay-node/tree/v4.0.0
 [3.4.0]: https://github.com/ForstaLabs/librelay-node/tree/v3.4.0
