@@ -422,6 +422,70 @@ class AtlasClient {
     }
 
     /**
+     * Update an existing users data
+     *
+     * @param {Object} data - A user data object as specified for the v1/user/ endpoint
+     * 
+     * @returns {Boolean} indicates whether the patch was successful or not
+     */
+    async patchUser(data) {
+        const op = { method: "PATCH", body: { data } };
+        try{
+            await this.fetch("/v1/user/" + data.id, op);
+            return true;
+        }catch (err){
+            console.log(err);
+            return false;
+        }
+    }
+
+    /**
+     * Add a new user to the existing user set
+     *
+     * @param {Object} data - A user data object as specified for the v1/user/ endpoint
+     * 
+     * @returns {Boolean} indicates whether the post was successful or not
+     */
+    async postUser(data) {
+        const op = { method: "POST", body: { data } };
+        try{
+            await this.fetch("/v1/user/", op);
+            return true;
+        }catch (err){
+            console.log(err);
+            return false;
+        }
+    }
+
+    /**
+     * Register a new user with atlas
+     *
+     * @param {Object} body - A user data object in the form:
+     *  {   
+     *      captcha, 
+     *      phone, 
+     *      email, 
+     *      fullname, 
+     *      tag_slug, 
+     *      password, 
+     *      org_name, 
+     *      org_slug 
+     * }
+     * All fields are required except phone
+     * 
+     * @returns {Object} - {nametag, orgslug, jwt}
+     */
+    async postJoin(body) {
+        try{
+            const result = await this.fetch("/v1/join/", { method: "POST", body });
+            return result;
+        }catch (err){
+            console.log(err);
+            return null;
+        }
+    }
+
+    /**
      *The current set of known devices for your account.
      *
      * @returns {Object[]} Device info objects.
