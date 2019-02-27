@@ -427,17 +427,8 @@ class AtlasClient {
      * @param {Object} data - A user data object as specified for the v1/user/ endpoint PATCH method
      */
     async patchUser(data) {
-        const op = { method: "PATCH", body: { ...data } };
-        try {
-            const resp = await this.fetch("/v1/user/" + data.id, op);
-            if(!resp.ok) {
-                const e = new errors.ProtocolError(resp.status, respContent);
-                e.message = `${urn} (${text})`;
-                throw e;
-            }
-        } catch (err) {
-            throw err;
-        }
+        const op = { method: "PATCH", json: { ...data } };
+        await this.fetch("/v1/user/" + data.id, op);
     }
 
     /**
@@ -446,18 +437,8 @@ class AtlasClient {
      * @param {Object} data - A user data object as specified for the v1/user/ endpoint POST method
      */
     async postUser(data) {
-        const op = { method: "POST", body: { ...data } };
-        try {
-            const resp = await this.fetch("/v1/user/", op);
-            if(!resp.ok) {
-                const e = new errors.ProtocolError(resp.status, respContent);
-                e.message = `${urn} (${text})`;
-                throw e;
-            }
-            return true;
-        } catch (err) {
-            throw err;
-        }
+        const op = { method: "POST", json: { ...data } };
+        await this.fetch("/v1/user/", op);
     }
 
     /**
@@ -476,22 +457,13 @@ class AtlasClient {
      * }
      * All fields are required except phone
      * 
-     * Use the recaptcha site key 6LcYOD8UAAAAAK8h67aZdxUJqgDPNpgIEDFgopil.
+     * Contact support@forsta.io for the recaptcha site key
      * 
      * @returns {Object} - {nametag, orgslug, jwt}
      */
-    async postJoin(body) {
-        try {
-            const resp = await this.fetch("/v1/join/", { method: "POST", body });
-            if(!resp.ok) {
-                const e = new errors.ProtocolError(resp.status, respContent);
-                e.message = `${urn} (${text})`;
-                throw e;
-            }
-            return result;
-        } catch (err) {
-            throw err;
-        }
+    async postJoin(json) {
+        const resp = await this.fetch("/v1/join/", { method: "POST", json });
+        return resp;
     }
 
     /**
