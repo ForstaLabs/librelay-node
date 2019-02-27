@@ -425,17 +425,18 @@ class AtlasClient {
      * Update an existing users data
      *
      * @param {Object} data - A user data object as specified for the v1/user/ endpoint PATCH method
-     * 
-     * @returns {Boolean} indicates whether the patch was successful or not
      */
     async patchUser(data) {
         const op = { method: "PATCH", body: { ...data } };
-        try{
-            await this.fetch("/v1/user/" + data.id, op);
-            return true;
-        }catch (err){
-            console.log(err);
-            return false;
+        try {
+            const resp = await this.fetch("/v1/user/" + data.id, op);
+            if(!resp.ok) {
+                const e = new errors.ProtocolError(resp.status, respContent);
+                e.message = `${urn} (${text})`;
+                throw e;
+            }
+        } catch (err) {
+            throw err;
         }
     }
 
@@ -443,17 +444,19 @@ class AtlasClient {
      * Add a new user to the existing user set
      *
      * @param {Object} data - A user data object as specified for the v1/user/ endpoint POST method
-     * 
-     * @returns {Boolean} indicates whether the post was successful or not
      */
     async postUser(data) {
         const op = { method: "POST", body: { ...data } };
-        try{
-            await this.fetch("/v1/user/", op);
+        try {
+            const resp = await this.fetch("/v1/user/", op);
+            if(!resp.ok) {
+                const e = new errors.ProtocolError(resp.status, respContent);
+                e.message = `${urn} (${text})`;
+                throw e;
+            }
             return true;
-        }catch (err){
-            console.log(err);
-            return false;
+        } catch (err) {
+            throw err;
         }
     }
 
@@ -473,18 +476,21 @@ class AtlasClient {
      * }
      * All fields are required except phone
      * 
-     * Use the site key 6Lcr4JMUAAAAAOljN5puqdFrcVeCyexMNHlWtWHX as the seed
-     * for your recaptcha token.
+     * Use the recaptcha site key 6LcYOD8UAAAAAK8h67aZdxUJqgDPNpgIEDFgopil.
      * 
      * @returns {Object} - {nametag, orgslug, jwt}
      */
     async postJoin(body) {
-        try{
-            const result = await this.fetch("/v1/join/", { method: "POST", body });
+        try {
+            const resp = await this.fetch("/v1/join/", { method: "POST", body });
+            if(!resp.ok) {
+                const e = new errors.ProtocolError(resp.status, respContent);
+                e.message = `${urn} (${text})`;
+                throw e;
+            }
             return result;
-        }catch (err){
-            console.log(err);
-            return null;
+        } catch (err) {
+            throw err;
         }
     }
 
