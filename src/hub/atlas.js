@@ -424,12 +424,12 @@ class AtlasClient {
     /**
      * Update an existing users data
      *
-     * @param {Object} data - A user data object as specified for the v1/user/ endpoint
+     * @param {Object} data - A user data object as specified for the v1/user/ endpoint PATCH method
      * 
      * @returns {Boolean} indicates whether the patch was successful or not
      */
     async patchUser(data) {
-        const op = { method: "PATCH", body: { data } };
+        const op = { method: "PATCH", body: { ...data } };
         try{
             await this.fetch("/v1/user/" + data.id, op);
             return true;
@@ -442,12 +442,12 @@ class AtlasClient {
     /**
      * Add a new user to the existing user set
      *
-     * @param {Object} data - A user data object as specified for the v1/user/ endpoint
+     * @param {Object} data - A user data object as specified for the v1/user/ endpoint POST method
      * 
      * @returns {Boolean} indicates whether the post was successful or not
      */
     async postUser(data) {
-        const op = { method: "POST", body: { data } };
+        const op = { method: "POST", body: { ...data } };
         try{
             await this.fetch("/v1/user/", op);
             return true;
