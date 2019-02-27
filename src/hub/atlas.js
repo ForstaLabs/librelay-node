@@ -473,6 +473,9 @@ class AtlasClient {
      * }
      * All fields are required except phone
      * 
+     * Use the site key 6Lcr4JMUAAAAAOljN5puqdFrcVeCyexMNHlWtWHX as the seed
+     * for your recaptcha token.
+     * 
      * @returns {Object} - {nametag, orgslug, jwt}
      */
     async postJoin(body) {
