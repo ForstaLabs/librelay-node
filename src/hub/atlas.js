@@ -424,27 +424,27 @@ class AtlasClient {
     /**
      * Update an existing users data
      *
-     * @param {Object} data - A user data object as specified for the v1/user/ endpoint PATCH method
+     * @param {Object} json - A user data object as specified for the v1/user/ endpoint PATCH method
      */
-    async updateUser(data) {
-        const op = { method: "PATCH", json: { ...data } };
+    async updateUser(json) {
+        const op = { method: "PATCH", json};
         await this.fetch("/v1/user/" + data.id, op);
     }
 
     /**
      * Add a new user to the existing user set
      *
-     * @param {Object} data - A user data object as specified for the v1/user/ endpoint POST method
+     * @param {Object} json - A user data object as specified for the v1/user/ endpoint POST method
      */
-    async addUser(data) {
-        const op = { method: "POST", json: { ...data } };
+    async addUser(json) {
+        const op = { method: "POST", json };
         await this.fetch("/v1/user/", op);
     }
 
     /**
      * Register a new user with atlas
      *
-     * @param {Object} body - A user data object in the form:
+     * @param {Object} json - A user data object in the form:
      *  {   
      *      captcha, 
      *      phone, 
