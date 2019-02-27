@@ -426,7 +426,7 @@ class AtlasClient {
      *
      * @param {Object} data - A user data object as specified for the v1/user/ endpoint PATCH method
      */
-    async patchUser(data) {
+    async updateUser(data) {
         const op = { method: "PATCH", json: { ...data } };
         await this.fetch("/v1/user/" + data.id, op);
     }
@@ -436,7 +436,7 @@ class AtlasClient {
      *
      * @param {Object} data - A user data object as specified for the v1/user/ endpoint POST method
      */
-    async postUser(data) {
+    async addUser(data) {
         const op = { method: "POST", json: { ...data } };
         await this.fetch("/v1/user/", op);
     }
@@ -461,7 +461,7 @@ class AtlasClient {
      * 
      * @returns {Object} - {nametag, orgslug, jwt}
      */
-    async postJoin(json) {
+    async join(json) {
         const resp = await this.fetch("/v1/join/", { method: "POST", json });
         return resp;
     }
