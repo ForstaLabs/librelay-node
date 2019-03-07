@@ -257,6 +257,22 @@ class Exchange {
     }
 
     /**
+     * Time this message spent waiting for delivery on the Signal server.
+     *
+     * @returns {number} Milliseconds
+     */
+    getAge() {
+        return this._age;
+    }
+
+    /**
+     * @param {number} value - Milliseconds this message spent waiting for delivery (set by server).
+     */
+    setAge(value) {
+        this._age = value;
+    }
+
+    /**
      * @abstract
      * @protected
      * @param {Object} payload - Version specific payload object.

@@ -229,6 +229,7 @@ class MessageReceiver extends eventing.EventTarget {
                                                         this.signalingKey);
             envelope = protobufs.Envelope.decode(data);
             envelope.timestamp = envelope.timestamp.toNumber();
+            envelope.age = envelope.age && envelope.age.toNumber();
         } catch(e) {
             console.error("Error handling incoming message:", e);
             request.respond(500, 'Bad encrypted websocket message');
@@ -341,6 +342,7 @@ class MessageReceiver extends eventing.EventTarget {
         ex.setSource(envelope.source);
         ex.setSourceDevice(envelope.sourceDevice);
         ex.setTimestamp(timestamp);
+        ex.setAge(envelope.age);
         const ev = new eventing.Event('sent');
         ev.data = {
             source: envelope.source,
@@ -348,7 +350,8 @@ class MessageReceiver extends eventing.EventTarget {
             timestamp,
             destination: sent.destination,
             message: sent.message,
-            exchange: ex
+            exchange: ex,
+            age: envelope.age,
         };
         if (sent.expirationStartTimestamp) {
           ev.data.expirationStartTimestamp = sent.expirationStartTimestamp.toNumber();
@@ -369,6 +372,7 @@ class MessageReceiver extends eventing.EventTarget {
         ex.setSource(envelope.source);
         ex.setSourceDevice(envelope.sourceDevice);
         ex.setTimestamp(envelope.timestamp);
+        ex.setAge(envelope.age);
         const ev = new eventing.Event('message');
         ev.data = {
             timestamp: envelope.timestamp,
@@ -377,6 +381,7 @@ class MessageReceiver extends eventing.EventTarget {
             message,
             exchange: ex,
             keyChange: envelope.keyChange,
+            age: envelope.age,
         };
         await this.dispatchEvent(ev);
     }
