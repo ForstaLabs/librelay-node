@@ -288,6 +288,32 @@ class AtlasClient {
     }
 
     /**
+     * Paged version of {@link fetch} for endpoints that have paged responses.
+     *
+     * @param {string} urn - The URN of the resource being requested.
+     * @param {Object} [options] - Standard fetch options.
+     * @returns {Object} - The response object (decoded JSON).
+     */
+    async fetchPaged(urn, options) {
+        /* Use this specifically for paged resources like /v1/tag */
+        const searchSep = urn.indexOf('?') === -1 ? '?' : '&';
+        const results = [];
+        let next = -1;
+        while (next) {
+            const pageUrn = next !== -1 ? (urn + searchSep + next) : urn;
+            const resp = await this.fetch(pageUrn, options);
+            if (resp.results && resp.hasOwnProperty('next')) {
+                results.push.apply(results, resp.results);
+                next = resp.next && resp.next.split('?')[1];
+            } else {
+                console.error("Paged API used for non-paged API:", urn);
+                return resp;
+            }
+        }
+        return {results};
+    }
+
+    /**
      * A background task that will keep a sessions JWT fresh.
      *
      * @param {boolean} forceRefresh - Perform an immediate refresh.
@@ -405,15 +431,15 @@ class AtlasClient {
         const missing = new Set(userIds);
         const users = [];
         if (!onlyDir) {
-            const resp = await this.fetch('/v1/user/?id_in=' + userIds.join());
+            const resp = await this.fetchPaged('/v1/user/?id_in=' + userIds.join());
             for (const user of resp.results) {
                 users.push(user);
                 missing.delete(user.id);
             }
         }
         if (missing.size) {
-            const resp = await this.fetch('/v1/directory/user/?id_in=' +
-                                          Array.from(missing).join());
+            const resp = await this.fetchPaged('/v1/directory/user/?id_in=' +
+                                               Array.from(missing).join());
             for (const user of resp.results) {
                 users.push(user);
             }
