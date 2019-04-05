@@ -166,6 +166,7 @@ class MessageReceiver extends eventing.EventTarget {
     close() {
         this._closing = true;
         this.wsr.close();
+        this.dispatchEvent(new eventing.Event('close'));
     }
 
     /**
