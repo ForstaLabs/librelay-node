@@ -10,7 +10,14 @@ const os = require('os');
 const protobufs = require('../protobufs');
 const storage = require('../storage');
 
-const defaultName = `librelay-node (${os.userInfo().username}@${os.hostname()} [${os.platform()}]`;
+function getUsername() {
+    try {
+        return os.userInfo().username;
+    } catch (e) {
+        return 'ANONYMOUS';
+    }
+}
+const defaultName = `librelay-node (${getUsername()}@${os.hostname()} [${os.platform()}]`;
 
 function generatePassword() {
     const passwordB64 = crypto.randomBytes(16).toString('base64');
