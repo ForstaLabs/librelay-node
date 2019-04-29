@@ -448,6 +448,51 @@ class AtlasClient {
     }
 
     /**
+     * Update an existing users data
+     *
+     * @param {Object} json - A user data object as specified for the v1/user/ endpoint PATCH method
+     */
+    async updateUser(json) {
+        const op = { method: "PATCH", json};
+        await this.fetch("/v1/user/" + data.id, op);
+    }
+
+    /**
+     * Add a new user to the existing user set
+     *
+     * @param {Object} json - A user data object as specified for the v1/user/ endpoint POST method
+     */
+    async addUser(json) {
+        const op = { method: "POST", json };
+        await this.fetch("/v1/user/", op);
+    }
+
+    /**
+     * Register a new user with atlas
+     *
+     * @param {Object} json - A user data object in the form:
+     *  {   
+     *      captcha, 
+     *      phone, 
+     *      email, 
+     *      fullname, 
+     *      tag_slug, 
+     *      password, 
+     *      org_name, 
+     *      org_slug 
+     * }
+     * All fields are required except phone
+     * 
+     * Contact support@forsta.io for the recaptcha site key
+     * 
+     * @returns {Object} - {nametag, orgslug, jwt}
+     */
+    async join(json) {
+        const resp = await this.fetch("/v1/join/", { method: "POST", json });
+        return resp;
+    }
+
+    /**
      *The current set of known devices for your account.
      *
      * @returns {Object[]} Device info objects.
