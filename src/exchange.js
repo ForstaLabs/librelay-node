@@ -312,7 +312,6 @@ class Exchange {
 
     /**
      * @abstract
-     * @deprecated Use {@link getSource} instead 
      */
     getSender() {
         throw new Error("Subclasss impl required");
@@ -320,10 +319,25 @@ class Exchange {
 
     /**
      * @abstract
-     * @deprecated Use {@link setSource} instead 
      * @param {string} value - The sender's UUID.
      */
     setSender(value) {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @returns {number} device ID of sender.
+     */
+    getSenderDevice() {
+        throw new Error("Subclasss impl required");
+    }
+
+    /**
+     * @abstract
+     * @param {number} value - Device ID of sender.
+     */
+    setSenderDevice(value) {
         throw new Error("Subclasss impl required");
     }
 
@@ -512,7 +526,8 @@ class ExchangeV1 extends Exchange {
         return Object.assign({
             version: 1,
             sender: {
-                userId: this.getSource()  // DEPRECATED but needed for a while.
+                userId: this.getSender() || this.getSource(),
+                device: this.getSenderDevice() || this.getSourceDevice()
             }
         }, this._payload);
     }
@@ -557,7 +572,21 @@ class ExchangeV1 extends Exchange {
     }
 
     setSender(value) {
-        this._payload.sender = {userId: value};
+        if (!this._payload.sender) {
+            this._payload.sender = {};
+        }
+        this._payload.sender.userId = value;
+    }
+
+    getSenderDevice() {
+        return this._payload.sender && this._payload.sender.device;
+    }
+
+    setSenderDevice(value) {
+        if (!this._payload.sender) {
+            this._payload.sender = {};
+        }
+        this._payload.sender.device = value;
     }
 
     getThreadExpression(value) {
